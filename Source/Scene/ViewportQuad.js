@@ -49,10 +49,11 @@ define([
      *
      * @example
      * var boundingRectangle = new BoundingRectangle(0, 0, 80, 40);
-     * var viewportQuad = new ViewportQuad(boundingRectangle);
+     * var viewportQuad = new ViewportQuad();
      * viewportQuad.material.uniforms.color = new Color(1.0, 0.0, 0.0, 1.0);
+     * viewportQuad.setRectangle(boundingRectangle);
      */
-    var ViewportQuad = function(rectangle) {
+    var ViewportQuad = function() {
 
         this._va = undefined;
         this._overlayCommand = new DrawCommand();
@@ -60,7 +61,15 @@ define([
         this._commandLists = new CommandLists();
         this._commandLists.overlayList.push(this._overlayCommand);
 
-        this._rectangle = BoundingRectangle.clone(rectangle);
+
+        this._rectangle = new BoundingRectangle(0, 0, 10, 10);
+
+        /**
+         * Determines if this viewport quad will be shown.
+         *
+         * @type Boolean
+         */
+        this.show = true;
 
 
         /**
@@ -207,6 +216,10 @@ define([
             this._overlayCommand.renderState = context.createRenderState({
                 blending : BlendingState.ALPHA_BLEND
             });
+        }
+
+        if (!this.show) {
+            return;
         }
 
         var pass = frameState.passes;
