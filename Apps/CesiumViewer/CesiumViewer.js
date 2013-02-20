@@ -5,6 +5,7 @@ define([
         'dojo/io-query',
         'dojo/parser',
         'dojo/ready',
+        'Scene/CesiumTerrainProvider',
         'Widgets/Dojo/checkForChromeFrame',
         'Widgets/Dojo/CesiumViewerWidget'
     ], function(
@@ -13,6 +14,7 @@ define([
         ioQuery,
         parser,
         ready,
+        CesiumTerrainProvider,
         checkForChromeFrame,
         CesiumViewerWidget) {
     "use strict";
@@ -34,6 +36,11 @@ define([
         });
         widget.placeAt('cesiumContainer');
         widget.startup();
+
+        var terrainProvider = new CesiumTerrainProvider({
+            url : 'http://cesium.agi.com/smallterrain'
+        });
+        widget.centralBody.terrainProvider = terrainProvider;
 
         domClass.remove(win.body(), 'loading');
     });
