@@ -17,6 +17,7 @@ Beta Releases
 * Added interactive extent drawing to the `Picking` Sandcastle example.
 * Added `HeightmapTessellator` to create a mesh from a heightmap.
 * Improved the lighting used in 2D and Columbus View modes.  In general, the surface lighting in these modes should look just like it does in 3D.
+* Added CZML object `DynamicScreenOverlay` to enable simple rectangular screen overlays that work with the material system.
 
 ### b13 - 2013-02-01
 
