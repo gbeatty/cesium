@@ -151,7 +151,12 @@ define([
                 });
                 existingMaterial.uniforms.image = existingMaterial.texture;
             }
-            existingMaterial.texture.copyFrom(video);
+
+            if(existingMaterial.videoTextureTime !== video.currentTime) {
+                existingMaterial.texture.copyFrom(video);
+                existingMaterial.videoTextureTime = video.currentTime;
+            }
+
             var duration = video.duration;
             //TODO: We should probably be checking the video.seekable segments
             //before setting the currentTime, but if there are no seekable
