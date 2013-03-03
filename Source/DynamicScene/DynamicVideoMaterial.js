@@ -165,7 +165,13 @@ define([
                 if (videoTime < 0.0) {
                     videoTime = duration - videoTime;
                 }
-                video.currentTime = videoTime;
+                if(video.currentTime === videoTime){
+                    video.currentTime = videoTime - 0.0001;
+                }
+                else {
+                    video.currentTime = videoTime;
+                }
+
             } else if (videoTime > duration) {
                 video.currentTime = duration;
             } else if (videoTime < 0.0) {
@@ -184,7 +190,6 @@ define([
      * @param {Material} [existingMaterial] An existing material to be modified.  If the material is undefined or not an Image Material, a new instance is created.
      * @returns The modified existingMaterial parameter or a new Image Material instance if existingMaterial was undefined or not a Image Material.
      */
-    var seekFunction;
     DynamicVideoMaterial.prototype.getValue = function(time, context, existingMaterial) {
         if (typeof existingMaterial === 'undefined' || (existingMaterial.type !== Material.ImageType)) {
             existingMaterial = Material.fromType(context, Material.ImageType);
@@ -234,9 +239,12 @@ define([
         if (typeof property !== 'undefined') {
             var url = property.getValue(time);
             if (typeof url !== 'undefined' && existingMaterial.currentUrl !== url) {
+                console.log("url change: " + url);
                 existingMaterial.currentUrl = url;
                 if (typeof existingMaterial.video !== 'undefined') {
-                    existingMaterial.video.removeEventListener("seeked", seekFunction, false);
+                    if(existingMaterial.video.seekFunction !== 'undefined') {
+                        existingMaterial.video.removeEventListener("seeked", existingMaterial.video.seekFunction, false);
+                    }
                     document.body.removeChild(existingMaterial.video);
                 }
                 video = existingMaterial.video = document.createElement('video');
@@ -244,10 +252,34 @@ define([
                 video.style.display = 'none';
                 video.preload = 'auto';
                 video.addEventListener("loadeddata", function() {
-                    //console.log("load event fired");
-                    seekFunction = createSeekFunction(context, video, existingMaterial);
-                    video.addEventListener("seeked", seekFunction, false);
-                    seekFunction();
+                    console.log("load event fired");
+                    video.seekFunction = createSeekFunction(context, video, existingMaterial);
+                    video.addEventListener("seeked", video.seekFunction, false);
+                    video.seekFunction();
+                }, false);
+
+                video.addEventListener("loadstart", function() {
+                    console.log("load start");
+                }, false);
+
+                video.addEventListener("durationchange", function() {
+                    console.log("duration change");
+                }, false);
+
+                video.addEventListener("loadedmetadata", function() {
+                    console.log("loaded metadata");
+                }, false);
+
+                video.addEventListener("progress", function() {
+                    console.log("progress");
+                }, false);
+
+                video.addEventListener("canplay", function() {
+                    console.log("can play");
+                }, false);
+
+                video.addEventListener("canplaythrough", function() {
+                    console.log("can play through");
                 }, false);
 
                 video.src = url;

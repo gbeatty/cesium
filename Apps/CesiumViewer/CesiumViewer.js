@@ -7,7 +7,8 @@ define([
         'dojo/ready',
         'Scene/CesiumTerrainProvider',
         'Widgets/Dojo/checkForChromeFrame',
-        'Widgets/Dojo/CesiumViewerWidget'
+        'Widgets/Dojo/CesiumViewerWidget',
+        'Core/JulianDate'
     ], function(
         win,
         domClass,
@@ -16,7 +17,8 @@ define([
         ready,
         CesiumTerrainProvider,
         checkForChromeFrame,
-        CesiumViewerWidget) {
+        CesiumViewerWidget,
+        JulianDate) {
     "use strict";
     /*global console*/
 
@@ -41,6 +43,26 @@ define([
             url : 'http://cesium.agi.com/smallterrain'
         });
         widget.centralBody.terrainProvider = terrainProvider;
+
+        widget.clock.multiplier = 0.1;
+
+        widget.onObjectSelected = function(selectedObject) {
+            if (typeof selectedObject !== 'undefined' && typeof selectedObject.dynamicObject !== 'undefined') {
+                try {
+                    var jdate = JulianDate.fromIso8601( selectedObject.dynamicObject.id );
+                    widget.clock.currentTime = jdate;
+                    console.log("clicked on object " + jdate);
+                } catch(e) {
+                    console.log("not valid date");
+                }
+            }
+        };
+
+        widget.setTime = widget.setTimeFromBuffer;
+        widget.setTimeFromBuffer = function() {
+            widget.setTime();
+            widget.clock.multiplier = 1;
+        };
 
         domClass.remove(win.body(), 'loading');
     });
