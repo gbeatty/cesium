@@ -40,7 +40,7 @@ define([
         widget.startup();
 
         var terrainProvider = new CesiumTerrainProvider({
-            url : 'http://cesium.agi.com/smallterrain'
+            url : 'http://cesium.agi.com/srtmplusutah'
         });
         widget.centralBody.terrainProvider = terrainProvider;
 
