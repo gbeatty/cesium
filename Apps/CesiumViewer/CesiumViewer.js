@@ -38,6 +38,7 @@ define([
         });
         widget.placeAt('cesiumContainer');
         widget.startup();
+        widget.fullscreen.viewModel.fullscreenElement(document.body);
 
         var terrainProvider = new CesiumTerrainProvider({
             url : 'http://cesium.agi.com/srtmplusutah'
