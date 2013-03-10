@@ -132,47 +132,35 @@ define([
     };
 
     var startTime;
+    function  syncVideo(video, existingMaterial, animationRate) {
 
-    function createSeekFunction(context, video, existingMaterial) {
-        return function() {
-            //            console.log("seek called");
-            //            if (video.seekable.length === 0) {
-            //                console.log(video.seekable);
-            //            } else {
-            //                for ( var i = 0; i < video.seekable.length; i++) {
-            //                    console.log(video.seekable.start(i));
-            //                    console.log(video.seekable.end(i));
-            //                }
-            //            }
+        var playbackRate = animationRate * existingMaterial.speed;
+        if(video.playbackRate !== playbackRate) {
+            video.playbackRate = playbackRate;
+        }
 
-            if (typeof existingMaterial.texture === 'undefined') {
-                existingMaterial.texture = context.createTexture2D({
-                    source : video
-                });
-                existingMaterial.uniforms.image = existingMaterial.texture;
+        var duration = video.duration;
+        //TODO: We should probably be checking the video.seekable segments
+        //before setting the currentTime, but if there are no seekable
+        //segments, then this code will have no affect, so the net result
+        //seems to be the same.
+        var videoTime = startTime.getSecondsDifference(existingMaterial.time);
+        videoTime = videoTime * existingMaterial.speed;
+        if (existingMaterial.loop) {
+            videoTime = videoTime % duration;
+            if (videoTime < 0.0) {
+                videoTime = duration - videoTime;
             }
-            existingMaterial.texture.copyFrom(video);
-            var duration = video.duration;
-            //TODO: We should probably be checking the video.seekable segments
-            //before setting the currentTime, but if there are no seekable
-            //segments, then this code will have no affect, so the net result
-            //seems to be the same.
-            var videoTime = startTime.getSecondsDifference(existingMaterial.time);
-            videoTime = videoTime * existingMaterial.speed;
-            if (existingMaterial.loop) {
-                videoTime = videoTime % duration;
-                if (videoTime < 0.0) {
-                    videoTime = duration - videoTime;
-                }
-                video.currentTime = videoTime;
-            } else if (videoTime > duration) {
-                video.currentTime = duration;
-            } else if (videoTime < 0.0) {
-                video.currentTime = 0.0;
-            } else {
-                video.currentTime = videoTime;
-            }
-        };
+        } else if (videoTime > duration) {
+            videoTime = duration;
+        } else if (videoTime < 0.0) {
+            videoTime = 0.0;
+        }
+
+        // seek to correct time if video has gotten out of sync
+        if( Math.abs(videoTime - video.currentTime) > 0.2 ) {
+            video.currentTime = videoTime;
+        }
     }
 
     /**
@@ -183,7 +171,9 @@ define([
      * @param {Material} [existingMaterial] An existing material to be modified.  If the material is undefined or not an Image Material, a new instance is created.
      * @returns The modified existingMaterial parameter or a new Image Material instance if existingMaterial was undefined or not a Image Material.
      */
-    var seekFunction;
+    var videoLoaded = false;
+    var previousTime = 'undefined';
+    var previousSystemTime = 'undefined';
     DynamicVideoMaterial.prototype.getValue = function(time, context, existingMaterial) {
         if (typeof existingMaterial === 'undefined' || (existingMaterial.type !== Material.ImageType)) {
             existingMaterial = Material.fromType(context, Material.ImageType);
@@ -233,9 +223,10 @@ define([
         if (typeof property !== 'undefined') {
             var url = property.getValue(time);
             if (typeof url !== 'undefined' && existingMaterial.currentUrl !== url) {
+                videoLoaded = false;
                 existingMaterial.currentUrl = url;
                 if (typeof existingMaterial.video !== 'undefined') {
-                    existingMaterial.video.removeEventListener("seeked", seekFunction, false);
+                    //existingMaterial.video.removeEventListener("seeked", seekFunction, false);
                     document.body.removeChild(existingMaterial.video);
                 }
                 video = existingMaterial.video = document.createElement('video');
@@ -244,9 +235,13 @@ define([
                 video.preload = 'auto';
                 video.addEventListener("loadeddata", function() {
                     //console.log("load event fired");
-                    seekFunction = createSeekFunction(context, video, existingMaterial);
-                    video.addEventListener("seeked", seekFunction, false);
-                    seekFunction();
+                    //seekFunction = createSeekFunction(context, video, existingMaterial);
+                    //video.addEventListener("seeked", seekFunction, false);
+                    //seekFunction();
+
+                    video.playbackRate = 0.0;
+                    video.play();
+                    videoLoaded = true;
                 }, false);
 
                 video.src = url;
@@ -254,6 +249,28 @@ define([
             }
         }
         video = existingMaterial.video;
+
+
+        if (typeof existingMaterial.texture === 'undefined') {
+            existingMaterial.texture = context.createTexture2D({
+                source : video
+            });
+            existingMaterial.uniforms.image = existingMaterial.texture;
+        }
+
+        var currentSystemTime = new Date().getTime();
+        if(videoLoaded && previousTime !== 'undefined' && previousSystemTime !== 'undefined') {
+
+            var animationRate = (time-previousTime) / (currentSystemTime-previousSystemTime);
+            syncVideo(video, existingMaterial, animationRate);
+
+            // copy the video frame into the material texture
+            existingMaterial.texture.copyFrom(video);
+        }
+
+        previousSystemTime = currentSystemTime;
+        previousTime = time;
+
         return existingMaterial;
     };
 
