@@ -134,8 +134,8 @@ define([
     var startTime;
     function  syncVideo(video, existingMaterial, animationRate) {
 
-        var playbackRate = animationRate * existingMaterial.speed;
-        if(video.playbackRate !== playbackRate) {
+        var playbackRate = (animationRate * existingMaterial.speed).toFixed(2);
+        if(video.playbackRate.toFixed(2) !== playbackRate) {
             video.playbackRate = playbackRate;
         }
 
@@ -241,6 +241,14 @@ define([
 
                     video.playbackRate = 0.0;
                     video.play();
+
+                    if (typeof existingMaterial.texture === 'undefined') {
+                        existingMaterial.texture = context.createTexture2D({
+                            source : video
+                        });
+                        existingMaterial.uniforms.image = existingMaterial.texture;
+                    }
+
                     videoLoaded = true;
                 }, false);
 
@@ -250,18 +258,12 @@ define([
         }
         video = existingMaterial.video;
 
-
-        if (typeof existingMaterial.texture === 'undefined') {
-            existingMaterial.texture = context.createTexture2D({
-                source : video
-            });
-            existingMaterial.uniforms.image = existingMaterial.texture;
-        }
-
         var currentSystemTime = new Date().getTime();
         if(videoLoaded && previousTime !== 'undefined' && previousSystemTime !== 'undefined') {
 
-            var animationRate = (time-previousTime) / (currentSystemTime-previousSystemTime);
+            var deltaAnimationTime = previousTime.getSecondsDifference(time);
+            var deltaSystemTime = (currentSystemTime-previousSystemTime) / 1000.0;
+            var animationRate = deltaAnimationTime / deltaSystemTime;
             syncVideo(video, existingMaterial, animationRate);
 
             // copy the video frame into the material texture
