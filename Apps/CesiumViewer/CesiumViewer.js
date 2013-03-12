@@ -5,6 +5,8 @@ define([
         'dojo/io-query',
         'dojo/parser',
         'dojo/ready',
+        'Scene/Camera',
+        'Scene/CameraFlightPath',
         'Scene/CesiumTerrainProvider',
         'Widgets/Dojo/checkForChromeFrame',
         'Widgets/Dojo/CesiumViewerWidget',
@@ -15,12 +17,32 @@ define([
         ioQuery,
         parser,
         ready,
+        Camera,
+        CameraFlightPath,
         CesiumTerrainProvider,
         checkForChromeFrame,
         CesiumViewerWidget,
         JulianDate) {
     "use strict";
     /*global console*/
+
+    function disableInput(scene) {
+        var controller = scene.getScreenSpaceCameraController();
+        controller.enableTranslate = false;
+        controller.enableZoom = false;
+        controller.enableRotate = false;
+        controller.enableTilt = false;
+        controller.enableLook = false;
+    }
+
+    function enableInput(scene) {
+        var controller = scene.getScreenSpaceCameraController();
+        controller.enableTranslate = true;
+        controller.enableZoom = true;
+        controller.enableRotate = true;
+        controller.enableTilt = true;
+        controller.enableLook = true;
+    }
 
     ready(function() {
         parser.parse();
@@ -54,7 +76,14 @@ define([
                     widget.clock.currentTime = jdate;
                     console.log("clicked on object " + jdate);
                 } catch(e) {
-                    console.log("not valid date");
+                    disableInput(widget.scene);
+                    var flight = CameraFlightPath.createAnimation(widget.scene.getFrameState(), {
+                        destination : selectedObject._actualPosition,
+                        onComplete : function() {
+                            enableInput(widget.scene);
+                        }
+                    });
+                    widget.scene.getAnimations().add(flight);
                 }
             }
         };
@@ -64,6 +93,8 @@ define([
             widget.setTime();
             widget.clock.multiplier = 1;
         };
+
+        widget.loadCzml("Gallery/deerValleyTest.czml", "path");
 
         domClass.remove(win.body(), 'loading');
     });
