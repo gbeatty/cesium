@@ -5,24 +5,32 @@ define([
         'dojo/io-query',
         'dojo/parser',
         'dojo/ready',
+        'DynamicScene/DynamicObjectView',
         'Scene/Camera',
         'Scene/CameraFlightPath',
         'Scene/CesiumTerrainProvider',
         'Widgets/Dojo/checkForChromeFrame',
         'Widgets/Dojo/CesiumViewerWidget',
-        'Core/JulianDate'
+        'Core/Cartesian3',
+        'Core/Cartographic',
+        'Core/JulianDate',
+        'Core/loadJson'
     ], function(
         win,
         domClass,
         ioQuery,
         parser,
         ready,
+        DynamicObjectView,
         Camera,
         CameraFlightPath,
         CesiumTerrainProvider,
         checkForChromeFrame,
         CesiumViewerWidget,
-        JulianDate) {
+        Cartesian3,
+        Cartographic,
+        JulianDate,
+        loadJson) {
     "use strict";
     /*global console*/
 
@@ -42,6 +50,27 @@ define([
         controller.enableRotate = true;
         controller.enableTilt = true;
         controller.enableLook = true;
+    }
+
+    function flyToObject(widget, dynamicObject) {
+        disableInput(widget.scene);
+
+        var viewFromTo = new DynamicObjectView(dynamicObject, widget.scene, widget.ellipsoid);
+        widget._viewFromTo = viewFromTo;
+
+
+        var cameraFlightPath = CameraFlightPath.createAnimation(
+            widget.scene.getFrameState(), {
+                destination : new Cartesian3(0, -1000, 600),
+                duration : 8000,
+                onComplete : function() {
+                    widget.centerCameraOnObject(dynamicObject);
+                    widget.clock.multiplier = 1.0;
+                    widget.clock.shouldAnimate = true;
+                    enableInput(widget.scene);
+            }
+        });
+        widget.scene.getAnimations().add(cameraFlightPath);
     }
 
     ready(function() {
@@ -69,6 +98,7 @@ define([
 
         widget.clock.multiplier = 0.1;
 
+        // hijack object selection
         widget.onObjectSelected = function(selectedObject) {
             if (typeof selectedObject !== 'undefined' && typeof selectedObject.dynamicObject !== 'undefined') {
                 try {
@@ -76,25 +106,36 @@ define([
                     widget.clock.currentTime = jdate;
                     console.log("clicked on object " + jdate);
                 } catch(e) {
-                    disableInput(widget.scene);
-                    var flight = CameraFlightPath.createAnimation(widget.scene.getFrameState(), {
-                        destination : selectedObject._actualPosition,
-                        onComplete : function() {
-                            enableInput(widget.scene);
-                        }
-                    });
-                    widget.scene.getAnimations().add(flight);
                 }
             }
+        };
+
+
+        widget.loadCzml = function(source, lookAt) {
+            widget._setLoading(true);
+            loadJson(source).then(function(czml) {
+
+                widget.addCzml(czml, source);
+                widget._setLoading(false);
+
+                var lookAtObject = widget.dynamicObjectCollection.getObject(lookAt);
+                flyToObject(widget, lookAtObject);
+
+            },
+            function(error) {
+                widget._setLoading(false);
+                console.error(error);
+                window.alert(error);
+            });
         };
 
         widget.setTime = widget.setTimeFromBuffer;
         widget.setTimeFromBuffer = function() {
             widget.setTime();
-            widget.clock.multiplier = 1;
+            widget.clock.multiplier = 1.0;
         };
 
-        widget.loadCzml("Gallery/deerValleyTest.czml", "path");
+        widget.loadCzml("Gallery/snowbird.czml", "path");
 
         domClass.remove(win.body(), 'loading');
     });

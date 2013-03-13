@@ -9,7 +9,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -45,7 +45,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -81,7 +81,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -117,7 +117,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -153,7 +153,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -189,7 +189,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -225,7 +225,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -261,7 +261,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -297,7 +297,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -333,7 +333,7 @@
       "show":true,
       "position":{
         "cartesian2":[
-          20.0,1e2
+          20.0,120
         ]
       },
       "material":{
@@ -362,6 +362,10 @@
   },
   {
     "id":"path",
+    "viewFrom":{
+      "cartesian":[0.0,0.0,10000000]
+    },
+
     "label":{
       "show":false,
       "text":"Deer Valley 1"
