@@ -240,6 +240,7 @@ define([
                     //seekFunction();
 
                     video.playbackRate = 0.0;
+                    video.muted = true;
                     video.play();
 
                     if (typeof existingMaterial.texture === 'undefined') {
