@@ -792,7 +792,7 @@ define([
             timeline.addEventListener('settime', onTimelineScrub, false);
             timeline.zoomTo(clock.startTime, clock.stopTime);
 
-            var viewHomeButton = widget.viewHomeButton;
+            /*var viewHomeButton = widget.viewHomeButton;
             var view2D = widget.view2D;
             var view3D = widget.view3D;
             var viewColumbus = widget.viewColumbus;
@@ -850,7 +850,7 @@ define([
             on(imageryAerialWithLabels, 'Click', createImageryClickFunction(imageryAerialWithLabels, BingMapsStyle.AERIAL_WITH_LABELS));
             on(imageryRoad, 'Click', createImageryClickFunction(imageryRoad, BingMapsStyle.ROAD));
             on(imagerySingleTile, 'Click', createImageryClickFunction(imagerySingleTile, undefined));
-
+*/
             //////////////////////////////////////////////////////////////////////////////////////////////////
 
             if (widget.resizeWidgetOnWindowResize) {
