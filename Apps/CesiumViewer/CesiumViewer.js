@@ -95,6 +95,7 @@ define([
             url : 'http://cesium.agi.com/srtmplusutah'
         });
         widget.centralBody.terrainProvider = terrainProvider;
+        //widget.centralBody.depthTestAgainstTerrain = true;
 
         widget.clock.multiplier = 0.1;
 
@@ -135,7 +136,7 @@ define([
             widget.clock.multiplier = 1.0;
         };
 
-        widget.loadCzml("Gallery/Snowbird.czml", "path");
+        widget.loadCzml("Gallery/deerValley.czml", "path");
 
         domClass.remove(win.body(), 'loading');
     });
