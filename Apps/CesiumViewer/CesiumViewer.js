@@ -136,7 +136,7 @@ define([
             widget.clock.multiplier = 1.0;
         };
 
-        widget.loadCzml("Gallery/deerValley.czml", "path");
+        widget.loadCzml("Gallery/alta.czml", "path");
 
         domClass.remove(win.body(), 'loading');
     });
