@@ -24,8 +24,13 @@ define([
     var videoLoadedEvent = document.createEvent("Event");
     videoLoadedEvent.initEvent("videoLoaded",true,true);
 
-    var videoStalledEvent = document.createEvent("Event");
-    videoStalledEvent.initEvent("videoStalled",true,true);
+    var triggerVideoLoadingEvent = function(evt) {
+        evt.target.dispatchEvent(videoLoadingEvent);
+    };
+
+    var triggerVideoLoadedEvent = function(evt) {
+        evt.target.dispatchEvent(videoLoadedEvent);
+    };
 
     /**
      * A utility class for processing CZML image materials.
@@ -236,22 +241,23 @@ define([
                 videoLoaded = false;
                 existingMaterial.currentUrl = url;
                 if (typeof existingMaterial.video !== 'undefined') {
+                    // pause, and completely unload the video.
                     existingMaterial.video.pause();
+                    existingMaterial.video.removeEventListener("waiting", triggerVideoLoadingEvent, false);
+                    existingMaterial.video.removeEventListener("playing", triggerVideoLoadedEvent, false);
+                    existingMaterial.video.src = ""; // force video to unload and stop downloading
+                    existingMaterial.video.load();
                     document.body.removeChild(existingMaterial.video);
                 }
 
                 video = existingMaterial.video = document.createElement('video');
                 document.body.appendChild(video);
 
-                video.addEventListener("waiting", function() {
-                    video.dispatchEvent(videoLoadingEvent);
-                }, false);
+                video.addEventListener("waiting", triggerVideoLoadingEvent, false);
 
-                video.addEventListener("playing", function() {
-                    video.dispatchEvent(videoLoadedEvent);
-                }, false);
+                video.addEventListener("playing", triggerVideoLoadedEvent, false);
 
-                video.addEventListener("canplay", function() {
+                video.addEventListener("canplaythrough", function() {
 
                     video.playbackRate = 0.0; // let the sync function control playback rate
                     video.play();
