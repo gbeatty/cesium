@@ -148,7 +148,7 @@ define([
             widget.clock.multiplier = 1.0;
         };
 
-        widget.loadCzml("Gallery/alta.czml", "path");
+        widget.loadCzml("Gallery/Alta.czml", "path");
 
         domClass.remove(win.body(), 'loading');
     });
