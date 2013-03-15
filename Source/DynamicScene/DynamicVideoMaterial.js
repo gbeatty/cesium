@@ -17,6 +17,16 @@ define([
          JulianDate) {
     "use strict";
 
+    // custom video events that will bubble up the dom tree
+    var videoLoadingEvent = document.createEvent("Event");
+    videoLoadingEvent.initEvent("videoLoading",true,true);
+
+    var videoLoadedEvent = document.createEvent("Event");
+    videoLoadedEvent.initEvent("videoLoaded",true,true);
+
+    var videoStalledEvent = document.createEvent("Event");
+    videoStalledEvent.initEvent("videoStalled",true,true);
+
     /**
      * A utility class for processing CZML image materials.
      * @alias DynamicVideoMaterial
@@ -226,21 +236,24 @@ define([
                 videoLoaded = false;
                 existingMaterial.currentUrl = url;
                 if (typeof existingMaterial.video !== 'undefined') {
-                    //existingMaterial.video.removeEventListener("seeked", seekFunction, false);
+                    existingMaterial.video.pause();
                     document.body.removeChild(existingMaterial.video);
                 }
+
                 video = existingMaterial.video = document.createElement('video');
                 document.body.appendChild(video);
-                video.style.display = 'none';
-                video.preload = 'auto';
-                video.addEventListener("loadeddata", function() {
-                    //console.log("load event fired");
-                    //seekFunction = createSeekFunction(context, video, existingMaterial);
-                    //video.addEventListener("seeked", seekFunction, false);
-                    //seekFunction();
 
-                    video.playbackRate = 0.0;
-                    video.muted = true;
+                video.addEventListener("waiting", function() {
+                    video.dispatchEvent(videoLoadingEvent);
+                }, false);
+
+                video.addEventListener("playing", function() {
+                    video.dispatchEvent(videoLoadedEvent);
+                }, false);
+
+                video.addEventListener("canplay", function() {
+
+                    video.playbackRate = 0.0; // let the sync function control playback rate
                     video.play();
 
                     if (typeof existingMaterial.texture === 'undefined') {
@@ -250,9 +263,15 @@ define([
                         existingMaterial.uniforms.image = existingMaterial.texture;
                     }
 
+                    video.dispatchEvent(videoLoadedEvent);
                     videoLoaded = true;
                 }, false);
 
+                video.dispatchEvent(videoLoadingEvent);
+                video.style.display = 'none';
+                video.preload = 'auto';
+                video.playbackRate = 1.0;
+                video.muted = true;
                 video.src = url;
                 video.load();
             }

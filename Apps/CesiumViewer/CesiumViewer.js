@@ -83,6 +83,18 @@ define([
             endUserOptions = ioQuery.queryToObject(window.location.search.substring(1));
         }
 
+        document.addEventListener("videoLoading", function() {
+            console.log("loading");
+            widget.clock.shouldAnimate = false;
+            widget._setLoading(true);
+        }, false);
+
+        document.addEventListener("videoLoaded", function() {
+            console.log("playing");
+            widget.clock.shouldAnimate = true;
+            widget._setLoading(false);
+        }, false);
+
         var widget = new CesiumViewerWidget({
             endUserOptions : endUserOptions,
             enableDragDrop : true
