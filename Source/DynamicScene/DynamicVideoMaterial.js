@@ -277,7 +277,7 @@ define([
                 video.style.display = 'none';
                 video.preload = 'auto';
                 video.playbackRate = 1.0;
-                video.muted = true;
+                //video.muted = true;
                 video.src = url;
                 video.load();
             }

@@ -9,12 +9,15 @@ define([
         'Scene/Camera',
         'Scene/CameraFlightPath',
         'Scene/CesiumTerrainProvider',
+        'Scene/TileMapServiceImageryProvider',
         'Widgets/Dojo/checkForChromeFrame',
         'Widgets/Dojo/CesiumViewerWidget',
         'Core/Cartesian3',
         'Core/Cartographic',
+        'Core/Extent',
         'Core/JulianDate',
-        'Core/loadJson'
+        'Core/loadJson',
+        'Core/Math'
     ], function(
         win,
         domClass,
@@ -25,12 +28,15 @@ define([
         Camera,
         CameraFlightPath,
         CesiumTerrainProvider,
+        TileMapServiceImageryProvider,
         checkForChromeFrame,
         CesiumViewerWidget,
         Cartesian3,
         Cartographic,
+        Extent,
         JulianDate,
-        loadJson) {
+        loadJson,
+        Math) {
     "use strict";
     /*global console*/
 
@@ -73,6 +79,21 @@ define([
         widget.scene.getAnimations().add(cameraFlightPath);
     }
 
+    function updateSpeed() {
+        console.log("time");
+    }
+
+    var slopeImageryProvider = new TileMapServiceImageryProvider({
+        url : 'Gallery/slopeShade',
+        fileExtension: 'jpg',
+        maximumLevel: 15,
+        extent: new Extent(
+            Math.toRadians(-112.0005556),
+            Math.toRadians(39.9994444),
+            Math.toRadians(-110.9994444),
+            Math.toRadians(41.0005556))
+    });
+
     ready(function() {
         parser.parse();
 
@@ -109,6 +130,10 @@ define([
         widget.centralBody.terrainProvider = terrainProvider;
         //widget.centralBody.depthTestAgainstTerrain = true;
 
+        var layers = widget.centralBody.getImageryLayers();
+        //var newLayer = layers.addImageryProvider(slopeImageryProvider);
+        //newLayer.alpha = 0.3;
+
         widget.clock.multiplier = 0.1;
 
         // hijack object selection
@@ -134,6 +159,7 @@ define([
                 var lookAtObject = widget.dynamicObjectCollection.getObject(lookAt);
                 flyToObject(widget, lookAtObject);
 
+                widget.clock.onTick.addEventListener(updateSpeed);
             },
             function(error) {
                 widget._setLoading(false);
