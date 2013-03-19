@@ -155,14 +155,14 @@ define([
         //widget.centralBody.depthTestAgainstTerrain = true;
 
         var slopeImageryProvider = new TileMapServiceImageryProvider({
-            url : 'Gallery/slopeTiles',
+            url : 'Gallery/slopeShadeTiles',
             fileExtension: 'png',
             maximumLevel: 15,
             extent: new Extent(
-                CesiumMath.toRadians(-112.0005556),
-                CesiumMath.toRadians(39.9994444),
-                CesiumMath.toRadians(-110.9994444),
-                CesiumMath.toRadians(41.0005556))
+                CesiumMath.toRadians(-111.8393519),
+                CesiumMath.toRadians(40.4554630),
+                CesiumMath.toRadians(-111.3080556),
+                CesiumMath.toRadians(40.7639815))
         });
         var layers = widget.centralBody.getImageryLayers();
         slopeLayer = layers.addImageryProvider(slopeImageryProvider);
