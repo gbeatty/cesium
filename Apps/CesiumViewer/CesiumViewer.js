@@ -3,8 +3,10 @@ define([
         'dojo/_base/window',
         'dojo/dom-class',
         'dojo/io-query',
+        'dojo/on',
         'dojo/parser',
         'dojo/ready',
+        'dijit/form/ToggleButton',
         'DynamicScene/DynamicObjectView',
         'Scene/Camera',
         'Scene/CameraFlightPath',
@@ -14,6 +16,7 @@ define([
         'Widgets/Dojo/CesiumViewerWidget',
         'Core/Cartesian3',
         'Core/Cartographic',
+        'Core/Ellipsoid',
         'Core/Extent',
         'Core/JulianDate',
         'Core/loadJson',
@@ -22,8 +25,10 @@ define([
         win,
         domClass,
         ioQuery,
+        on,
         parser,
         ready,
+        ToggleButton,
         DynamicObjectView,
         Camera,
         CameraFlightPath,
@@ -33,10 +38,11 @@ define([
         CesiumViewerWidget,
         Cartesian3,
         Cartographic,
+        Ellipsoid,
         Extent,
         JulianDate,
         loadJson,
-        Math) {
+        CesiumMath) {
     "use strict";
     /*global console*/
 
@@ -79,20 +85,38 @@ define([
         widget.scene.getAnimations().add(cameraFlightPath);
     }
 
+    var pathObject;
+    var clock;
     function updateSpeed() {
-        console.log("time");
+
+        // calculate instantaneous speed
+        var currentPosition = pathObject.position.getValueCartesian(clock.currentTime);
+        var startPosition = pathObject.position.getValueCartesian(clock.currentTime.addSeconds(-2.0));
+        var distance = Cartesian3.distance(currentPosition, startPosition);
+        var speed = distance * 1.23694; // m/s -> mph
+        speed = Math.round(speed); // round to 2 decimal places
+
+        // calculate slope
+        startPosition = pathObject.position.getValueCartographic(clock.currentTime.addSeconds(-2.0));
+        currentPosition = pathObject.position.getValueCartographic(clock.currentTime);
+        var referencePoint = currentPosition.clone();
+        referencePoint.height = startPosition.height;
+        startPosition = Ellipsoid.WGS84.cartographicToCartesian(startPosition);
+        currentPosition = Ellipsoid.WGS84.cartographicToCartesian(currentPosition);
+        referencePoint = Ellipsoid.WGS84.cartographicToCartesian(referencePoint);
+        var vec1 = referencePoint.subtract(startPosition);
+        var vec2 = currentPosition.subtract(startPosition);
+        var slope = CesiumMath.toDegrees(Cartesian3.angleBetween(vec1, vec2));
+        slope = Math.round(slope);
+
+        if(speed < 3) {
+            slope = '---';
+        }
+
+        console.log(speed + " mph  slope = " + slope);
     }
 
-    var slopeImageryProvider = new TileMapServiceImageryProvider({
-        url : 'Gallery/slopeShade',
-        fileExtension: 'jpg',
-        maximumLevel: 15,
-        extent: new Extent(
-            Math.toRadians(-112.0005556),
-            Math.toRadians(39.9994444),
-            Math.toRadians(-110.9994444),
-            Math.toRadians(41.0005556))
-    });
+    var slopeLayer;
 
     ready(function() {
         parser.parse();
@@ -130,9 +154,32 @@ define([
         widget.centralBody.terrainProvider = terrainProvider;
         //widget.centralBody.depthTestAgainstTerrain = true;
 
+        var slopeImageryProvider = new TileMapServiceImageryProvider({
+            url : 'Gallery/slopeTiles',
+            fileExtension: 'png',
+            maximumLevel: 15,
+            extent: new Extent(
+                CesiumMath.toRadians(-112.0005556),
+                CesiumMath.toRadians(39.9994444),
+                CesiumMath.toRadians(-110.9994444),
+                CesiumMath.toRadians(41.0005556))
+        });
         var layers = widget.centralBody.getImageryLayers();
-        //var newLayer = layers.addImageryProvider(slopeImageryProvider);
-        //newLayer.alpha = 0.3;
+        slopeLayer = layers.addImageryProvider(slopeImageryProvider);
+        slopeLayer.alpha = 0.6;
+        slopeLayer.show = false;
+
+        //var slopeButton = widget.slopeButton;
+        slopeButton.set('checked', false);
+
+        on(slopeButton, 'Click', function() {
+            if(slopeButton.get('checked')) {
+                slopeLayer.show = true;
+            }
+            else {
+                slopeLayer.show = false;
+            }
+        });
 
         widget.clock.multiplier = 0.1;
 
@@ -159,6 +206,8 @@ define([
                 var lookAtObject = widget.dynamicObjectCollection.getObject(lookAt);
                 flyToObject(widget, lookAtObject);
 
+                pathObject = lookAtObject;
+                clock = widget.clock;
                 widget.clock.onTick.addEventListener(updateSpeed);
             },
             function(error) {
