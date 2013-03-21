@@ -25,7 +25,14 @@
            collapsible: true
        });
    });
-   </script>
+   
+   $(function() {
+       $( "#translucencySlider" ).slider();
+       $( "#translucencySlider" ).slider( "option", "min", 0 );
+       $( "#translucencySlider" ).slider( "option", "max", 100 );
+       $( "#translucencySlider" ).hide();
+   });
+</script>
     
 </head>
 <body class="claro" style="background: #000;">
@@ -49,6 +56,9 @@
         <button data-dojo-type="dijit/form/ToggleButton" data-dojo-id="slopeButton" data-dojo-props="iconClass:'cw-slopeIcon'" type="button">
             Terrain Slope Overlay
         </button>
+        <div id="translucencySlider"></div>
+        <img id="overlayScale" src="Gallery/overlayScale.jpg" align="right" style="position:relative;" hidden="true">
     </div>
+    
 </body>
 </html>

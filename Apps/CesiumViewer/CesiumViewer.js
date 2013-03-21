@@ -99,7 +99,7 @@ define([
         // calculate slope
         startPosition = pathObject.position.getValueCartographic(clock.currentTime.addSeconds(-2.0));
         currentPosition = pathObject.position.getValueCartographic(clock.currentTime);
-        var altitude = Math.round(currentPosition.height / 3.28084);
+        var altitude = Math.round(currentPosition.height * 3.28084);
         var referencePoint = currentPosition.clone();
         referencePoint.height = startPosition.height;
         startPosition = Ellipsoid.WGS84.cartographicToCartesian(startPosition);
@@ -121,6 +121,11 @@ define([
     }
 
     var slopeLayer;
+    $( "#translucencySlider" ).on( "slide", updateLayerTranslucency );
+    function updateLayerTranslucency(event, ui) {
+        slopeLayer.alpha = ui.value / 100.0;
+    }
+
 
     ready(function() {
         parser.parse();
@@ -156,7 +161,7 @@ define([
             url : 'http://cesium.agi.com/srtmplusutah'
         });
         widget.centralBody.terrainProvider = terrainProvider;
-        //widget.centralBody.depthTestAgainstTerrain = true;
+        widget.centralBody.depthTestAgainstTerrain = true;
 
         var slopeImageryProvider = new TileMapServiceImageryProvider({
             url : 'Gallery/slopeShadeTiles',
@@ -170,18 +175,24 @@ define([
         });
         var layers = widget.centralBody.getImageryLayers();
         slopeLayer = layers.addImageryProvider(slopeImageryProvider);
-        slopeLayer.alpha = 0.6;
-        slopeLayer.show = false;
+        slopeLayer.alpha = 0.0;
+        $( "#translucencySlider" ).slider( "option", "value", 60 );
 
         //var slopeButton = widget.slopeButton;
         slopeButton.set('checked', false);
 
         on(slopeButton, 'Click', function() {
             if(slopeButton.get('checked')) {
-                slopeLayer.show = true;
+                //slopeLayer.show = true;
+                slopeLayer.alpha = $( "#translucencySlider" ).slider( "value" ) / 100;
+                $("#translucencySlider").show("drop", { direction: "up" }, 1000);
+                $( "#overlayScale" ).show("slide", { direction: "right" }, 1000);
             }
             else {
-                slopeLayer.show = false;
+                //slopeLayer.show = false;
+                slopeLayer.alpha = 0;
+                $("#translucencySlider").hide("drop", { direction: "up" }, 1000);
+                $( "#overlayScale" ).hide("slide", { direction: "right" }, 1000);
             }
         });
 
@@ -227,7 +238,7 @@ define([
             widget.clock.multiplier = 1.0;
         };
 
-        widget.loadCzml("Gallery/Alta.czml", "path");
+        widget.loadCzml("Gallery/DeerValley.czml", "path");
 
         domClass.remove(win.body(), 'loading');
     });

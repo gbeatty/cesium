@@ -184,7 +184,7 @@
   {
     "id":"path",
     "viewFrom":{
-      "cartesian":[0.0,0.0,10000000]
+      "cartesian":[0.0,0.0,5000000]
     },
     "label":{
       "show":false,

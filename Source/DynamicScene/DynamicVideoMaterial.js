@@ -150,7 +150,11 @@ define([
     function  syncVideo(video, existingMaterial, animationRate) {
 
         var playbackRate = (animationRate * existingMaterial.speed).toFixed(2);
-        if(video.playbackRate.toFixed(2) !== playbackRate) {
+        if(video.playbackRate < 0) {
+            // browsers don't handle negative playback rates
+            video.playbackRate = 0;
+        }
+        else if(video.playbackRate.toFixed(2) !== playbackRate) {
             video.playbackRate = playbackRate;
         }
 
