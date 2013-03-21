@@ -12,30 +12,43 @@
 <title>Cesium Viewer</title>
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="CesiumViewer.css" media="screen">
+<link rel="stylesheet" href="jquery-ui-1.10.2.custom/css/dark-hive/jquery-ui-1.10.2.custom.css">
 
-<script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-39356908-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
-
+<script src="jquery-ui-1.10.2.custom/js/jquery-1.9.1.js"></script>
+<script src="jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js"></script>
 <script data-dojo-config="async:1,tlmSiblingOfDojo:0" src="../../ThirdParty/dojo-release-1.8.3-src/dojo/dojo.js"></script>
 <script src="CesiumViewerStartup.js"></script>
+
+<script>
+   $(function() {
+       $( "#liveData" ).accordion({
+           collapsible: true
+       });
+   });
+   </script>
+    
 </head>
 <body class="claro" style="background: #000;">
-    <div id="cesiumContainer" class="fullWindow"></div>
+
+    <div id="cesiumContainer" class="fullWindow">
+    
+	    
+    
+    </div>
+    
+    <div id="liveData" style="width:15%; position:relative;">
+            <h3 style="height:10px; font-size:small">Tracking Data</h3>
+            <div id="trackingData">
+                <br>
+                <br>
+                <br>
+            </div>    
+        </div>
+    
     <div class="cw-viewButtons">
         <button data-dojo-type="dijit/form/ToggleButton" data-dojo-id="slopeButton" data-dojo-props="iconClass:'cw-slopeIcon'" type="button">
-		    Terrain Slope Overlay
-		</button>
+            Terrain Slope Overlay
+        </button>
     </div>
 </body>
 </html>

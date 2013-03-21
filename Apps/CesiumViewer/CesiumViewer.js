@@ -99,6 +99,7 @@ define([
         // calculate slope
         startPosition = pathObject.position.getValueCartographic(clock.currentTime.addSeconds(-2.0));
         currentPosition = pathObject.position.getValueCartographic(clock.currentTime);
+        var altitude = Math.round(currentPosition.height / 3.28084);
         var referencePoint = currentPosition.clone();
         referencePoint.height = startPosition.height;
         startPosition = Ellipsoid.WGS84.cartographicToCartesian(startPosition);
@@ -112,8 +113,11 @@ define([
         if(speed < 3) {
             slope = '---';
         }
+        else {
+            slope += "\u00B0";
+        }
 
-        console.log(speed + " mph  slope = " + slope);
+        $('#trackingData').html("speed: " + speed + " mph <br>slope: " + slope + "<br>altitude: " + altitude + " ft");
     }
 
     var slopeLayer;
