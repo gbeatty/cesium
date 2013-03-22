@@ -87,6 +87,7 @@ define([
 
     var pathObject;
     var clock;
+    var location;
     function updateSpeed() {
 
         // calculate instantaneous speed
@@ -117,7 +118,7 @@ define([
             slope += "\u00B0";
         }
 
-        $('#trackingData').html("speed: " + speed + " mph <br>slope: " + slope + "<br>altitude: " + altitude + " ft");
+        $('#trackingData').html("Location: " + location + "<br>Speed: " + speed + " mph <br>Slope: " + slope + "<br>Altitude: " + altitude + " ft");
     }
 
     var slopeLayer;
@@ -239,6 +240,7 @@ define([
         };
 
         widget.loadCzml("Gallery/DeerValley.czml", "path");
+        location = "Deer Valley, UT";
 
         domClass.remove(win.body(), 'loading');
     });
