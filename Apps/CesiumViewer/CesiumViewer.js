@@ -139,13 +139,11 @@ define([
         }
 
         document.addEventListener("videoLoading", function() {
-            console.log("loading");
             widget.clock.shouldAnimate = false;
             widget._setLoading(true);
         }, false);
 
         document.addEventListener("videoLoaded", function() {
-            console.log("playing");
             widget.clock.shouldAnimate = true;
             widget._setLoading(false);
         }, false);
