@@ -147,7 +147,7 @@ define([
     };
 
     var startTime;
-    function  syncVideo(video, existingMaterial, animationRate) {
+    function syncVideo(video, existingMaterial, animationRate) {
 
         var playbackRate = (animationRate * existingMaterial.speed).toFixed(2);
         if(video.playbackRate < 0) {
@@ -156,6 +156,10 @@ define([
         }
         else if(video.playbackRate.toFixed(2) !== playbackRate) {
             video.playbackRate = playbackRate;
+        }
+
+        if(video.paused) {
+            video.play();
         }
 
         var duration = video.duration;
@@ -180,6 +184,10 @@ define([
         if( Math.abs(videoTime - video.currentTime) > 0.2 ) {
             video.currentTime = videoTime;
         }
+
+        // set a timer to stop the video if the video material isn't being accessed
+        window.clearTimeout(video.timeoutId);
+        video.timeoutId = window.setTimeout(function () { video.pause(); }, 100);
     }
 
     /**
