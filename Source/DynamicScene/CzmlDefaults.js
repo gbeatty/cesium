@@ -2,6 +2,7 @@
 define([
         './DynamicObject',
         './DynamicBillboard',
+        './DynamicEllipse',
         './DynamicEllipsoid',
         './DynamicCone',
         './DynamicLabel',
@@ -22,28 +23,29 @@ define([
         './DynamicPyramidVisualizer',
         './DynamicScreenOverlayVisualizer'
 
-       ], function(
-        DynamicObject,
-        DynamicBillboard,
-        DynamicEllipsoid,
-        DynamicCone,
-        DynamicLabel,
-        DynamicPath,
-        DynamicPoint,
-        DynamicPolygon,
-        DynamicPolyline,
-        DynamicPyramid,
-        DynamicScreenOverlay,
-        DynamicBillboardVisualizer,
-        DynamicEllipsoidVisualizer,
-        DynamicConeVisualizer,
-        DynamicLabelVisualizer,
-        DynamicPathVisualizer,
-        DynamicPointVisualizer,
-        DynamicPolygonVisualizer,
-        DynamicPolylineVisualizer,
-        DynamicPyramidVisualizer,
-        DynamicScreenOverlayVisualizer) {
+        ], function(
+                DynamicObject,
+                DynamicBillboard,
+                DynamicEllipse,
+                DynamicEllipsoid,
+                DynamicCone,
+                DynamicLabel,
+                DynamicPath,
+                DynamicPoint,
+                DynamicPolygon,
+                DynamicPolyline,
+                DynamicPyramid,
+                DynamicScreenOverlay,
+                DynamicBillboardVisualizer,
+                DynamicEllipsoidVisualizer,
+                DynamicConeVisualizer,
+                DynamicLabelVisualizer,
+                DynamicPathVisualizer,
+                DynamicPointVisualizer,
+                DynamicPolygonVisualizer,
+                DynamicPolylineVisualizer,
+                DynamicPyramidVisualizer,
+				DynamicScreenOverlayVisualizer) {
     "use strict";
 
     /**
@@ -67,6 +69,7 @@ define([
          * @see DynamicObjectCollection
          */
         updaters : [DynamicBillboard.processCzmlPacket,
+                    DynamicEllipse.processCzmlPacket,
                     DynamicEllipsoid.processCzmlPacket,
                     DynamicCone.processCzmlPacket,
                     DynamicLabel.processCzmlPacket,
@@ -89,6 +92,7 @@ define([
          * @see CompositeDynamicObjectCollection
          */
         mergers : [DynamicBillboard.mergeProperties,
+                   DynamicEllipse.mergeProperties,
                    DynamicEllipsoid.mergeProperties,
                    DynamicCone.mergeProperties,
                    DynamicLabel.mergeProperties,
@@ -100,44 +104,45 @@ define([
                    DynamicScreenOverlay.mergeProperties,
                    DynamicObject.mergeProperties],
 
-       /**
+        /**
         * The standard set of cleaners for processing CZML.  This array is the default
         * set of updater methods used by CompositeDynamicObjectCollection.
         *
         * @see CompositeDynamicObjectCollection
         */
         cleaners : [DynamicBillboard.undefineProperties,
-                    DynamicEllipsoid.undefineProperties,
-                    DynamicCone.undefineProperties,
-                    DynamicLabel.undefineProperties,
-                    DynamicPath.undefineProperties,
-                    DynamicPoint.undefineProperties,
-                    DynamicPolygon.undefineProperties,
-                    DynamicPolyline.undefineProperties,
-                    DynamicPyramid.undefineProperties,
-                    DynamicScreenOverlay.undefineProperties,
-                    DynamicObject.undefineProperties],
+                   DynamicEllipse.undefineProperties,
+                   DynamicEllipsoid.undefineProperties,
+                   DynamicCone.undefineProperties,
+                   DynamicLabel.undefineProperties,
+                   DynamicPath.undefineProperties,
+                   DynamicPoint.undefineProperties,
+                   DynamicPolygon.undefineProperties,
+                   DynamicPolyline.undefineProperties,
+                   DynamicPyramid.undefineProperties,
+				   DynamicScreenOverlay.undefineProperties,
+                   DynamicObject.undefineProperties],
 
-        /**
-         * Creates an array containing the standard CZML visualizers,
-         * configured for the provided scene.
-         *
-         * @param scene The scene being used for visualization.
-         * @returns {Array} The CZML standard visualizers.
-         * @see VisualizerCollection#createCzmlDefaultsCollection
-         */
-        createVisualizers : function(scene) {
-            return [new DynamicBillboardVisualizer(scene),
-                    new DynamicEllipsoidVisualizer(scene),
-                    new DynamicConeVisualizer(scene),
-                    new DynamicLabelVisualizer(scene),
-                    new DynamicPointVisualizer(scene),
-                    new DynamicPolygonVisualizer(scene),
-                    new DynamicPolylineVisualizer(scene),
-                    new DynamicPyramidVisualizer(scene),
-                    new DynamicPathVisualizer(scene),
-                    new DynamicScreenOverlayVisualizer(scene)];
-        }
+       /**
+        * Creates an array containing the standard CZML visualizers,
+        * configured for the provided scene.
+        *
+        * @param scene The scene being used for visualization.
+        * @returns {Array} The CZML standard visualizers.
+        * @see VisualizerCollection#createCzmlDefaultsCollection
+        */
+       createVisualizers : function(scene) {
+           return [new DynamicBillboardVisualizer(scene),
+                   new DynamicEllipsoidVisualizer(scene),
+                   new DynamicConeVisualizer(scene),
+                   new DynamicLabelVisualizer(scene),
+                   new DynamicPointVisualizer(scene),
+                   new DynamicPolygonVisualizer(scene),
+                   new DynamicPolylineVisualizer(scene),
+                   new DynamicPyramidVisualizer(scene),
+                   new DynamicPathVisualizer(scene),
+				   new DynamicScreenOverlayVisualizer(scene)];
+       }
     };
 
     return CzmlDefaults;

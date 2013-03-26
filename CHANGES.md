@@ -3,13 +3,24 @@ Change Log
 
 Beta Releases
 -------------
+
 ### b15 - 2013-04-01
 
 * Breaking changes:
-   *
+   * `Billboard.computeScreenSpacePosition` now takes `Context` and `FrameState` arguments instead of a `UniformState` argument.
+   * Removed `clampToPixel` property from `BillboardCollection` and `LabelCollection`.  This options is no longer be needed due to overall LabelCollection visualization improvements.
+   * Removed `Widgets/Dojo/CesiumWidget` and replaced it with `Widgets/CesiumWidget`, which has no Dojo dependancies.
+   * `destroyObject` no longer deletes properties from the object being destroyed.  
+   * `darker.css` files have been deleted and the `darker` theme is now the default style for widgets.  The original theme is now known as `lighter` and is in corresponding `lighter.css` files.
+   * CSS class names have been standardized to avoid potential collisions. All widgets now follow the same pattern, `cesium-<widget>-<className>`.
 * Added `BoundingSphere.fromCornerPoints`.
 * Added `fromArray` and `distance` functions to `Cartesian2`, `Cartesian3`, and `Cartesian4`.
-* Added `DynamicPath.resolution` property for setting the maximum step size, in seconds, to take when sampling a position for path visualization. 
+* Added `DynamicPath.resolution` property for setting the maximum step size, in seconds, to take when sampling a position for path visualization.
+* Added `TileCoordinatesImageryProvider` that renders imagery with tile X, Y, Level coordinates on the surface of the globe.  This is mostly useful for debugging. 
+* Added `DynamicEllipse` and `DynamicObject.ellipse` property to render CZML ellipses on the globe.
+* Added `sampleTerrain` function to sample the terrain height of a list of `Cartographic` positions.
+* Added `DynamicObjectCollection.removeObject` and handling of the new CZML `delete` property. 
+* Imagery layers with an `alpha` of exactly 0.0 are no longer rendered.  Previously these invisible layers were rendered normally, which was a waste of resources.  Unlike the `show` property, imagery tiles in a layer with an `alpha` of 0.0 are still downloaded, so the layer will become visible more quickly when its `alpha` is increased. 
 * Added CZML object `DynamicScreenOverlay` to enable simple rectangular screen overlays that work with the material system.
 
 ### b14 - 2013-03-01
@@ -38,7 +49,6 @@ Beta Releases
 * Improved the lighting used in 2D and Columbus View modes.  In general, the surface lighting in these modes should look just like it does in 3D.
 * Fixed an issue where a `PolylineCollection` with a model matrix other than the identity would be incorrectly rendered in 2D and Columbus view.
 * Fixed an issue in the `ScreenSpaceCameraController` where disabled mouse events can cause the camera to be moved after being re-enabled.
-* Added CZML object `DynamicScreenOverlay` to enable simple rectangular screen overlays that work with the material system.
 
 ### b13 - 2013-02-01
 
