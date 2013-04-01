@@ -240,6 +240,11 @@ define([
         widget.loadCzml("Gallery/DeerValley.czml", "path");
         location = "Deer Valley, UT";
 
+        var trailsCzml = "Gallery/DeerValleyTrails.czml";
+        loadJson(trailsCzml).then(function(czml) {
+            widget.addCzml(czml, trailsCzml);
+        });
+
         domClass.remove(win.body(), 'loading');
     });
 });
