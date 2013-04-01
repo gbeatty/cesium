@@ -33,7 +33,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -69,7 +70,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -105,7 +107,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -141,7 +144,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -177,7 +181,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -213,7 +218,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -249,7 +255,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -285,7 +292,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -321,7 +329,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
@@ -357,7 +366,8 @@
     },
     "billboard":{
       "image":"film.png",
-      "scale":0.25
+      "scale":0.25,
+      "verticalOrigin":"BOTTOM"
     }
   },
   {
