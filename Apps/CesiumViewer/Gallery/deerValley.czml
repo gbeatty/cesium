@@ -1,6 +1,204 @@
 
 [
   {
+    "id":"CurrentTrail",
+    "label":{
+      "show":false,
+      "text":[
+        {
+          "interval":"2013-02-01T19:58:00Z/2013-02-01T20:02:46Z",
+          "string":"Silver Link"
+        },
+        {
+          "interval":"2013-02-01T20:02:46Z/2013-02-01T20:09:02Z",
+          "string":"Sterling Express Lift"
+        },
+        {
+          "interval":"2013-02-01T20:09:02Z/2013-02-01T20:15:00Z",
+          "string":"Bald Mtn Peak"
+        },
+        {
+          "interval":"2013-02-01T20:15:00Z/2013-02-01T20:16:14Z",
+          "string":"Tycoon"
+        },
+        {
+          "interval":"2013-02-01T20:16:14Z/2013-02-01T20:21:26Z",
+          "string":"Reward"
+        },
+        {
+          "interval":"2013-02-01T20:21:26Z/2013-02-01T20:26:30Z",
+          "string":"Wasatch Express Lift"
+        },
+        {
+          "interval":"2013-02-01T20:26:30Z/2013-02-01T20:32:14Z",
+          "string":"Nabob"
+        },
+        {
+          "interval":"2013-02-01T20:32:14Z/2013-02-01T20:38:00Z",
+          "string":"Sterling Express Lift"
+        },
+        {
+          "interval":"2013-02-01T20:38:00Z/2013-02-01T20:48:35Z",
+          "string":"Ruins of Pompeii"
+        },
+        {
+          "interval":"2013-02-01T20:48:35Z/2013-02-01T20:51:24Z",
+          "string":"Tycoon"
+        },
+        {
+          "interval":"2013-02-01T20:51:24Z/2013-02-01T20:57:36Z",
+          "string":"Sultan Express Lift"
+        },
+        {
+          "interval":"2013-02-01T20:57:36Z/2013-02-01T21:02:51Z",
+          "string":"North Star"
+        },
+        {
+          "interval":"2013-02-01T21:02:51Z/2013-02-01T21:02:58Z",
+          "string":"Sunset"
+        },
+        {
+          "interval":"2013-02-01T21:02:58Z/2013-02-01T21:04:13Z",
+          "string":"Bird's Eye"
+        },
+        {
+          "interval":"2013-02-01T21:04:13Z/2013-02-01T21:08:01Z",
+          "string":"Sunset Glade"
+        },
+        {
+          "interval":"2013-02-01T21:08:01Z/2013-02-01T21:09:36Z",
+          "string":"Ontario"
+        },
+        {
+          "interval":"2013-02-01T21:09:36Z/2013-02-01T21:17:00Z",
+          "string":"Quincy Express Lift"
+        },
+        {
+          "interval":"2013-02-01T21:17:00Z/2013-02-01T21:21:35Z",
+          "string":"Lost Boulder"
+        },
+        {
+          "interval":"2013-02-01T21:21:35Z/2013-02-01T21:23:36Z",
+          "string":"Lucky Star"
+        },
+        {
+          "interval":"2013-02-01T21:23:36Z/2013-02-01T21:29:15Z",
+          "string":"Northside Express Lift"
+        },
+        {
+          "interval":"2013-02-01T21:29:15Z/2013-02-01T21:35:34Z",
+          "string":"Warming Hut"
+        },
+        {
+          "interval":"2013-02-01T21:35:34Z/2013-02-01T21:50:54Z",
+          "string":"GPS Data Unavailable"
+        },
+        {
+          "interval":"2013-02-01T21:50:54Z/2013-02-01T22:01:32Z",
+          "string":"Sterling Express Lift"
+        },
+        {
+          "interval":"2013-02-01T22:01:32Z/2013-02-01T22:03:46Z",
+          "string":"North Star"
+        },
+        {
+          "interval":"2013-02-01T22:03:46Z/2013-02-01T22:04:04Z",
+          "string":"Emerald"
+        },
+        {
+          "interval":"2013-02-01T22:04:04Z/2013-02-01T22:05:12Z",
+          "string":"Sunset"
+        },
+        {
+          "interval":"2013-02-01T22:05:12Z/2013-02-01T22:09:26Z",
+          "string":"Sunset Glade"
+        },
+        {
+          "interval":"2013-02-01T22:09:26Z/2013-02-01T22:11:07Z",
+          "string":"Ontario"
+        },
+        {
+          "interval":"2013-02-01T22:11:07Z/2013-02-01T22:16:07Z",
+          "string":"Quincy Express Lift"
+        },
+        {
+          "interval":"2013-02-01T22:16:07Z/2013-02-01T22:19:10Z",
+          "string":"Blue Bell"
+        },
+        {
+          "interval":"2013-02-01T22:19:10Z/2013-02-01T22:21:45Z",
+          "string":"Silver Buck"
+        },
+        {
+          "interval":"2013-02-01T22:21:45Z/2013-02-01T22:22:39Z",
+          "string":"Banner"
+        },
+        {
+          "interval":"2013-02-01T22:22:39Z/2013-02-01T22:25:13Z",
+          "string":"Judge Lift"
+        },
+        {
+          "interval":"2013-02-01T22:25:13Z/2013-02-01T22:31:15Z",
+          "string":"Birdseye"
+        },
+        {
+          "interval":"2013-02-01T22:31:15Z/2013-02-01T22:37:47Z",
+          "string":"Homestake Lift"
+        },
+        {
+          "interval":"2013-02-01T22:37:47Z/2013-02-01T22:40:32Z",
+          "string":"Solid Muldoon"
+        },
+        {
+          "interval":"2013-02-01T22:40:32Z/2013-02-01T22:40:40Z",
+          "string":"Little Bell"
+        },
+        {
+          "interval":"2013-02-01T22:40:40Z/2013-02-01T22:41:20Z",
+          "string":"Success"
+        },
+        {
+          "interval":"2013-02-01T22:41:20Z/2013-02-01T22:44:44Z",
+          "string":"Lucky Bill"
+        },
+        {
+          "interval":"2013-02-01T22:44:44Z/2013-02-01T22:45:00Z",
+          "string":"Big Stick"
+        },
+        {
+          "interval":"2013-02-01T22:45:00Z/2013-02-01T22:46:31Z",
+          "string":"Rosebud"
+        },
+        {
+          "interval":"2013-02-01T22:46:31Z/2013-02-01T22:53:29Z",
+          "string":"Carpenter Express Lift"
+        },
+        {
+          "interval":"2013-02-01T22:53:29Z/2013-02-01T22:55:52Z",
+          "string":"Solid Muldoon"
+        },
+        {
+          "interval":"2013-02-01T22:55:52Z/2013-02-01T22:56:44Z",
+          "string":"Success"
+        },
+        {
+          "interval":"2013-02-01T22:56:44Z/2013-02-01T23:00:26Z",
+          "string":"Little Kate"
+        },
+        {
+          "interval":"2013-02-01T23:00:26Z/2013-02-01T23:00:52Z",
+          "string":"Rosebud"
+        },
+        {
+          "interval":"2013-02-01T23:00:52Z/2013-02-01T23:50:00Z",
+          "string":"Snow Park Lodge"
+        }
+      ]
+    }
+  },
+
+
+  {
     "id":"deer_valley 1.webm",
     "availability":"2013-02-01T20:01:05Z/2013-02-01T20:03:03Z",
     "screenOverlay":{
@@ -6166,5 +6364,6 @@
     }
 
   }
+
   
 ]

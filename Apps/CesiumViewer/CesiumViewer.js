@@ -88,6 +88,7 @@ define([
     var pathObject;
     var clock;
     var location;
+    var currentTrail;
     function updateSpeed() {
 
         // calculate instantaneous speed
@@ -118,7 +119,10 @@ define([
             slope += "\u00B0";
         }
 
-        $('#trackingData').html("Location: " + location + "<br>Speed: " + speed + " mph <br>Slope: " + slope + "<br>Altitude: " + altitude + " ft");
+        var trailName = currentTrail.label.text.getValue(clock.currentTime);
+
+        $('#trackingData').html("Location: " + location + "<br>Speed: " + speed + " mph <br>Slope: " + slope +
+                "<br>Altitude: " + altitude + " ft<br>Trail: " + trailName);
     }
 
     var slopeLayer;
@@ -216,6 +220,8 @@ define([
 
                 widget.addCzml(czml, source);
                 widget._setLoading(false);
+
+                currentTrail = widget.dynamicObjectCollection.getObject("CurrentTrail");
 
                 var lookAtObject = widget.dynamicObjectCollection.getObject(lookAt);
                 flyToObject(widget, lookAtObject);
