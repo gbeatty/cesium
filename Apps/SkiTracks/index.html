@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<!-- Use Chrome Frame in IE -->
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+
+<!-- Make the application take up the full browser screen and disable user scaling-->
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+
+<title>Ski Tracks</title>
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" href="SkiTracks.css" media="screen">
+<link rel="stylesheet" href="jquery-ui-1.10.2.custom/css/dark-hive/jquery-ui-1.10.2.custom.css">
+
+<script src="jquery-ui-1.10.2.custom/js/jquery-1.9.1.js"></script>
+<script src="jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js"></script>
+<script data-dojo-config="async:1,tlmSiblingOfDojo:0" src="../../ThirdParty/dojo-release-1.8.3-src/dojo/dojo.js"></script>
+<script src="SkiTracksStartup.js"></script>
+
+<script>
+   $(function() {
+       $( "#liveData" ).accordion({
+           collapsible: true
+       });
+   });
+   
+   $(function() {
+       $( "#translucencySlider" ).slider();
+       $( "#translucencySlider" ).slider( "option", "min", 0 );
+       $( "#translucencySlider" ).slider( "option", "max", 100 );
+       $( "#translucencySlider" ).hide();
+   });
+</script>
+
+    
+</head>
+<body class="claro" style="background: #000;">
+
+    
+    <div id="cesiumContainer" >
+        <div id="liveData" class="skiTracks-liveDataContainer">
+            <h3 style="height:10px; font-size:small">Tracking Data</h3>
+            <div id="trackingData" style="font-size:small">
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+            </div>    
+        </div>
+        <div id="animationContainer" class="skiTracks-animationContainer"></div>
+        <div id="timelineContainer" class="skiTracks-timelineContainer"></div>
+    </div>
+    
+    
+    
+    <!--
+    
+    <div class="cesium-viewerWidget-viewButtons">
+        <button data-dojo-type="dijit/form/ToggleButton" data-dojo-id="slopeButton" data-dojo-props="iconClass:'cw-slopeIcon'" type="button">
+            Terrain Slope Overlay
+        </button>
+        <div id="translucencySlider"></div>
+        <img id="overlayScale" src="Gallery/overlayScale.jpg" align="right" style="position:relative;" hidden="true">
+    </div>
+    -->
+    
+</body>
+</html>

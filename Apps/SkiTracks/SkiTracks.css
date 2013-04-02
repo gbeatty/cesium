@@ -1,0 +1,63 @@
+@import	url('../../ThirdParty/dojo-release-1.8.3-src/dijit/themes/claro/claro.css');
+@import url('../../Source/Widgets/CesiumWidget/CesiumWidget.css');
+@import url('../../Source/Widgets/Timeline/Timeline.css');
+@import url('../../Source/Widgets/Animation/Animation.css');
+
+.fullWindow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+.cesium-widget-logo {
+    bottom: 30px;
+    left: 170px;
+    text-decoration: none;
+    width: 118px;
+    height: 26px;
+}
+
+.cw-slopeIcon {
+    background-image: url('Gallery/slope.png');
+    background-repeat: no-repeat;
+    width: 32px;
+    height: 32px;
+}
+
+.skiTracks-liveDataContainer {
+    position: absolute;
+    width: 15%;
+    top: 5px;
+    left: 5px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: small;
+}
+
+.skiTracks-timelineContainer {
+    position: absolute;
+    bottom: 0;
+    left: 169px;
+    right: 5px;
+    height: 27px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+.skiTracks-animationContainer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 0;
+    width: 169px;
+    height: 112px;
+}
