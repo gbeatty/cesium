@@ -89,12 +89,13 @@ define([
     function flyToObject(scene, dynamicObject) {
         disableInput(scene);
 
-        dynamicObjectView = new DynamicObjectView(dynamicObject, scene, Ellipsoid.WGS84);
+        dynamicObjectView = new DynamicObjectView(dynamicObject, scene);
+        dynamicObjectView.update(clock.currentTime);
 
         var cameraFlightPath = CameraFlightPath.createAnimation(
             scene.getFrameState(), {
                 destination : new Cartesian3(0, -1000, 600),
-                duration : 8000,
+                duration : 12000,
                 onComplete : function() {
                     enableInput(scene);
             }
