@@ -17,6 +17,21 @@ define([
          JulianDate) {
     "use strict";
 
+    // custom video events that will bubble up the dom tree
+    var videoLoadingEvent = document.createEvent("Event");
+    videoLoadingEvent.initEvent("videoLoading",true,true);
+
+    var videoLoadedEvent = document.createEvent("Event");
+    videoLoadedEvent.initEvent("videoLoaded",true,true);
+
+    var triggerVideoLoadingEvent = function(evt) {
+        evt.target.dispatchEvent(videoLoadingEvent);
+    };
+
+    var triggerVideoLoadedEvent = function(evt) {
+        evt.target.dispatchEvent(videoLoadedEvent);
+    };
+
     /**
      * A utility class for processing CZML image materials.
      * @alias DynamicVideoMaterial
@@ -132,11 +147,19 @@ define([
     };
 
     var startTime;
-    function  syncVideo(video, existingMaterial, animationRate) {
+    function syncVideo(video, existingMaterial, animationRate) {
 
         var playbackRate = (animationRate * existingMaterial.speed).toFixed(2);
-        if(video.playbackRate.toFixed(2) !== playbackRate) {
+        if(video.playbackRate < 0) {
+            // browsers don't handle negative playback rates
+            video.playbackRate = 0;
+        }
+        else if(video.playbackRate.toFixed(2) !== playbackRate) {
             video.playbackRate = playbackRate;
+        }
+
+        if(video.paused) {
+            video.play();
         }
 
         var duration = video.duration;
@@ -161,6 +184,10 @@ define([
         if( Math.abs(videoTime - video.currentTime) > 0.2 ) {
             video.currentTime = videoTime;
         }
+
+        // set a timer to stop the video if the video material isn't being accessed
+        window.clearTimeout(video.timeoutId);
+        video.timeoutId = window.setTimeout(function () { video.pause(); }, 100);
     }
 
     /**
@@ -226,20 +253,25 @@ define([
                 videoLoaded = false;
                 existingMaterial.currentUrl = url;
                 if (typeof existingMaterial.video !== 'undefined') {
-                    //existingMaterial.video.removeEventListener("seeked", seekFunction, false);
+                    // pause, and completely unload the video.
+                    existingMaterial.video.pause();
+                    existingMaterial.video.removeEventListener("waiting", triggerVideoLoadingEvent, false);
+                    existingMaterial.video.removeEventListener("playing", triggerVideoLoadedEvent, false);
+                    existingMaterial.video.src = ""; // force video to unload and stop downloading
+                    existingMaterial.video.load();
                     document.body.removeChild(existingMaterial.video);
                 }
+
                 video = existingMaterial.video = document.createElement('video');
                 document.body.appendChild(video);
-                video.style.display = 'none';
-                video.preload = 'auto';
-                video.addEventListener("loadeddata", function() {
-                    //console.log("load event fired");
-                    //seekFunction = createSeekFunction(context, video, existingMaterial);
-                    //video.addEventListener("seeked", seekFunction, false);
-                    //seekFunction();
 
-                    video.playbackRate = 0.0;
+                video.addEventListener("waiting", triggerVideoLoadingEvent, false);
+
+                video.addEventListener("playing", triggerVideoLoadedEvent, false);
+
+                video.addEventListener("canplaythrough", function() {
+
+                    video.playbackRate = 0.0; // let the sync function control playback rate
                     video.play();
 
                     if (typeof existingMaterial.texture === 'undefined') {
@@ -249,9 +281,15 @@ define([
                         existingMaterial.uniforms.image = existingMaterial.texture;
                     }
 
+                    video.dispatchEvent(videoLoadedEvent);
                     videoLoaded = true;
                 }, false);
 
+                video.dispatchEvent(videoLoadingEvent);
+                video.style.display = 'none';
+                video.preload = 'auto';
+                video.playbackRate = 1.0;
+                //video.muted = true;
                 video.src = url;
                 video.load();
             }
