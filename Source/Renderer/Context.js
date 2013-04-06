@@ -1381,9 +1381,18 @@ define([
             throw new DeveloperError('description is required.');
         }
 
+        var width = description.width;
+        var height = description.height;
         var source = description.source;
-        var width = typeof source !== 'undefined' ? source.width : description.width;
-        var height = typeof source !== 'undefined' ? source.height : description.height;
+
+        if (typeof source !== 'undefined') {
+            if (typeof width === 'undefined') {
+                width = defaultValue(source.videoWidth, source.width);
+            }
+            if (typeof height === 'undefined') {
+                height = defaultValue(source.videoHeight, source.height);
+            }
+        }
 
         if (typeof width === 'undefined' || typeof height === 'undefined') {
             throw new DeveloperError('description requires a source field to create an initialized texture or width and height fields to create a blank texture.');
