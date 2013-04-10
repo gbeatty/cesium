@@ -267,7 +267,7 @@ define([
         );
 
 
-        /*var slopeImageryProvider = new TileMapServiceImageryProvider({
+        var slopeImageryProvider = new TileMapServiceImageryProvider({
             url : 'Gallery/slopeShadeTiles',
             fileExtension: 'png',
             maximumLevel: 15,
@@ -277,28 +277,26 @@ define([
                 CesiumMath.toRadians(-111.3080556),
                 CesiumMath.toRadians(40.7639815))
         });
-        var layers = widget.centralBody.getImageryLayers();
+        var layers = cesiumWidget.centralBody.getImageryLayers();
         slopeLayer = layers.addImageryProvider(slopeImageryProvider);
-        slopeLayer.alpha = 0.0;
+        slopeLayer.show = false;
         $( "#translucencySlider" ).slider( "option", "value", 60 );
 
-        //var slopeButton = widget.slopeButton;
-        slopeButton.set('checked', false);
-
-        on(slopeButton, 'Click', function() {
-            if(slopeButton.get('checked')) {
-                //slopeLayer.show = true;
-                slopeLayer.alpha = $( "#translucencySlider" ).slider( "value" ) / 100;
+        var slopeButton = document.getElementById("slopeOverlayButton");
+        slopeButton.onclick = function() {
+            if(slopeLayer.show === false) {
+                slopeLayer.show = true;
+                //slopeLayer.alpha = $( "#translucencySlider" ).slider( "value" ) / 100;
                 $("#translucencySlider").show("drop", { direction: "up" }, 1000);
                 $( "#overlayScale" ).show("slide", { direction: "right" }, 1000);
             }
             else {
-                //slopeLayer.show = false;
-                slopeLayer.alpha = 0;
+                slopeLayer.show = false;
+                //slopeLayer.alpha = 0;
                 $("#translucencySlider").hide("drop", { direction: "up" }, 1000);
                 $( "#overlayScale" ).hide("slide", { direction: "right" }, 1000);
             }
-        });*/
+        };
 
 
         var handler = new ScreenSpaceEventHandler(cesiumWidget.scene._canvas);
