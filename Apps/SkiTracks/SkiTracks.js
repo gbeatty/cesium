@@ -35,6 +35,7 @@ define([
         'Core/Math',
         'Core/ScreenSpaceEventHandler',
         'Core/ScreenSpaceEventType',
+        'ThirdParty/knockout'
     ], function(
         win,
         domClass,
@@ -70,7 +71,8 @@ define([
         loadJson,
         CesiumMath,
         ScreenSpaceEventHandler,
-        ScreenSpaceEventType) {
+        ScreenSpaceEventType,
+        knockout) {
     "use strict";
     /*global console*/
 
@@ -115,7 +117,7 @@ define([
 
     var pathObject = 'undefined';
     var location;
-    var currentTrail;
+    var currentTrail = 'undefined';
     var pathVisualizers = 'undefined';
     var trailsVisualizers = 'undefined';
     var dynamicObjectView;
@@ -167,7 +169,7 @@ define([
                 slope += "\u00B0";
             }
 
-            var trailName = ""; //currentTrail.label.text.getValue(clock.currentTime);
+            var trailName = (currentTrail !== 'undefined' ? currentTrail.label.text.getValue(clock.currentTime) : "");
 
             $('#trackingData').html("Location: " + location + "<br>Speed: " + speed + " mph <br>Slope: " + slope +
                     "<br>Altitude: " + altitude + " ft<br>Trail: " + trailName);
@@ -249,7 +251,8 @@ define([
         clockViewModel.owner = this;
         clockViewModel.shouldAnimate(true);
         var animationViewModel = new AnimationViewModel(clockViewModel);
-        animationViewModel.setShuttleRingTicks([0.5, 1, 2, 3, 5, 10, 20, 50, 100]);
+        animationViewModel.snapToTicks = knockout.observable(true);
+        animationViewModel.setShuttleRingTicks([0.0, 0.5, 1, 2, 3, 5, 10, 20, 50, 100]);
         var animationContainer = document.getElementById("animationContainer");
         animationWidget = new Animation(animationContainer, animationViewModel);
 
@@ -318,6 +321,9 @@ define([
             var lookAtObject = dynamicObjectCollection.getObject("path");
             flyToObject(cesiumWidget.scene, lookAtObject);
             pathObject = lookAtObject;
+
+            // get the current trail object
+            currentTrail = dynamicObjectCollection.getObject("CurrentTrail");
 
             pathVisualizers = VisualizerCollection.createCzmlStandardCollection(cesiumWidget.scene, dynamicObjectCollection);
             setLoading(false);

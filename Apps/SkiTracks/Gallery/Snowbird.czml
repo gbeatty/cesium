@@ -19,7 +19,7 @@
           "startTime":{
             "time":"2013-02-03T17:13:10Z"
           },
-          "video":"videos/snowbird 1.webm"
+          "video":"SkiTracksVideos/snowbird 1.webm"
         }
       }
     }
@@ -32,8 +32,8 @@
       ]
     },
     "billboard":{
-      "image":"film.png",
-      "scale":0.25,
+      "image":"Icons/Vid1.png",
+
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -56,7 +56,7 @@
           "startTime":{
             "time":"2013-02-03T17:47:11Z"
           },
-          "video":"videos/snowbird 2.webm"
+          "video":"SkiTracksVideos/snowbird 2.webm"
         }
       }
     }
@@ -69,8 +69,8 @@
       ]
     },
     "billboard":{
-      "image":"film.png",
-      "scale":0.25,
+      "image":"Icons/Vid1.png",
+
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -93,7 +93,7 @@
           "startTime":{
             "time":"2013-02-03T17:52:08Z"
           },
-          "video":"videos/snowbird 3.webm"
+          "video":"SkiTracksVideos/snowbird 3.webm"
         }
       }
     }
@@ -106,8 +106,8 @@
       ]
     },
     "billboard":{
-      "image":"film.png",
-      "scale":0.25,
+      "image":"Icons/Vid1.png",
+
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -130,7 +130,7 @@
           "startTime":{
             "time":"2013-02-03T18:27:41Z"
           },
-          "video":"videos/snowbird 4.webm"
+          "video":"SkiTracksVideos/snowbird 4.webm"
         }
       }
     }
@@ -143,8 +143,8 @@
       ]
     },
     "billboard":{
-      "image":"film.png",
-      "scale":0.25,
+      "image":"Icons/Vid1.png",
+
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -167,7 +167,7 @@
           "startTime":{
             "time":"2013-02-03T21:04:28Z"
           },
-          "video":"videos/snowbird 5.webm"
+          "video":"SkiTracksVideos/snowbird 5.webm"
         }
       }
     }
@@ -180,8 +180,8 @@
       ]
     },
     "billboard":{
-      "image":"film.png",
-      "scale":0.25,
+      "image":"Icons/Vid1.png",
+
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -204,7 +204,7 @@
           "startTime":{
             "time":"2013-02-03T21:23:56Z"
           },
-          "video":"videos/snowbird 6.webm"
+          "video":"SkiTracksVideos/snowbird 6.webm"
         }
       }
     }
@@ -217,8 +217,8 @@
       ]
     },
     "billboard":{
-      "image":"film.png",
-      "scale":0.25,
+      "image":"Icons/Vid1.png",
+
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -235,7 +235,7 @@
     },
     "billboard":{
       "scale":1.3,
-      "image":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTM5jWRgMAAAAWdEVYdENyZWF0aW9uIFRpbWUAMTIvMjAvMDehTDAUAAAEEXRFWHRYTUw6Y29tLmFkb2JlLnhtcAA8P3hwYWNrZXQgYmVnaW49IiAgICIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pgo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA0LjEtYzAzNCA0Ni4yNzI5NzYsIFNhdCBKYW4gMjcgMjAwNyAyMjoxMTo0MSAgICAgICAgIj4KICAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6eGFwPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIj4KICAgICAgICAgPHhhcDpDcmVhdG9yVG9vbD5BZG9iZSBGaXJld29ya3MgQ1MzPC94YXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx4YXA6Q3JlYXRlRGF0ZT4yMDA3LTEyLTIwVDIxOjA3OjEzWjwveGFwOkNyZWF0ZURhdGU+CiAgICAgICAgIDx4YXA6TW9kaWZ5RGF0ZT4yMDA3LTEyLTIwVDIxOjI3OjAzWjwveGFwOk1vZGlmeURhdGU+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iPgogICAgICAgICA8ZGM6Zm9ybWF0PmltYWdlL3BuZzwvZGM6Zm9ybWF0PgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDctGs+AAAJBUlEQVR42u2b228U1x3HP2dm9ur1+m6wwdwvLrYB104MxmDAxCkUikgCaWnTRm2jvPa9z/kX+tBIeWpUVZWqSK14SFolaSORSg1pUhRFraKmQYESBReDd9d7PX3Y31mfHZbgtWcNDox0POOd2TnnfM/3dz2/VVprHubD4SE/vMU8pJRaVZOqh9XefWJdCIhYDCwBWSAv18s6lFKLBsG7D4yLAVE5m/4LQAaYl3PhgRKBAFc+CiSAJNAsLADIAbeBW4AC0isFwkoCEJJVTwLtQKsAgtA/AriWSKSDEIcHCYAIEBcAWoEu4Ftybx54Ta6LogvyAszXAgAXCAsDEtKGgGeE8nngMvCxiENGJp9dCblcKfqHLQUYAaZkATz57AjQJC0mz7tfFwCiluaPAmuAHbL6yHlcgImJqEQtJbmqAQhLi1orewCIWQ6WBlqAQXmmyQLLXc0AONbEbWpPmNVXSqHKSDjAtNyPy/NR+X/VAhCybH9CABgQMwhAR3ev/fygTD4uz8flO+5qBSBiaX7DgFPSr/JCYZ768c9ggQUecEhAM0CEBchVB4Bt+sxKdgLby8xX7Bga5dhTzxMOR4zvrsQa+MUmshoBqGX6jgBeWe4dps+9iHbCjD/5jIk4NdAL9FjsiTbSJDYSAL/pawL2mZvJ9i5Gj36HQklz7OwLOK5nK8PDMumIfDfUKDFwGkj/kG8CC8pPKQ5++zz5giZf0KzbOkTn2j77+yNiFm0Ao6sJgJBlASKymodF9lUkGmf85A8olHSlHTj5fZSqDKdVALPfEWqEGDgr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"
+      "image":"Icons/Ski4.png"
     },
     "path":{
       "color":{
