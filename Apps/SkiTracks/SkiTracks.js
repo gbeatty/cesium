@@ -372,6 +372,7 @@ define([
         var layers = cesiumWidget.centralBody.getImageryLayers();
         slopeLayer = layers.addImageryProvider(slopeImageryProvider);
         slopeLayer.show = false;
+        slopeLayer.alpha = 0.6;
         $( "#translucencySlider" ).slider( "option", "value", 60 );
 
         var slopeButton = document.getElementById("slopeOverlayButton");
