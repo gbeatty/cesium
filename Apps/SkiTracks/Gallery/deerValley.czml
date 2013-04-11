@@ -6,7 +6,7 @@
       "show":false,
       "text":[
         {
-          "interval":"2013-02-01T19:58:00Z/2013-02-01T20:02:46Z",
+          "interval":"2013-02-01T20:00:50Z/2013-02-01T20:02:46Z",
           "string":"Silver Link"
         },
         {
@@ -583,7 +583,7 @@
       "leadTime":0.0,
 	 "trailTime":120.0
     },
-    "availability":"2013-02-01T19:58:39.4749999999985Z/2013-02-01T23:09:00Z",
+    "availability":"2013-02-01T20:00:50Z/2013-02-01T23:09:00Z",
     "position":{
       "epoch":"2013-02-01T19:58:39.4749999999985Z",
       "cartographicRadians":[
