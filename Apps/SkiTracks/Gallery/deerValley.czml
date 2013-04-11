@@ -580,7 +580,8 @@
         ]
       },
       "width":4.0,
-      "leadTime":20000.0
+      "leadTime":0.0,
+	 "trailTime":120.0
     },
     "availability":"2013-02-01T19:58:39.4749999999985Z/2013-02-01T23:09:00Z",
     "position":{

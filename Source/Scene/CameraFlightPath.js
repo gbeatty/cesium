@@ -184,7 +184,7 @@ define([
         var length = points.length - 1;
         for (var i = 1; i < length; ++i) {
             point = points[i];
-            direction = point.point.negate().normalize();
+            direction = Cartesian3.fromCartesian4(point.point.negate()).normalize();
             right = direction.cross(Cartesian3.UNIT_Z).normalize();
             up = right.cross(direction);
             point.orientation = createQuaternion(direction, up);
@@ -194,7 +194,7 @@ define([
         if (typeof endDirection !== 'undefined' && typeof endUp !== 'undefined') {
             point.orientation = createQuaternion(endDirection, endUp);
         } else {
-            direction = point.point.negate().normalize();
+            direction = Cartesian3.fromCartesian4(point.point.negate()).normalize();
             right = direction.cross(Cartesian3.UNIT_Z).normalize();
             up = right.cross(direction);
             point.orientation = createQuaternion(direction, up);

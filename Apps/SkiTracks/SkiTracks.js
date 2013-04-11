@@ -33,9 +33,14 @@ define([
         'Core/JulianDate',
         'Core/loadJson',
         'Core/Math',
+        'Core/Matrix3',
+        'Core/Matrix4',
+        'Core/Quaternion',
         'Core/ScreenSpaceEventHandler',
         'Core/ScreenSpaceEventType',
-        'ThirdParty/knockout'
+        'Core/Transforms',
+        'ThirdParty/knockout',
+        'ThirdParty/Tween'
     ], function(
         win,
         domClass,
@@ -70,9 +75,14 @@ define([
         JulianDate,
         loadJson,
         CesiumMath,
+        Matrix3,
+        Matrix4,
+        Quaternion,
         ScreenSpaceEventHandler,
         ScreenSpaceEventType,
-        knockout) {
+        Transforms,
+        knockout,
+        Tween) {
     "use strict";
     /*global console*/
 
@@ -115,6 +125,83 @@ define([
         scene.getAnimations().add(cameraFlightPath);
     }
 
+    function createQuaternion(direction, up) {
+        var right = direction.cross(up);
+        up = right.cross(direction);
+        var viewMat = new Matrix3( right.x,      right.y,      right.z,
+                                   up.x,         up.y,         up.z,
+                                  -direction.x, -direction.y, -direction.z);
+        return Quaternion.fromRotationMatrix(viewMat);
+    }
+
+    function flyToTime(jdate) {
+        disableInput(cesiumWidget.scene);
+        cesiumWidget.clock.shouldAnimate = false;
+
+        var camera = cesiumWidget.scene.getCamera();
+        var initialCameraPositionENU = camera.position;
+        var initialCameraPositionWC = camera.getPositionWC();
+        var initialObjectPositionWC = pathObject.position.getValueCartesian(cesiumWidget.clock.currentTime);
+        var cameraOffsetWC = initialCameraPositionWC.subtract(initialObjectPositionWC);
+        var finalObjectPositionWC = pathObject.position.getValueCartesian(jdate);
+        var finalCameraPositionWC = finalObjectPositionWC.add(cameraOffsetWC);
+
+        var finalDirection = cameraOffsetWC.negate().normalize();
+        var finalRight = finalDirection.cross(finalObjectPositionWC).normalize();
+        var finalUp = finalRight.cross(finalDirection).normalize();
+        var finalRefFrame = Transforms.eastNorthUpToFixedFrame(finalObjectPositionWC);
+        var finalOffsetENU = Matrix4.getRotation(finalRefFrame).multiplyByVector(cameraOffsetWC);
+
+        var initialOrientation = createQuaternion(camera.getDirectionWC(), camera.getUpWC());
+        var finalOrientation = createQuaternion(finalDirection, finalUp);
+
+        // put the camera in world coordinate ref frame
+        camera.position = camera.getPositionWC();
+        camera.direction = Cartesian3.fromCartesian4(camera.getDirectionWC());
+        camera.up = Cartesian3.fromCartesian4(camera.getUpWC());
+        camera.right = Cartesian3.fromCartesian4(camera.getRightWC());
+        camera.transform = Matrix4.IDENTITY.clone();
+
+
+        var updateCamera = function(value) {
+            var time = value.time;
+            var orientation = Quaternion.slerp(initialOrientation, finalOrientation, time);
+            var rotationMatrix = Matrix3.fromQuaternion(orientation);
+
+            camera.position = Cartesian3.lerp(initialCameraPositionWC, finalCameraPositionWC, time);
+            camera.right = rotationMatrix.getRow(0);
+            camera.up = rotationMatrix.getRow(1);
+            camera.direction = rotationMatrix.getRow(2).negate();
+        };
+
+        var duration = 3000;
+        var animation =
+            {
+                duration : duration,
+                easingFunction : Tween.Easing.Sinusoidal.InOut,
+                startValue : {
+                    time : 0.0
+                },
+                stopValue : {
+                    time : 1.0
+                },
+                onUpdate : updateCamera,
+                onComplete : function() {
+                    camera.transform = finalRefFrame;
+                    camera.position = initialCameraPositionENU;
+                    camera.direction = camera.position.negate().normalize();
+                    camera.right = camera.direction.cross(Cartesian3.UNIT_Z).normalize();
+                    camera.up = camera.right.cross(camera.direction).normalize();
+                    enableInput(cesiumWidget.scene);
+                    cesiumWidget.clock.shouldAnimate = true;
+                    cesiumWidget.clock.currentTime = jdate;
+                }
+            };
+
+        cesiumWidget.scene.getAnimations().add(animation);
+
+    }
+
     var pathObject = 'undefined';
     var location;
     var currentTrail = 'undefined';
@@ -123,6 +210,10 @@ define([
     var dynamicObjectView;
 
     function updateData() {
+
+        if(cesiumWidget.clock.shouldAnimate === false){
+            return;
+        }
 
         var clock = cesiumWidget.clock;
 
@@ -203,7 +294,8 @@ define([
         if (typeof selectedObject !== 'undefined' && typeof selectedObject.dynamicObject !== 'undefined') {
             try {
                 var jdate = JulianDate.fromIso8601( selectedObject.dynamicObject.id );
-                cesiumWidget.clock.currentTime = jdate;
+                flyToTime(jdate);
+                //cesiumWidget.clock.currentTime = jdate;
             } catch(e) {
             }
         }

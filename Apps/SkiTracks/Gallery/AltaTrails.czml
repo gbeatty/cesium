@@ -3,10 +3,12 @@
   {
     "id":"Line 1",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -19,10 +21,12 @@
   {
     "id":"Line 2",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -35,10 +39,12 @@
   {
     "id":"Line 3",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -51,10 +57,12 @@
   {
     "id":"Line 4",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -67,10 +75,12 @@
   {
     "id":"Line 5",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -83,10 +93,12 @@
   {
     "id":"Line 6",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -99,10 +111,12 @@
   {
     "id":"Line 7",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -115,10 +129,12 @@
   {
     "id":"Line 8",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -131,10 +147,12 @@
   {
     "id":"Line 9",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -147,10 +165,12 @@
   {
     "id":"Line 10",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -163,10 +183,12 @@
   {
     "id":"Line 11",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -179,10 +201,12 @@
   {
     "id":"Line 12",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -195,10 +219,12 @@
   {
     "id":"Line 13",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -211,10 +237,12 @@
   {
     "id":"Line 14",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -227,10 +255,12 @@
   {
     "id":"Line 15",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -243,10 +273,12 @@
   {
     "id":"Line 16",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -259,10 +291,12 @@
   {
     "id":"Line 17",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -275,10 +309,12 @@
   {
     "id":"Line 18",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -291,10 +327,12 @@
   {
     "id":"Line 19",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -307,10 +345,12 @@
   {
     "id":"Line 20",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -323,10 +363,12 @@
   {
     "id":"Line 21",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -339,10 +381,12 @@
   {
     "id":"Line 22",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -355,10 +399,12 @@
   {
     "id":"Line 79",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -371,10 +417,12 @@
   {
     "id":"Line 80",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -387,10 +435,12 @@
   {
     "id":"Line 81",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -403,10 +453,12 @@
   {
     "id":"Line 82",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -419,10 +471,12 @@
   {
     "id":"Line 83",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -435,10 +489,12 @@
   {
     "id":"Line 84",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -451,10 +507,12 @@
   {
     "id":"Line 85",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -467,10 +525,12 @@
   {
     "id":"Line 86",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -483,10 +543,12 @@
   {
     "id":"Line 87",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -499,10 +561,12 @@
   {
     "id":"Line 88",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -515,10 +579,12 @@
   {
     "id":"Line 89",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -531,10 +597,12 @@
   {
     "id":"Line 90",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -547,10 +615,12 @@
   {
     "id":"Line 91",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -563,10 +633,12 @@
   {
     "id":"Line 92",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -579,10 +651,12 @@
   {
     "id":"Line 93",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -595,10 +669,12 @@
   {
     "id":"Line 94",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -611,10 +687,12 @@
   {
     "id":"Line 95",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -627,10 +705,12 @@
   {
     "id":"Line 96",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -643,10 +723,12 @@
   {
     "id":"Line 97",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -659,10 +741,12 @@
   {
     "id":"Line 98",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -675,10 +759,12 @@
   {
     "id":"Line 99",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -691,10 +777,12 @@
   {
     "id":"Line 100",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -707,10 +795,12 @@
   {
     "id":"Line 101",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -723,10 +813,12 @@
   {
     "id":"Line 102",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -739,10 +831,12 @@
   {
     "id":"Line 103",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -755,10 +849,12 @@
   {
     "id":"Line 104",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -771,10 +867,12 @@
   {
     "id":"Line 105",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -787,10 +885,12 @@
   {
     "id":"Line 106",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -803,10 +903,12 @@
   {
     "id":"Line 107",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -819,10 +921,12 @@
   {
     "id":"Line 108",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -835,10 +939,12 @@
   {
     "id":"Line 109",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -851,10 +957,12 @@
   {
     "id":"Line 110",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -867,10 +975,12 @@
   {
     "id":"Line 111",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -883,10 +993,12 @@
   {
     "id":"Line 112",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -899,10 +1011,12 @@
   {
     "id":"Line 113",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -915,10 +1029,12 @@
   {
     "id":"Line 114",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -931,10 +1047,12 @@
   {
     "id":"Line 115",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -947,10 +1065,12 @@
   {
     "id":"Line 116",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -963,10 +1083,12 @@
   {
     "id":"Line 117",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -979,10 +1101,12 @@
   {
     "id":"Line 118",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -995,10 +1119,12 @@
   {
     "id":"Line 119",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1011,10 +1137,12 @@
   {
     "id":"Line 120",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1027,10 +1155,12 @@
   {
     "id":"Line 121",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1043,10 +1173,12 @@
   {
     "id":"Line 122",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1059,10 +1191,12 @@
   {
     "id":"Line 123",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1075,10 +1209,12 @@
   {
     "id":"Line 124",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1091,10 +1227,12 @@
   {
     "id":"Line 125",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1107,10 +1245,12 @@
   {
     "id":"Line 126",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1123,10 +1263,12 @@
   {
     "id":"Line 127",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1139,10 +1281,12 @@
   {
     "id":"Line 128",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1155,10 +1299,12 @@
   {
     "id":"Line 129",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1171,10 +1317,12 @@
   {
     "id":"Line 130",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1187,10 +1335,12 @@
   {
     "id":"Line 131",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1203,10 +1353,12 @@
   {
     "id":"Line 132",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1219,10 +1371,12 @@
   {
     "id":"Line 133",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1235,10 +1389,12 @@
   {
     "id":"Line 134",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1251,10 +1407,12 @@
   {
     "id":"Line 135",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1267,10 +1425,12 @@
   {
     "id":"Line 136",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1283,10 +1443,12 @@
   {
     "id":"Line 137",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1299,10 +1461,12 @@
   {
     "id":"Line 138",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1315,10 +1479,12 @@
   {
     "id":"Line 139",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1331,10 +1497,12 @@
   {
     "id":"Line 140",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1347,10 +1515,12 @@
   {
     "id":"Line 141",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1363,10 +1533,12 @@
   {
     "id":"Line 142",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1379,10 +1551,12 @@
   {
     "id":"Line 143",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1395,10 +1569,12 @@
   {
     "id":"Line 144",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1411,10 +1587,12 @@
   {
     "id":"Line 145",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1427,10 +1605,12 @@
   {
     "id":"Line 146",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1443,10 +1623,12 @@
   {
     "id":"Line 147",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1459,10 +1641,12 @@
   {
     "id":"Line 148",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1475,10 +1659,12 @@
   {
     "id":"Line 149",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1491,10 +1677,12 @@
   {
     "id":"Line 150",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1507,10 +1695,12 @@
   {
     "id":"Line 151",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1523,10 +1713,12 @@
   {
     "id":"Line 152",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1539,10 +1731,12 @@
   {
     "id":"Line 153",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1555,10 +1749,12 @@
   {
     "id":"Line 154",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1571,10 +1767,12 @@
   {
     "id":"Line 155",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1587,10 +1785,12 @@
   {
     "id":"Line 156",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1603,10 +1803,12 @@
   {
     "id":"Line 157",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1619,10 +1821,12 @@
   {
     "id":"Line 158",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1635,10 +1839,12 @@
   {
     "id":"Line 159",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1651,10 +1857,12 @@
   {
     "id":"Line 160",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1667,10 +1875,12 @@
   {
     "id":"Line 161",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1683,10 +1893,12 @@
   {
     "id":"Line 162",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1699,10 +1911,12 @@
   {
     "id":"Line 163",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1715,10 +1929,12 @@
   {
     "id":"Line 164",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1731,10 +1947,12 @@
   {
     "id":"Line 165",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1747,10 +1965,12 @@
   {
     "id":"Line 166",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1763,10 +1983,12 @@
   {
     "id":"Line 167",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1779,10 +2001,12 @@
   {
     "id":"Line 168",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1795,10 +2019,12 @@
   {
     "id":"Line 169",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1811,10 +2037,12 @@
   {
     "id":"Line 170",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1827,10 +2055,12 @@
   {
     "id":"Line 171",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1843,10 +2073,12 @@
   {
     "id":"Line 172",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1859,10 +2091,12 @@
   {
     "id":"Line 173",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1875,10 +2109,12 @@
   {
     "id":"Line 174",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1891,10 +2127,12 @@
   {
     "id":"Line 175",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1907,10 +2145,12 @@
   {
     "id":"Line 176",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1923,10 +2163,12 @@
   {
     "id":"Line 177",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1939,10 +2181,12 @@
   {
     "id":"Line 178",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1955,10 +2199,12 @@
   {
     "id":"Line 179",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1971,10 +2217,12 @@
   {
     "id":"Line 180",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -1987,10 +2235,12 @@
   {
     "id":"Line 181",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2003,10 +2253,12 @@
   {
     "id":"Line 182",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2019,10 +2271,12 @@
   {
     "id":"Line 37",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2035,10 +2289,12 @@
   {
     "id":"Line 38",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2051,10 +2307,12 @@
   {
     "id":"Line 39",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2067,10 +2325,12 @@
   {
     "id":"Line 40",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2083,10 +2343,12 @@
   {
     "id":"Line 41",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2099,10 +2361,12 @@
   {
     "id":"Line 42",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2115,10 +2379,12 @@
   {
     "id":"Line 43",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2131,10 +2397,12 @@
   {
     "id":"Line 44",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2147,10 +2415,12 @@
   {
     "id":"Line 45",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2163,10 +2433,12 @@
   {
     "id":"Line 46",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2179,10 +2451,12 @@
   {
     "id":"Line 47",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2195,10 +2469,12 @@
   {
     "id":"Line 48",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,0,255
+          0,0,0,140
         ]
       }
     },
@@ -2211,10 +2487,12 @@
   {
     "id":"Line 49",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2227,10 +2505,12 @@
   {
     "id":"Line 50",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2243,10 +2523,12 @@
   {
     "id":"Line 51",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2259,10 +2541,12 @@
   {
     "id":"Line 52",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2275,10 +2559,12 @@
   {
     "id":"Line 53",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2291,10 +2577,12 @@
   {
     "id":"Line 54",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2307,10 +2595,12 @@
   {
     "id":"Line 55",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2323,10 +2613,12 @@
   {
     "id":"Line 56",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2339,10 +2631,12 @@
   {
     "id":"Line 57",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2355,10 +2649,12 @@
   {
     "id":"Line 58",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2371,10 +2667,12 @@
   {
     "id":"Line 59",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2387,10 +2685,12 @@
   {
     "id":"Line 60",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2403,10 +2703,12 @@
   {
     "id":"Line 61",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2419,10 +2721,12 @@
   {
     "id":"Line 62",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2435,10 +2739,12 @@
   {
     "id":"Line 63",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2451,10 +2757,12 @@
   {
     "id":"Line 64",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2467,10 +2775,12 @@
   {
     "id":"Line 65",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2483,10 +2793,12 @@
   {
     "id":"Line 66",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2499,10 +2811,12 @@
   {
     "id":"Line 67",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2515,10 +2829,12 @@
   {
     "id":"Line 68",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2531,10 +2847,12 @@
   {
     "id":"Line 69",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2547,10 +2865,12 @@
   {
     "id":"Line 70",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2563,10 +2883,12 @@
   {
     "id":"Line 71",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2579,10 +2901,12 @@
   {
     "id":"Line 72",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2595,10 +2919,12 @@
   {
     "id":"Line 73",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2611,10 +2937,12 @@
   {
     "id":"Line 74",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2627,10 +2955,12 @@
   {
     "id":"Line 75",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2643,10 +2973,12 @@
   {
     "id":"Line 76",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,51,255,255
+          51,51,255,140
         ]
       }
     },
@@ -2659,10 +2991,12 @@
   {
     "id":"Line 77",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2675,10 +3009,12 @@
   {
     "id":"Line 78",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2691,10 +3027,12 @@
   {
     "id":"Line 79",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2707,10 +3045,12 @@
   {
     "id":"Line 80",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2723,10 +3063,12 @@
   {
     "id":"Line 5",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2739,10 +3081,12 @@
   {
     "id":"Line 6",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2755,10 +3099,12 @@
   {
     "id":"Line 7",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2771,10 +3117,12 @@
   {
     "id":"Line 8",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2787,10 +3135,12 @@
   {
     "id":"Line 9",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2803,10 +3153,12 @@
   {
     "id":"Line 10",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2819,10 +3171,12 @@
   {
     "id":"Line 11",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2835,10 +3189,12 @@
   {
     "id":"Line 12",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2851,10 +3207,12 @@
   {
     "id":"Line 13",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2867,10 +3225,12 @@
   {
     "id":"Line 14",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2883,10 +3243,12 @@
   {
     "id":"Line 15",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          0,0,255,255
+          0,0,255,140
         ]
       }
     },
@@ -2899,10 +3261,12 @@
   {
     "id":"Line 16",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -2915,10 +3279,12 @@
   {
     "id":"Line 17",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -2931,10 +3297,12 @@
   {
     "id":"Line 18",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -2947,10 +3315,12 @@
   {
     "id":"Line 19",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -2963,10 +3333,12 @@
   {
     "id":"Line 20",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -2979,10 +3351,12 @@
   {
     "id":"Line 21",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -2995,10 +3369,12 @@
   {
     "id":"Line 22",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3011,10 +3387,12 @@
   {
     "id":"Line 23",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3027,10 +3405,12 @@
   {
     "id":"Line 24",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3043,10 +3423,12 @@
   {
     "id":"Line 25",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3059,10 +3441,12 @@
   {
     "id":"Line 26",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3075,10 +3459,12 @@
   {
     "id":"Line 27",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3091,10 +3477,12 @@
   {
     "id":"Line 28",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3107,10 +3495,12 @@
   {
     "id":"Line 29",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3123,10 +3513,12 @@
   {
     "id":"Line 30",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3139,10 +3531,12 @@
   {
     "id":"Line 31",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3155,10 +3549,12 @@
   {
     "id":"Line 32",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3171,10 +3567,12 @@
   {
     "id":"Line 33",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3187,10 +3585,12 @@
   {
     "id":"Line 34",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3203,10 +3603,12 @@
   {
     "id":"Line 35",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3219,10 +3621,12 @@
   {
     "id":"Line 36",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3235,10 +3639,12 @@
   {
     "id":"Line 37",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3251,10 +3657,12 @@
   {
     "id":"Line 38",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3267,10 +3675,12 @@
   {
     "id":"Line 39",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
@@ -3283,10 +3693,12 @@
   {
     "id":"Line 40",
     "polyline":{
-      "width":6.0,
+      "width":5.0,
+      "outlineWidth":2.0,
+      "outlineColor":{"rgba":[255,255,255,140]},
       "color":{
         "rgba":[
-          51,204,0,255
+          51,204,0,140
         ]
       }
     },
