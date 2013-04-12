@@ -134,7 +134,13 @@ define([
         return Quaternion.fromRotationMatrix(viewMat);
     }
 
+    var transitionInProgress = false;
     function flyToTime(jdate) {
+        if(transitionInProgress) {
+            return;
+        }
+
+        transitionInProgress = true;
         disableInput(cesiumWidget.scene);
         cesiumWidget.clock.shouldAnimate = false;
 
@@ -195,6 +201,7 @@ define([
                     enableInput(cesiumWidget.scene);
                     cesiumWidget.clock.shouldAnimate = true;
                     cesiumWidget.clock.currentTime = jdate;
+                    transitionInProgress = false;
                 }
             };
 
@@ -295,7 +302,6 @@ define([
             try {
                 var jdate = JulianDate.fromIso8601( selectedObject.dynamicObject.id );
                 flyToTime(jdate);
-                //cesiumWidget.clock.currentTime = jdate;
             } catch(e) {
             }
         }
