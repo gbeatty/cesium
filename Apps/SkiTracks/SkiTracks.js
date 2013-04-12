@@ -12,6 +12,7 @@ define([
         'DynamicScene/DynamicObjectCollection',
         'DynamicScene/processCzml',
         'DynamicScene/VisualizerCollection',
+        'Scene/Billboard',
         'Scene/BingMapsImageryProvider',
         'Scene/Camera',
         'Scene/CameraFlightPath',
@@ -54,6 +55,7 @@ define([
         DynamicObjectCollection,
         processCzml,
         VisualizerCollection,
+        Billboard,
         BingMapsImageryProvider,
         Camera,
         CameraFlightPath,
@@ -148,7 +150,10 @@ define([
         var initialCameraPositionENU = camera.position;
         var initialCameraPositionWC = camera.getPositionWC();
         var initialObjectPositionWC = pathObject.position.getValueCartesian(cesiumWidget.clock.currentTime);
+
         var cameraOffsetWC = initialCameraPositionWC.subtract(initialObjectPositionWC);
+        cameraOffsetWC = cameraOffsetWC.normalize().multiplyByScalar(75);
+        var finalCameraPositionENU = initialCameraPositionENU.normalize().multiplyByScalar(75);
         var finalObjectPositionWC = pathObject.position.getValueCartesian(jdate);
         var finalCameraPositionWC = finalObjectPositionWC.add(cameraOffsetWC);
 
@@ -194,7 +199,7 @@ define([
                 onUpdate : updateCamera,
                 onComplete : function() {
                     camera.transform = finalRefFrame;
-                    camera.position = initialCameraPositionENU;
+                    camera.position = finalCameraPositionENU;
                     camera.direction = camera.position.negate().normalize();
                     camera.right = camera.direction.cross(Cartesian3.UNIT_Z).normalize();
                     camera.up = camera.right.cross(camera.direction).normalize();
@@ -360,7 +365,7 @@ define([
         timelineWidget.addEventListener('settime',
             function onTimelineScrub(e) {
                 cesiumWidget.clock.currentTime = e.timeJulian;
-                cesiumWidget.clock.shouldAnimate = false;
+                cesiumWidget.clock.shouldAnimate = true;
             }, false
         );
 
@@ -400,6 +405,69 @@ define([
 
         var handler = new ScreenSpaceEventHandler(cesiumWidget.scene._canvas);
         handler.setInputAction(_handleLeftClick, ScreenSpaceEventType.LEFT_CLICK);
+
+        var animation;
+        var animatingBillboard;
+        var updateAnimation = function(value) {
+            animatingBillboard.setScale(value.scale);
+        };
+
+        var animationComplete = function() {
+            animation = undefined;
+            animatingBillboard.highlighted = true;
+        };
+
+        var finalAnimationComplete = function() {
+            animation = undefined;
+            animatingBillboard.highlighted = false;
+            animatingBillboard = undefined;
+        };
+
+        // If the mouse is over the billboard, change its scale
+        handler.setInputAction(function (movement) {
+            var scene = cesiumWidget.scene;
+            var pickedObject = scene.pick(movement.endPosition);
+            if(animatingBillboard === undefined &&
+                pickedObject instanceof Billboard &&
+                pickedObject.dynamicObject.id !== "path" &&
+                !pickedObject.highlighted) {
+
+                // on enter
+                animatingBillboard = pickedObject;
+                animation = animation || scene.getAnimations().add({
+                    onUpdate : updateAnimation,
+                    onComplete : animationComplete,
+                    startValue : {
+                        scale : animatingBillboard.getScale()
+                    },
+                    stopValue : {
+                        scale : 1.5
+                    },
+                    duration : 200,
+                    easingFunction : Tween.Easing.Quartic.Out
+                });
+            }
+            else if (animatingBillboard !== undefined &&
+                    pickedObject !== animatingBillboard &&
+                    animatingBillboard.highlighted) {
+                // on exit
+                animation = animation || scene.getAnimations().add({
+                    onUpdate : updateAnimation,
+                    onComplete : finalAnimationComplete,
+                    startValue : {
+                        scale : animatingBillboard.getScale()
+                    },
+                    stopValue : {
+                        scale : 1.0
+                    },
+                    duration : 200,
+                    easingFunction : Tween.Easing.Quartic.Out
+                });
+            }
+
+        },
+        ScreenSpaceEventType.MOUSE_MOVE);
+
 
 
 

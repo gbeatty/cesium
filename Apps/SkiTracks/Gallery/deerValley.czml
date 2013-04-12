@@ -230,7 +230,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -266,7 +266,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -302,7 +302,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -338,7 +338,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -374,7 +374,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -410,7 +410,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -446,7 +446,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -482,7 +482,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -518,7 +518,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -554,7 +554,7 @@
       ]
     },
     "billboard":{
-      "image":"Icons/Vid1.png",
+      "image":"Icons/vid2.png",
       "verticalOrigin":"BOTTOM"
     }
   },
@@ -579,9 +579,10 @@
           250,25,115,255
         ]
       },
-      "width":4.0,
+      "width":6.0,
+      "outlineWidth":2.0,
       "leadTime":0.0,
-	 "trailTime":120.0
+	 "trailTime":400.0
     },
     "availability":"2013-02-01T20:00:50Z/2013-02-01T23:09:00Z",
     "position":{
