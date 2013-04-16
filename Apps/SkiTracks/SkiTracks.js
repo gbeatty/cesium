@@ -24,6 +24,7 @@ define([
         'Widgets/Animation/Animation',
         'Widgets/Animation/AnimationViewModel',
         'Widgets/Timeline/Timeline',
+        'Core/Cartesian2',
         'Core/Cartesian3',
         'Core/Cartographic',
         'Core/ClockRange',
@@ -67,6 +68,7 @@ define([
         Animation,
         AnimationViewModel,
         Timeline,
+        Cartesian2,
         Cartesian3,
         Cartographic,
         ClockRange,
@@ -348,6 +350,8 @@ define([
         });
         cesiumWidget.centralBody.depthTestAgainstTerrain = true;
         cesiumWidget.clock.onTick.addEventListener(updateData);
+
+        cesiumWidget.centralBody.logoOffset = new Cartesian2(300, 30);
 
         // initialize the animation controller
         var clockViewModel = new ClockViewModel(cesiumWidget.clock);
