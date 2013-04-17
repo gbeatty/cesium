@@ -354,8 +354,8 @@
 		</antcall>
 
 		<antcall target="buildApp">
-			<param name="app.path" value="Apps/CesiumViewer" />
-			<param name="app.name" value="CesiumViewer" />
+			<param name="app.path" value="Apps/SkiTracks" />
+			<param name="app.name" value="SkiTracks" />
 		</antcall>
 	</target>
 
@@ -474,6 +474,10 @@
 		<!-- Copy the r.js built versions of the worker files over top of the dojo built ones -->
 		<copy todir="${appOutputDirectory}/Workers" overwrite="true">
 			<fileset dir="${buildOutputDirectory}/Workers" includes="*.js" />
+		</copy>
+        
+        <copy todir="${appOutputDirectory}">
+			<fileset dir="${app.path}" includes="Gallery/**,jquery-ui*/**" />
 		</copy>
 	</target>
 </project>
