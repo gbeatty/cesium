@@ -1,6 +1,6 @@
 [submodule "Apps/SkiTracks/Gallery/SkiTracksVideos"]
 	path = Apps/SkiTracks/Gallery/SkiTracksVideos
-	url = git@github.com:gbeatty/SkiTracksVideos.git
+	url = https://github.com/gbeatty/SkiTracksVideos.git
 [submodule "Apps/SkiTracks/Gallery/SlopeShadeTiles"]
 	path = Apps/SkiTracks/Gallery/SlopeShadeTiles
 	url = https://github.com/gbeatty/SlopeShadeTiles.git
