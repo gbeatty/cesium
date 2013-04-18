@@ -332,6 +332,12 @@ define([
 
         checkForChromeFrame();
 
+        var isChrome = window.chrome;
+        if(!isChrome) {
+            $('#errorDialog').dialog("open");
+            return;
+        }
+
         document.addEventListener("videoLoading", function() {
             cesiumWidget.clock.shouldAnimate = false;
             setLoading(true);

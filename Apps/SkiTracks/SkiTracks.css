@@ -28,12 +28,35 @@
     background-image: url(Gallery/ajax-loader.gif);
 }
 
+.agi-logo  {
+    display: block;
+    position: absolute;
+    bottom: 35px;
+    right: 5px;
+    width: 85px;
+    height: 35px;
+    background: url('Gallery/Icons/AGI logo.png');
+    background-size: 100% 100%;
+}
+
+.chrome-logo  {
+    display: block;
+    width: 90px;
+    height: 35px;
+    background: url('Gallery/Icons/chrome_logo_2x.png');
+    background-size: 100% 100%;
+}
+
 .cesium-widget-logo {
     bottom: 35px;
     left: 170px;
     text-decoration: none;
     width: 118px;
     height: 26px;
+}
+
+.skiTracks-errorDialog {
+    position: absolute;
 }
 
 .skiTracks-slopeIcon {
