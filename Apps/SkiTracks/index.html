@@ -9,7 +9,7 @@
 <!-- Make the application take up the full browser screen and disable user scaling-->
 <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 
-<title>Ski Tracks</title>
+<title>Powder Tracks</title>
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="SkiTracks.css" media="screen">
 <link rel="stylesheet" href="jquery-ui-1.10.2.custom/css/dark-hive/jquery-ui-1.10.2.custom.css">
@@ -28,9 +28,16 @@
             autoOpen: false
        });
        
+       // initialize help dialog
+       $( "#helpDialog" ).dialog({
+            modal: true,
+            width: 'auto',
+            autoOpen: false
+       });
+       
        // initialize accordion
        $( "#liveData" ).accordion({
-           show: false
+           collapsible: true
        });
   
        // initialize translucency slider
@@ -49,6 +56,10 @@
         <p>SkiTracks currently only runs in Google Chrome browser. Please install Chrome.</p>
         <a href="http://www.google.com/chrome" target="_blank" class="chrome-logo"></a>
         
+    </div>
+    
+    <div id="helpDialog" title="Powder Tracks Instructions" class="skiTracks-errorDialog">
+        <img id="helpImage" src="Gallery/Icons/headsup_1.png"/>
     </div>
     
     <div id="cesiumContainer" >

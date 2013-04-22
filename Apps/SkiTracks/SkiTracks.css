@@ -47,6 +47,14 @@
     background-size: 100% 100%;
 }
 
+.help-icon  {
+    display: block;
+    width: auto;
+    height: 200px;
+    background: url('Gallery/Icons/headsup_1.png');
+    background-size: 100% 100%;
+}
+
 .cesium-widget-logo {
     bottom: 35px;
     left: 170px;

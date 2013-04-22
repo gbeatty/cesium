@@ -333,13 +333,16 @@ define([
 
         parser.parse();
 
-        checkForChromeFrame();
+        //checkForChromeFrame();
 
         var isChrome = window.chrome;
         if(!isChrome) {
             $('#errorDialog').dialog("open");
             return;
         }
+
+        // help dialog
+        $('#helpDialog').dialog("open");
 
         document.addEventListener("videoLoading", function() {
             cesiumWidget.clock.shouldAnimate = false;
