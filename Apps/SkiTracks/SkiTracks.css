@@ -67,6 +67,16 @@
     position: absolute;
 }
 
+.social-buttons {
+    position: absolute;
+    right: 210px;
+    horizontal
+}
+
+.social-button-inline {
+    display: inline-block;
+}
+
 .skiTracks-slopeIcon {
 
 	background-image: url('Gallery/Icons/tim2.png');
