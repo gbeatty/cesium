@@ -504,7 +504,7 @@
 			<fileset dir="${buildOutputDirectory}/Workers" includes="*.js" />
 		</copy>
         
-        <copy todir="${appOutputDirectory}">
+        <copy todir="${appOutputDirectory}" preservelastmodified="true">
 			<fileset dir="${app.path}" includes="Gallery/**,jquery-ui*/**" />
 		</copy>
 	</target>

@@ -10,6 +10,22 @@
 <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
 
 <title>Powder Tracks</title>
+<meta property="og:description" content="Powder Tracks is an interactive downhill skiing application that combines GPS tracking data with synchronized videos." />
+<meta property="og:image" content="http://cesium.agi.com/powdertracks/Gallery/PowderTracksThumbnail.png" />
+
+<script type="text/javascript">
+    if (window.location.host === "cesium.agi.com") {
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-30040272-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    }
+</script>
+
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 <link rel="stylesheet" href="SkiTracks.css" media="screen">
 <link rel="stylesheet" href="jquery-ui-1.10.2.custom/css/dark-hive/jquery-ui-1.10.2.custom.css">
@@ -53,7 +69,7 @@
 <body style="margin:0px; background: #000;">
 
     <div id="errorDialog" title="Install Chrome" class="skiTracks-errorDialog">
-        <p>SkiTracks currently only runs in Google Chrome browser. Please install Chrome.</p>
+        <p>Powder Tracks currently only runs in Google Chrome browser. Please install Chrome.</p>
         <a href="http://www.google.com/chrome" target="_blank" class="chrome-logo"></a>
         
     </div>
@@ -74,6 +90,19 @@
             </div>    
         </div>
         
+        <div id="social" class="social-buttons">
+            <div class="social-button-inline">
+                <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://cesium.agi.com/powdertracks">Tweet</a>
+            </div>
+            <div class="social-button-inline">
+                <div class="g-plusone" data-size="medium" data-href="http://cesium.agi.com/powdertracks"></div>
+            </div>
+            <div class="social-button-inline">
+                <div class="fb-like" data-href="http://cesium.agi.com/powdertracks" data-send="false" data-layout="button_count" data-show-faces="false"></div>
+            </div>
+        </div>
+        
+        
         <div style="position:absolute; right:10px">
 	        <button id="slopeOverlayButton" class="skiTracks-slopeIcon"></button>
 	        <div id="translucencySlider" style="margin:5px"></div>
@@ -89,4 +118,36 @@
     </div>
     
 </body>
+
+<script>
+    // Social Media Buttons
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+            return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "http://connect.facebook.net/en_US/all.js#xfbml=1";
+        fjs.parentNode.insertBefore(js, fjs);
+    } (document, 'script', 'facebook-jssdk'));
+
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (!d.getElementById(id)) {
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//platform.twitter.com/widgets.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }
+    })(document, "script", "twitter-wjs");
+
+    (function () {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
+
+</script>
+
 </html>
