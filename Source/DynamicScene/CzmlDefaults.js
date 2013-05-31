@@ -13,6 +13,7 @@ define([
         './DynamicPolyline',
         './DynamicPyramid',
         './DynamicScreenOverlay',
+        './DynamicVector',
         './DynamicBillboardVisualizer',
         './DynamicEllipsoidVisualizer',
         './DynamicConeVisualizerUsingCustomSensor', //CZML_TODO Replace with './DynamicConeVisualizer', once ComplexConicSensor works.
@@ -22,7 +23,8 @@ define([
         './DynamicPolygonVisualizer',
         './DynamicPolylineVisualizer',
         './DynamicPyramidVisualizer',
-        './DynamicScreenOverlayVisualizer'
+        './DynamicScreenOverlayVisualizer',
+        './DynamicVectorVisualizer'
     ], function(
         DynamicObject,
         DynamicBillboard,
@@ -37,6 +39,7 @@ define([
         DynamicPolyline,
         DynamicPyramid,
         DynamicScreenOverlay,
+        DynamicVector,
         DynamicBillboardVisualizer,
         DynamicEllipsoidVisualizer,
         DynamicConeVisualizer,
@@ -46,7 +49,8 @@ define([
         DynamicPolygonVisualizer,
         DynamicPolylineVisualizer,
         DynamicPyramidVisualizer,
-        DynamicScreenOverlayVisualizer) {
+        DynamicScreenOverlayVisualizer,
+        DynamicVectorVisualizer) {
     "use strict";
 
     /**
@@ -81,6 +85,7 @@ define([
                     DynamicPolyline.processCzmlPacket,
                     DynamicPyramid.processCzmlPacket,
                     DynamicScreenOverlay.processCzmlPacket,
+                    DynamicVector.processCzmlPacket,
                     DynamicObject.processCzmlPacketPosition,
                     DynamicObject.processCzmlPacketViewFrom,
                     DynamicObject.processCzmlPacketOrientation,
@@ -105,6 +110,7 @@ define([
                    DynamicPolyline.mergeProperties,
                    DynamicPyramid.mergeProperties,
                    DynamicScreenOverlay.mergeProperties,
+                   DynamicVector.mergeProperties,
                    DynamicObject.mergeProperties],
 
         /**
@@ -124,6 +130,7 @@ define([
                     DynamicPolyline.undefineProperties,
                     DynamicPyramid.undefineProperties,
                     DynamicScreenOverlay.undefineProperties,
+                    DynamicVector.undefineProperties,
                     DynamicObject.undefineProperties,
                     DynamicClock.undefineProperties],
 
@@ -145,6 +152,7 @@ define([
                     new DynamicPolylineVisualizer(scene),
                     new DynamicPyramidVisualizer(scene),
                     new DynamicPathVisualizer(scene),
+                    new DynamicVectorVisualizer(scene),
                     new DynamicScreenOverlayVisualizer(scene)];
         }
     };

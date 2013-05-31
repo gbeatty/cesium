@@ -1,6 +1,5 @@
 /*global define*/
 define([
-        '../Core/JulianDate',
         '../Core/TimeInterval',
         '../Core/TimeIntervalCollection',
         '../Core/Iso8601',
@@ -9,7 +8,6 @@ define([
         './DynamicGridMaterial',
         './DynamicVideoMaterial'
     ], function(
-        JulianDate,
         TimeInterval,
         TimeIntervalCollection,
         Iso8601,
