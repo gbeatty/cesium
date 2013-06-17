@@ -1,12 +1,5 @@
 /*global define*/
 define([
-        'dojo/_base/window',
-        'dojo/dom-class',
-        'dojo/io-query',
-        'dojo/on',
-        'dojo/parser',
-        'dojo/ready',
-        'dijit/form/ToggleButton',
         'DynamicScene/CompositeDynamicObjectCollection',
         'DynamicScene/DynamicObjectView',
         'DynamicScene/DynamicObjectCollection',
@@ -19,7 +12,6 @@ define([
         'Scene/CesiumTerrainProvider',
         'Scene/TileMapServiceImageryProvider',
         'Widgets/ClockViewModel',
-        'Widgets/Dojo/checkForChromeFrame',
         'Widgets/CesiumWidget/CesiumWidget',
         'Widgets/Animation/Animation',
         'Widgets/Animation/AnimationViewModel',
@@ -44,13 +36,6 @@ define([
         'ThirdParty/knockout',
         'ThirdParty/Tween'
     ], function(
-        win,
-        domClass,
-        ioQuery,
-        on,
-        parser,
-        ready,
-        ToggleButton,
         CompositeDynamicObjectCollection,
         DynamicObjectView,
         DynamicObjectCollection,
@@ -63,7 +48,6 @@ define([
         CesiumTerrainProvider,
         TileMapServiceImageryProvider,
         ClockViewModel,
-        checkForChromeFrame,
         CesiumWidget,
         Animation,
         AnimationViewModel,
@@ -328,12 +312,8 @@ define([
     var animationWidget;
     var cesiumWidget;
     var trailMapCzml;
-    ready(function() {
+    $( document ).ready(function() {
         setLoading(true);
-
-        parser.parse();
-
-        //checkForChromeFrame();
 
         var isChrome = window.chrome;
         if(!isChrome) {
@@ -519,6 +499,5 @@ define([
             trailsVisualizers = VisualizerCollection.createCzmlStandardCollection(cesiumWidget.scene, trailMapCzml);
         });
 
-        domClass.remove(win.body(), 'loading');
     });
 });

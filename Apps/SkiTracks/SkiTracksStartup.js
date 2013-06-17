@@ -2,12 +2,6 @@
 require({
     baseUrl : '../..',
     packages : [{
-        name : 'dojo',
-        location : 'ThirdParty/dojo-release-1.8.3-src/dojo'
-    }, {
-        name : 'dijit',
-        location : 'ThirdParty/dojo-release-1.8.3-src/dijit'
-    }, {
         name : 'Assets',
         location : 'Source/Assets'
     }, {
