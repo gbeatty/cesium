@@ -88,7 +88,6 @@ define([
             context2D.fillText(text, 0, y);
         }
 
-
         return canvas;
     };
 
