@@ -421,66 +421,66 @@
 			<param name="build.minification" value="true" />
 		</antcall>
 
-		<antcall target="buildCesiumViewer" />
+		<antcall target="buildSkiTracks" />
 	</target>
 
-	<target name="buildCesiumViewer" depends="setNodePath">
-		<property name="cesiumViewerDirectory" location="Apps/CesiumViewer" />
-		<property name="cesiumViewerOutputDirectory" location="${buildDirectory}/Apps/CesiumViewer" />
-		<mkdir dir="${cesiumViewerOutputDirectory}" />
-		<property name="relativeCesiumViewerOutputDirectory" location="${cesiumViewerOutputDirectory}" relative="true" basedir="${cesiumViewerDirectory}" />
+	<target name="buildSkiTracks" depends="setNodePath">
+		<property name="SkiTracksDirectory" location="Apps/SkiTracks" />
+		<property name="SkiTracksOutputDirectory" location="${buildDirectory}/Apps/SkiTracks" />
+		<mkdir dir="${SkiTracksOutputDirectory}" />
+		<property name="relativeSkiTracksOutputDirectory" location="${SkiTracksOutputDirectory}" relative="true" basedir="${SkiTracksDirectory}" />
 
 		<!-- mainConfigFile is relative to the build.js file -->
-		<exec executable="${nodePath}" dir="${cesiumViewerDirectory}">
+		<exec executable="${nodePath}" dir="${SkiTracksDirectory}">
 			<arg value="${rjsPath}" />
 			<arg value="-o" />
 			<arg value="${rjsOptions}" />
 			<arg value="optimize=uglify2" />
-			<arg value="mainConfigFile=../Apps/CesiumViewer/CesiumViewerStartup.js" />
-			<arg value="name=CesiumViewer/CesiumViewerStartup" />
-			<arg value="out=${relativeCesiumViewerOutputDirectory}/CesiumViewerStartup.js" />
+			<arg value="mainConfigFile=../Apps/SkiTracks/SkiTracksStartup.js" />
+			<arg value="name=SkiTracks/SkiTracksStartup" />
+			<arg value="out=${relativeSkiTracksOutputDirectory}/SkiTracksStartup.js" />
 		</exec>
 
-		<exec executable="${nodePath}" dir="${cesiumViewerDirectory}">
+		<exec executable="${nodePath}" dir="${SkiTracksDirectory}">
 			<arg value="${rjsPath}" />
 			<arg value="-o" />
 			<arg value="${rjsOptions}" />
-			<arg value="cssIn=CesiumViewer.css" />
-			<arg value="out=${relativeCesiumViewerOutputDirectory}/CesiumViewer.css" />
+			<arg value="cssIn=SkiTracks.css" />
+			<arg value="out=${relativeSkiTracksOutputDirectory}/SkiTracks.css" />
 		</exec>
 
 		<!-- Copy other app files -->
-		<copy todir="${cesiumViewerOutputDirectory}">
-			<fileset dir="${cesiumViewerDirectory}">
+		<copy todir="${SkiTracksOutputDirectory}">
+			<fileset dir="${SkiTracksDirectory}">
 				<exclude name="*.js" />
 				<exclude name="*.css" />
 			</fileset>
 		</copy>
 
 		<!-- Copy RequireJS -->
-		<copy file="${requirejsPath}/require.min.js" tofile="${cesiumViewerOutputDirectory}/require.js" />
+		<copy file="${requirejsPath}/require.min.js" tofile="${SkiTracksOutputDirectory}/require.js" />
 
 		<!-- Copy the built Cesium assets and workers -->
-		<copy todir="${cesiumViewerOutputDirectory}">
+		<copy todir="${SkiTracksOutputDirectory}">
 			<fileset dir="${buildOutputDirectory}" excludes="Cesium.js" />
 		</copy>
 
 		<!-- rewrite the paths in the configuration -->
-		<replace dir="${cesiumViewerOutputDirectory}" summary="true">
+		<replace dir="${SkiTracksOutputDirectory}" summary="true">
 			<replacefilter token="../../Source" value="." />
-			<replacefilter token="../Apps/CesiumViewer" value="." />
+			<replacefilter token="../Apps/SkiTracks" value="." />
 			<replacefilter token="../ThirdParty/requirejs-2.1.6" value="." />
-			<include name="CesiumViewerStartup.js" />
+			<include name="SkiTracksStartup.js" />
 		</replace>
 
 		<!-- rewrite the paths in the HTML -->
-		<replace dir="${cesiumViewerOutputDirectory}" summary="true">
+		<replace dir="${SkiTracksOutputDirectory}" summary="true">
 			<replacefilter token="../../ThirdParty/requirejs-2.1.6" value="." />
 			<include name="index.html" />
 		</replace>
 
 		<!-- rewrite the paths in the CSS -->
-		<replace dir="${cesiumViewerOutputDirectory}" summary="true">
+		<replace dir="${SkiTracksOutputDirectory}" summary="true">
 			<replacefilter token="../../Source/" value="" />
 			<include name="*.css" />
 		</replace>

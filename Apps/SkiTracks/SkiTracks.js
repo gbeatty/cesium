@@ -348,8 +348,8 @@ define([
         // initialize the animation controller
         var clockViewModel = new ClockViewModel(cesiumWidget.clock);
         clockViewModel.owner = this;
-        clockViewModel.shouldAnimate(true);
-        clockViewModel.clockRange(ClockRange.LOOP_STOP);
+        clockViewModel.shouldAnimate = true;
+        clockViewModel.clockRange = ClockRange.LOOP_STOP;
         var animationViewModel = new AnimationViewModel(clockViewModel);
         animationViewModel.snapToTicks = knockout.observable(true);
         animationViewModel.setShuttleRingTicks([0.0, 0.5, 1, 2, 3, 5, 10, 20, 50, 100]);
