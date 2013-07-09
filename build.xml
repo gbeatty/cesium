@@ -450,7 +450,7 @@
 		</exec>
 
 		<!-- Copy other app files -->
-		<copy todir="${SkiTracksOutputDirectory}">
+		<copy todir="${SkiTracksOutputDirectory}" preservelastmodified="true">
 			<fileset dir="${SkiTracksDirectory}">
 				<exclude name="*.js" />
 				<exclude name="*.css" />
@@ -484,9 +484,5 @@
 			<replacefilter token="../../Source/" value="" />
 			<include name="*.css" />
 		</replace>
-        
-        <copy todir="${appOutputDirectory}" preservelastmodified="true">
-			<fileset dir="${app.path}" includes="Gallery/**,jquery-ui*/**" />
-		</copy>
 	</target>
 </project>
