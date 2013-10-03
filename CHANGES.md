@@ -74,6 +74,7 @@ Beta Releases
 
         return primitives.add(new Primitive(/* ... */));
 * Fixed bug in triangulation that fails on complex polygons. Instead, it makes a "best effort" to render what it can.
+* Added `Scene.drillPick` to return list of objects each containing 1 primitive at a screen space position.
 
 ### b20 - 2013-09-03
 
