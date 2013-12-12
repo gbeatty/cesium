@@ -1451,6 +1451,7 @@ define([
                 blendColor : new Color(0.0, 1.0, 0.699, 1.0),
                 specularMap : Material.DefaultImageId,
                 normalMap : Material.DefaultImageId,
+                foamTexture : Material.DefaultImageId,
                 frequency : 10.0,
                 animationSpeed : 0.01,
                 amplitude : 1.0,

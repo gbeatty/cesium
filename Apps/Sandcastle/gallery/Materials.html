@@ -233,10 +233,11 @@ require(['Cesium'], function(Cesium) {
                 type : 'Water',
                 uniforms : {
                     specularMap: '../images/earthspec1k.jpg',
-                    normalMap: require.toUrl('Assets/Textures/waterNormals.jpg'),
-                    frequency: 10000.0,
-                    animationSpeed: 0.01,
-                    amplitude: 1.0
+                    normalMap: require.toUrl('Assets/Textures/waterRipplesNormals.jpg'),
+                    foamTexture: require.toUrl('Assets/Textures/waterFoam.jpg'),
+                    frequency: 1000.0,
+                    animationSpeed: 0.00003,
+                    amplitude: 0.0005
                 }
             }
         });
