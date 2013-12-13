@@ -195,7 +195,7 @@ vec4 computeWaterColor(vec3 positionEyeCoordinates, vec2 textureCoordinates, mat
     float waveIntensity = waveFade(70000.0, 1000000.0, positionToEyeECLength);
 
 #ifdef SHOW_OCEAN_WAVES
-    vec4 noise = czm_getWaterNoise(u_oceanNormalMap, textureCoordinates * oceanFrequency, time, 0.0);
+    vec4 noise = czm_getWaterNoise(u_oceanNormalMap, textureCoordinates * oceanFrequency, time);
     vec3 normalTangentSpace = noise.xyz * vec3(1.0, 1.0, (1.0 / oceanAmplitude));
     
     // fade out the normal perturbation as we move farther from the water surface

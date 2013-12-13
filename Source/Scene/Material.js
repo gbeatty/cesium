@@ -271,6 +271,9 @@ define([
      *      <li><code>normalMap</code>:  Normal map for water normal perturbation.</li>
      *      <li><code>animationSpeed</code>:  Number that controls the animations speed of the water.</li>
      *      <li><code>amplitude</code>:  Number that controls the amplitude of water waves.</li>
+     *      <li><code>waveSteepness</code>:  Steepness of generated waves. Values can range from 0.0 to 10.0 with 0 being smooth rolling waves and 10 being very steep waves.</li>
+     *      <li><code>waveDirection</code>:  The direction of the generated waves in texture coordinates.</li>
+     *      <li><code>surfaceRoughness</code>:  Value representing the roughness of the water surface. 0 is completely smooth with positive values increasing the roughness..</li>
      *      <li><code>specularIntensity</code>:  Number that controls the intensity of specular reflections.</li>
      *  </ul>
      *  <li>RimLighting</li>
@@ -1455,6 +1458,9 @@ define([
                 frequency : 10.0,
                 animationSpeed : 0.01,
                 amplitude : 1.0,
+                waveSteepness : 0.0,
+                waveDirection : new Cartesian2(1.0, 0.0),
+                surfaceRoughness : 1.0,
                 specularIntensity : 0.5,
                 fadeFactor : 1.0
             },

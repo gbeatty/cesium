@@ -235,9 +235,12 @@ require(['Cesium'], function(Cesium) {
                     specularMap: '../images/earthspec1k.jpg',
                     normalMap: require.toUrl('Assets/Textures/waterRipplesNormals.jpg'),
                     foamTexture: require.toUrl('Assets/Textures/waterFoam.jpg'),
-                    frequency: 1000.0,
-                    animationSpeed: 0.00003,
-                    amplitude: 0.0005
+                    frequency: 10000.0,
+                    animationSpeed: 0.000003,
+                    amplitude: 0.1,
+                    waveSteepness: 0.3,
+                    surfaceRoughness: 0.8,
+                    specularIntensity: 0.5
                 }
             }
         });
