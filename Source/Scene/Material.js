@@ -193,18 +193,17 @@ define([
      *  </ul>
      *  <li>Water</li>
      *  <ul>
-     *      <li><code>baseWaterColor</code>:  rgba color object base color of the water.</li>
-     *      <li><code>blendColor</code>:  rgba color object used when blending from water to non-water areas.</li>
-     *      <li><code>specularMap</code>:  Single channel texture used to indicate areas of water.</li>
-     *      <li><code>normalMap</code>:  Normal map for water normal perturbation.</li>
-     *      <li><code>frequency</code>:  Number that controls the number of waves.</li>
-     *      <li><code>normalMap</code>:  Normal map for water normal perturbation.</li>
-     *      <li><code>animationSpeed</code>:  Number that controls the animations speed of the water.</li>
-     *      <li><code>amplitude</code>:  Number that controls the amplitude of water waves.</li>
+     *      <li><code>waterBaseColor</code>:  rgba color object base color of the water.</li>
+     *      <li><code>waterBlendColor</code>:  rgba color object used when blending from water to non-water areas.</li>
+     *      <li><code>waterSpecularMap</code>:  Single channel texture used to indicate areas of water.</li>
+     *      <li><code>waterNormalMap</code>:  Normal map for water normal perturbation.</li>
+     *      <li><code>waterAnimationSpeed</code>:  Number that controls the animations speed of the water.</li>
+     *      <li><code>waveFrequency</code>:  Number that controls the number of waves.</li>
+     *      <li><code>waveAmplitude</code>:  Number that controls the amplitude of water waves.</li>
      *      <li><code>waveSteepness</code>:  Steepness of generated waves. Values can range from 0.0 to 10.0 with 0 being smooth rolling waves and 10 being very steep waves.</li>
      *      <li><code>waveDirection</code>:  The direction of the generated waves in texture coordinates.</li>
-     *      <li><code>surfaceRoughness</code>:  Value representing the roughness of the water surface. 0 is completely smooth with positive values increasing the roughness..</li>
-     *      <li><code>specularIntensity</code>:  Number that controls the intensity of specular reflections.</li>
+     *      <li><code>waterSurfaceRoughness</code>:  Value representing the roughness of the water surface. 0 is completely smooth with positive values increasing the roughness..</li>
+     *      <li><code>waterSpecularIntensity</code>:  Number that controls the intensity of specular reflections.</li>
      *  </ul>
      *  <li>RimLighting</li>
      *  <ul>
