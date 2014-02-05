@@ -175,15 +175,15 @@ require(['Cesium'], function(Cesium) {
             fabric : {
                 type : 'Water',
                 uniforms : {
-                    specularMap: '../images/earthspec1k.jpg',
-                    normalMap: require.toUrl('Assets/Textures/waterRipplesNormals.jpg'),
-                    foamTexture: require.toUrl('Assets/Textures/waterFoam.jpg'),
-                    frequency: 10000.0,
-                    animationSpeed: 0.000003,
-                    amplitude: 0.1,
+                    waterSpecularMap: '../images/earthspec1k.jpg',
+                    waterNormalMap: require.toUrl('Assets/Textures/waterRipplesNormals.jpg'),
+                    waterFoamTexture: require.toUrl('Assets/Textures/waterFoam.jpg'),
+                    waterAnimationSpeed: 0.000003,
+                    waveFrequency: 10000.0,
+                    waveAmplitude: 0.1,
                     waveSteepness: 0.3,
-                    surfaceRoughness: 0.8,
-                    specularIntensity: 0.5
+                    waterSurfaceRoughness: 0.8,
+                    waterSpecularIntensity: 0.5
                 }
             }
         });

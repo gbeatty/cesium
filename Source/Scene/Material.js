@@ -1239,25 +1239,25 @@ define([
         fabric : {
             type : Material.WaterType,
             uniforms : {
-                baseWaterColor : new Color(0.2, 0.3, 0.6, 1.0),
-                blendColor : new Color(0.0, 1.0, 0.699, 1.0),
-                specularMap : Material.DefaultImageId,
-                normalMap : Material.DefaultImageId,
-                foamTexture : Material.DefaultImageId,
-                frequency : 10.0,
-                animationSpeed : 0.01,
-                amplitude : 1.0,
+                waterBaseColor : new Color(0.2, 0.3, 0.6, 1.0),
+                waterBlendColor : new Color(0.0, 1.0, 0.699, 1.0),
+                waterSpecularMap : Material.DefaultImageId,
+                waterNormalMap : Material.DefaultImageId,
+                waterFoamTexture : Material.DefaultImageId,
+                waterAnimationSpeed : 0.01,
+                waveFrequency : 10.0,
+                waveAmplitude : 1.0,
                 waveSteepness : 0.0,
                 waveDirection : new Cartesian2(1.0, 0.0),
-                surfaceRoughness : 1.0,
-                specularIntensity : 0.5,
-                fadeFactor : 1.0
+                waterSurfaceRoughness : 1.0,
+                waterSpecularIntensity : 0.5,
+                waterFadeFactor : 1.0
             },
             source : WaterMaterial
         },
         translucent : function(material) {
             var uniforms = material.uniforms;
-            return (uniforms.baseWaterColor.alpha < 1.0) || (uniforms.blendColor.alpha < 0.0);
+            return (uniforms.waterBaseColor.alpha < 1.0) || (uniforms.waterBlendColor.alpha < 0.0);
         }
     });
 
