@@ -1,52 +1,56 @@
 /*global define*/
 define([
-        '../Core/defaultValue',
-        '../Core/destroyObject',
         '../Core/BoundingSphere',
         '../Core/Cartesian2',
         '../Core/Cartesian3',
         '../Core/Cartesian4',
-        '../Core/CubeMapEllipsoidTessellator',
+        '../Core/Cartographic',
+        '../Core/defined',
+        '../Core/destroyObject',
         '../Core/DeveloperError',
-        '../Core/Ellipsoid',
         '../Core/EllipsoidalOccluder',
+        '../Core/FeatureDetection',
+        '../Core/getTimestamp',
         '../Core/Intersect',
         '../Core/Matrix4',
-        '../Core/MeshFilters',
         '../Core/PrimitiveType',
         '../Core/Queue',
         '../Core/WebMercatorProjection',
         '../Renderer/DrawCommand',
+        '../Renderer/Pass',
         './ImageryLayer',
         './ImageryState',
         './SceneMode',
         './TerrainProvider',
         './TileReplacementQueue',
-        './TileState'
+        './TileState',
+        '../ThirdParty/when'
     ], function(
-        defaultValue,
-        destroyObject,
         BoundingSphere,
         Cartesian2,
         Cartesian3,
         Cartesian4,
-        CubeMapEllipsoidTessellator,
+        Cartographic,
+        defined,
+        destroyObject,
         DeveloperError,
-        Ellipsoid,
         EllipsoidalOccluder,
+        FeatureDetection,
+        getTimestamp,
         Intersect,
         Matrix4,
-        MeshFilters,
         PrimitiveType,
         Queue,
         WebMercatorProjection,
         DrawCommand,
+        Pass,
         ImageryLayer,
         ImageryState,
         SceneMode,
         TerrainProvider,
         TileReplacementQueue,
-        TileState) {
+        TileState,
+        when) {
     "use strict";
 
     /**
@@ -58,17 +62,18 @@ define([
      * @constructor
      * @private
      */
-    var CentralBodySurface = function(description) {
-        if (typeof description.terrainProvider === 'undefined') {
-            throw new DeveloperError('description.terrainProvider is required.');
+    var CentralBodySurface = function(options) {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(options.terrainProvider)) {
+            throw new DeveloperError('options.terrainProvider is required.');
         }
-        if (typeof description.imageryLayerCollection === 'undefined') {
-            throw new DeveloperError('description.imageryLayerCollection is required.');
+        if (!defined(options.imageryLayerCollection)) {
+            throw new DeveloperError('options.imageryLayerCollection is required.');
         }
+        //>>includeEnd('debug');
 
-        this._terrainProvider = description.terrainProvider;
-        this._imageryLayerCollection = description.imageryLayerCollection;
-        this._maxScreenSpaceError = defaultValue(description.maxScreenSpaceError, 2);
+        this._terrainProvider = options.terrainProvider;
+        this._imageryLayerCollection = options.imageryLayerCollection;
 
         this._imageryLayerCollection.layerAdded.addEventListener(CentralBodySurface.prototype._onLayerAdded, this);
         this._imageryLayerCollection.layerRemoved.addEventListener(CentralBodySurface.prototype._onLayerRemoved, this);
@@ -77,7 +82,7 @@ define([
 
         this._layerOrderChanged = false;
 
-        var terrainTilingScheme = this._terrainProvider.getTilingScheme();
+        var terrainTilingScheme = this._terrainProvider.tilingScheme;
         this._levelZeroTiles = undefined;
 
         this._tilesToRenderByTextureCount = [];
@@ -86,6 +91,7 @@ define([
         this._tileTraversalQueue = new Queue();
         this._tileLoadQueue = [];
         this._tileReplacementQueue = new TileReplacementQueue();
+        this._maximumScreenSpaceError = 2;
         this._tileCacheSize = 100;
 
         // The number of milliseconds each frame to allow for processing the tile load queue.
@@ -93,13 +99,13 @@ define([
         // even if this value is 0.
         this._loadQueueTimeSlice = 5;
 
-        var ellipsoid = terrainTilingScheme.getEllipsoid();
+        var ellipsoid = terrainTilingScheme.ellipsoid;
         this._ellipsoidalOccluder = new EllipsoidalOccluder(ellipsoid, Cartesian3.ZERO);
 
         this._debug = {
             enableDebugOutput : false,
+            wireframe : false,
             boundingSphereTile : undefined,
-            boundingSphereVA : undefined,
 
             maxDepth : 0,
             tilesVisited : 0,
@@ -119,12 +125,11 @@ define([
         };
     };
 
-    CentralBodySurface.prototype.update = function(context, frameState, colorCommandList, centralBodyUniformMap, shaderSet, renderState, projection) {
+    CentralBodySurface.prototype.update = function(context, frameState, commandList, centralBodyUniformMap, shaderSet, renderState, projection) {
         updateLayers(this);
         selectTilesForRendering(this, context, frameState);
         processTileLoadQueue(this, context, frameState);
-        createRenderCommandsForSelectedTiles(this, context, frameState, shaderSet, projection, centralBodyUniformMap, colorCommandList, renderState);
-        debugCreateRenderCommandsForTileBoundingSphere(this, context, frameState, centralBodyUniformMap, shaderSet, renderState, colorCommandList);
+        createRenderCommandsForSelectedTiles(this, context, frameState, shaderSet, projection, centralBodyUniformMap, commandList, renderState);
     };
 
     CentralBodySurface.prototype.getTerrainProvider = function() {
@@ -136,9 +141,11 @@ define([
             return;
         }
 
-        if (typeof terrainProvider === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(terrainProvider)) {
             throw new DeveloperError('terrainProvider is required.');
         }
+        //>>includeEnd('debug');
 
         this._terrainProvider = terrainProvider;
 
@@ -150,7 +157,7 @@ define([
 
         // Free and recreate the level zero tiles.
         var levelZeroTiles = this._levelZeroTiles;
-        if (typeof levelZeroTiles !== 'undefined') {
+        if (defined(levelZeroTiles)) {
             for (var i = 0; i < levelZeroTiles.length; ++i) {
                 levelZeroTiles[i].freeResources();
             }
@@ -160,14 +167,14 @@ define([
     };
 
     CentralBodySurface.prototype._onLayerAdded = function(layer, index) {
-        if (typeof this._levelZeroTiles === 'undefined') {
+        if (!defined(this._levelZeroTiles)) {
             return;
         }
 
         // create TileImagerys for this layer for all previously loaded tiles
         if (layer.show) {
             var tile = this._tileReplacementQueue.head;
-            while (typeof tile !== 'undefined') {
+            while (defined(tile)) {
                 if (layer._createTileImagerySkeletons(tile, this._terrainProvider)) {
                     tile.state = TileState.LOADING;
                 }
@@ -179,13 +186,13 @@ define([
     };
 
     CentralBodySurface.prototype._onLayerRemoved = function(layer, index) {
-        if (typeof this._levelZeroTiles === 'undefined') {
+        if (!defined(this._levelZeroTiles)) {
             return;
         }
 
         // destroy TileImagerys for this layer for all previously loaded tiles
         var tile = this._tileReplacementQueue.head;
-        while (typeof tile !== 'undefined') {
+        while (defined(tile)) {
             var tileImageryCollection = tile.imagery;
 
             var startIndex = -1;
@@ -193,7 +200,7 @@ define([
             for ( var i = 0, len = tileImageryCollection.length; i < len; ++i) {
                 var tileImagery = tileImageryCollection[i];
                 var imagery = tileImagery.loadingImagery;
-                if (typeof imagery === 'undefined') {
+                if (!defined(imagery)) {
                     imagery = tileImagery.readyImagery;
                 }
                 if (imagery.imageryLayer === layer) {
@@ -222,7 +229,7 @@ define([
     };
 
     CentralBodySurface.prototype._onLayerMoved = function(layer, newIndex, oldIndex) {
-        if (typeof this._levelZeroTiles === 'undefined') {
+        if (!defined(this._levelZeroTiles)) {
             return;
         }
 
@@ -230,7 +237,7 @@ define([
     };
 
     CentralBodySurface.prototype._onLayerShownOrHidden = function(layer, index, show) {
-        if (typeof this._levelZeroTiles === 'undefined') {
+        if (!defined(this._levelZeroTiles)) {
             return;
         }
 
@@ -249,7 +256,7 @@ define([
      *
      * @memberof CentralBodySurface
      *
-     * @return {Boolean} True if this object was destroyed; otherwise, false.
+     * @returns {Boolean} True if this object was destroyed; otherwise, false.
      *
      * @see CentralBodySurface#destroy
      */
@@ -267,7 +274,7 @@ define([
      *
      * @memberof CentralBodySurface
      *
-     * @return {undefined}
+     * @returns {undefined}
      *
      * @exception {DeveloperError} This object was destroyed, i.e., destroy() was called.
      *
@@ -275,7 +282,7 @@ define([
      */
     CentralBodySurface.prototype.destroy = function() {
         var levelZeroTiles = this._levelZeroTiles;
-        if (typeof levelZeroTiles !== 'undefined') {
+        if (defined(levelZeroTiles)) {
             for (var i = 0; i < levelZeroTiles.length; ++i) {
                 levelZeroTiles[i].freeResources();
             }
@@ -283,24 +290,17 @@ define([
 
         this._imageryLayerCollection.destroy();
 
-        var debug = this._debug;
-        if (typeof debug !== 'undefined') {
-            if (typeof debug.boundingSphereVA !== 'undefined') {
-                debug.boundingSphereVA.destroy();
-            }
-        }
-
         return destroyObject(this);
     };
 
     function sortTileImageryByLayerIndex(a, b) {
         var aImagery = a.loadingImagery;
-        if (typeof aImagery === 'undefined') {
+        if (!defined(aImagery)) {
             aImagery = a.readyImagery;
         }
 
         var bImagery = b.loadingImagery;
-        if (typeof bImagery === 'undefined') {
+        if (!defined(bImagery)) {
             bImagery = b.readyImagery;
         }
 
@@ -315,12 +315,14 @@ define([
 
             // Sort the TileImagery instances in each tile by the layer index.
             var tile = surface._tileReplacementQueue.head;
-            while (typeof tile !== 'undefined') {
+            while (defined(tile)) {
                 tile.imagery.sort(sortTileImageryByLayerIndex);
                 tile = tile.replacementNext;
             }
         }
     }
+
+    var scratchCamera = new Cartographic();
 
     function selectTilesForRendering(surface, context, frameState) {
         var debug = surface._debug;
@@ -335,7 +337,7 @@ define([
         var tilesToRenderByTextureCount = surface._tilesToRenderByTextureCount;
         for (i = 0, len = tilesToRenderByTextureCount.length; i < len; ++i) {
             var tiles = tilesToRenderByTextureCount[i];
-            if (typeof tiles !== 'undefined') {
+            if (defined(tiles)) {
                 tiles.length = 0;
             }
         }
@@ -354,9 +356,9 @@ define([
         surface._tileReplacementQueue.markStartOfRenderFrame();
 
         // We can't render anything before the level zero tiles exist.
-        if (typeof surface._levelZeroTiles === 'undefined') {
-            if (surface._terrainProvider.isReady()) {
-                var terrainTilingScheme = surface._terrainProvider.getTilingScheme();
+        if (!defined(surface._levelZeroTiles)) {
+            if (surface._terrainProvider.ready) {
+                var terrainTilingScheme = surface._terrainProvider.tilingScheme;
                 surface._levelZeroTiles = terrainTilingScheme.createLevelZeroTiles();
             } else {
                 // Nothing to do until the terrain provider is ready.
@@ -364,12 +366,12 @@ define([
             }
         }
 
-        var cameraPosition = frameState.camera.getPositionWC();
+        var cameraPosition = frameState.camera.positionWC;
 
-        var ellipsoid = surface._terrainProvider.getTilingScheme().getEllipsoid();
-        var cameraPositionCartographic = ellipsoid.cartesianToCartographic(cameraPosition);
+        var ellipsoid = surface._terrainProvider.tilingScheme.ellipsoid;
+        var cameraPositionCartographic = ellipsoid.cartesianToCartographic(cameraPosition, scratchCamera);
 
-        surface._ellipsoidalOccluder.setCameraPosition(cameraPosition);
+        surface._ellipsoidalOccluder.cameraPosition = cameraPosition;
 
         var tile;
 
@@ -395,7 +397,7 @@ define([
         // This ordering allows us to load bigger, lower-detail tiles before smaller, higher-detail ones.
         // This maximizes the average detail across the scene and results in fewer sharp transitions
         // between very different LODs.
-        while (typeof (tile = traversalQueue.dequeue()) !== 'undefined') {
+        while (defined((tile = traversalQueue.dequeue()))) {
             ++debug.tilesVisited;
 
             surface._tileReplacementQueue.markTileRendered(tile);
@@ -408,7 +410,7 @@ define([
             // This one doesn't load children unless we refine to them.
             // We may want to revisit this in the future.
 
-            if (screenSpaceError(surface, context, frameState, cameraPosition, cameraPositionCartographic, tile) < surface._maxScreenSpaceError) {
+            if (screenSpaceError(surface, context, frameState, cameraPosition, cameraPositionCartographic, tile) < surface._maximumScreenSpaceError) {
                 // This tile meets SSE requirements, so render it.
                 addTileToRenderList(surface, tile);
             } else if (queueChildrenLoadAndDetermineIfChildrenAreAllRenderable(surface, frameState, tile)) {
@@ -455,30 +457,12 @@ define([
             return screenSpaceError2D(surface, context, frameState, cameraPosition, cameraPositionCartographic, tile);
         }
 
-        var extent = tile.extent;
-
-        var latitudeFactor = 1.0;
-
-        // Adjust by latitude in 3D only.
-        if (frameState.mode === SceneMode.SCENE3D) {
-            var latitudeClosestToEquator = 0.0;
-            if (extent.south > 0.0) {
-                latitudeClosestToEquator = extent.south;
-            } else if (extent.north < 0.0) {
-                latitudeClosestToEquator = extent.north;
-            }
-
-            latitudeFactor = Math.cos(latitudeClosestToEquator);
-        }
-
-        var maxGeometricError = latitudeFactor * surface._terrainProvider.getLevelMaximumGeometricError(tile.level);
-
+        var maxGeometricError = surface._terrainProvider.getLevelMaximumGeometricError(tile.level);
 
         var distance = Math.sqrt(distanceSquaredToTile(frameState, cameraPosition, cameraPositionCartographic, tile));
         tile.distance = distance;
 
-        var canvas = context.getCanvas();
-        var height = canvas.clientHeight;
+        var height = context.getDrawingBufferHeight();
 
         var camera = frameState.camera;
         var frustum = camera.frustum;
@@ -491,9 +475,8 @@ define([
     function screenSpaceError2D(surface, context, frameState, cameraPosition, cameraPositionCartographic, tile) {
         var camera = frameState.camera;
         var frustum = camera.frustum;
-        var canvas = context.getCanvas();
-        var width = canvas.clientWidth;
-        var height = canvas.clientHeight;
+        var width = context.getDrawingBufferWidth();
+        var height = context.getDrawingBufferHeight();
 
         var maxGeometricError = surface._terrainProvider.getLevelMaximumGeometricError(tile.level);
         var pixelSize = Math.max(frustum.top - frustum.bottom, frustum.right - frustum.left) / Math.max(width, height);
@@ -505,13 +488,13 @@ define([
         var tileImageryCollection = tile.imagery;
         for ( var i = 0, len = tileImageryCollection.length; i < len; ++i) {
             var tileImagery = tileImageryCollection[i];
-            if (typeof tileImagery.readyImagery !== 'undefined' && tileImagery.readyImagery.imageryLayer.alpha !== 0.0) {
+            if (defined(tileImagery.readyImagery) && tileImagery.readyImagery.imageryLayer.alpha !== 0.0) {
                 ++readyTextureCount;
             }
         }
 
         var tileSet = surface._tilesToRenderByTextureCount[readyTextureCount];
-        if (typeof tileSet === 'undefined') {
+        if (!defined(tileSet)) {
             tileSet = [];
             surface._tilesToRenderByTextureCount[readyTextureCount] = tileSet;
         }
@@ -533,7 +516,7 @@ define([
         if (frameState.mode !== SceneMode.SCENE3D) {
             boundingVolume = boundingSphereScratch;
             BoundingSphere.fromExtentWithHeights2D(tile.extent, frameState.scene2D.projection, tile.minimumHeight, tile.maximumHeight, boundingVolume);
-            boundingVolume.center = new Cartesian3(boundingVolume.center.z, boundingVolume.center.x, boundingVolume.center.y);
+            Cartesian3.fromElements(boundingVolume.center.z, boundingVolume.center.x, boundingVolume.center.y, boundingVolume.center);
 
             if (frameState.mode === SceneMode.MORPHING) {
                 boundingVolume = BoundingSphere.union(tile.boundingSphere3D, boundingVolume, boundingVolume);
@@ -546,7 +529,7 @@ define([
 
         if (frameState.mode === SceneMode.SCENE3D) {
             var occludeePointInScaledSpace = tile.occludeePointInScaledSpace;
-            if (typeof occludeePointInScaledSpace === 'undefined') {
+            if (!defined(occludeePointInScaledSpace)) {
                 return true;
             }
 
@@ -558,8 +541,8 @@ define([
 
     var southwestCornerScratch = new Cartesian3();
     var northeastCornerScratch = new Cartesian3();
-    var negativeUnitY = Cartesian3.UNIT_Y.negate();
-    var negativeUnitZ = Cartesian3.UNIT_Z.negate();
+    var negativeUnitY = Cartesian3.negate(Cartesian3.UNIT_Y);
+    var negativeUnitZ = Cartesian3.negate(Cartesian3.UNIT_Z);
     var vectorScratch = new Cartesian3();
 
     function distanceSquaredToTile(frameState, cameraCartesianPosition, cameraCartographicPosition, tile) {
@@ -587,13 +570,13 @@ define([
             maximumHeight = 0.0;
         }
 
-        var vectorFromSouthwestCorner = cameraCartesianPosition.subtract(southwestCornerCartesian, vectorScratch);
-        var distanceToWestPlane = vectorFromSouthwestCorner.dot(westNormal);
-        var distanceToSouthPlane = vectorFromSouthwestCorner.dot(southNormal);
+        var vectorFromSouthwestCorner = Cartesian3.subtract(cameraCartesianPosition, southwestCornerCartesian, vectorScratch);
+        var distanceToWestPlane = Cartesian3.dot(vectorFromSouthwestCorner, westNormal);
+        var distanceToSouthPlane = Cartesian3.dot(vectorFromSouthwestCorner, southNormal);
 
-        var vectorFromNortheastCorner = cameraCartesianPosition.subtract(northeastCornerCartesian, vectorScratch);
-        var distanceToEastPlane = vectorFromNortheastCorner.dot(eastNormal);
-        var distanceToNorthPlane = vectorFromNortheastCorner.dot(northNormal);
+        var vectorFromNortheastCorner = Cartesian3.subtract(cameraCartesianPosition, northeastCornerCartesian, vectorScratch);
+        var distanceToEastPlane = Cartesian3.dot(vectorFromNortheastCorner, eastNormal);
+        var distanceToNorthPlane = Cartesian3.dot(vectorFromNortheastCorner, northNormal);
 
         var cameraHeight;
         if (frameState.mode === SceneMode.SCENE3D) {
@@ -659,7 +642,7 @@ define([
         // we're allowed to keep.
         surface._tileReplacementQueue.trimTiles(surface._tileCacheSize);
 
-        var startTime = Date.now();
+        var startTime = getTimestamp();
         var timeSlice = surface._loadQueueTimeSlice;
         var endTime = startTime + timeSlice;
 
@@ -669,7 +652,7 @@ define([
 
             tile.processStateMachine(context, terrainProvider, imageryLayerCollection);
 
-            if (Date.now() >= endTime) {
+            if (getTimestamp() >= endTime) {
                 break;
             }
         }
@@ -682,9 +665,9 @@ define([
         var tilesToRenderByTextureCount = this._tilesToRenderByTextureCount;
         var result;
         var tile;
-        for (var i = 0; i < tilesToRenderByTextureCount.length && typeof result === 'undefined'; ++i) {
+        for (var i = 0; i < tilesToRenderByTextureCount.length && !defined(result); ++i) {
             var tileSet = tilesToRenderByTextureCount[i];
-            if (typeof tileSet === 'undefined') {
+            if (!defined(tileSet)) {
                 continue;
             }
             for (var j = 0; j < tileSet.length; ++j) {
@@ -696,60 +679,12 @@ define([
             }
         }
 
-        if (typeof result !== 'undefined') {
-            console.log('x: ' + result.x + ' y: ' + result.y + ' level: ' + result.level + ' radius: ' + result.boundingSphere3D.radius + ' center magnitude: ' + result.boundingSphere3D.center.magnitude());
+        if (defined(result)) {
+            console.log('x: ' + result.x + ' y: ' + result.y + ' level: ' + result.level + ' radius: ' + result.boundingSphere3D.radius + ' center magnitude: ' + Cartesian3.magnitude(result.boundingSphere3D.center));
         }
 
         this._debug.boundingSphereTile = result;
-        this._debug.boundingSphereVA = undefined;
     };
-
-    function debugCreateRenderCommandsForTileBoundingSphere(surface, context, frameState, centralBodyUniformMap, shaderSet, renderState, colorCommandList) {
-        if (typeof surface._debug !== 'undefined' && typeof surface._debug.boundingSphereTile !== 'undefined') {
-            if (!surface._debug.boundingSphereVA) {
-                var radius = surface._debug.boundingSphereTile.boundingSphere3D.radius;
-                var sphere = CubeMapEllipsoidTessellator.compute(new Ellipsoid(radius, radius, radius), 10);
-                MeshFilters.toWireframeInPlace(sphere);
-                surface._debug.boundingSphereVA = context.createVertexArrayFromMesh({
-                    mesh : sphere,
-                    attributeIndices : MeshFilters.createAttributeIndices(sphere)
-                });
-            }
-
-            var tile = surface._debug.boundingSphereTile;
-            if (typeof tile.vertexArray === 'undefined') {
-                return;
-            }
-
-            var rtc2 = tile.center;
-
-            var uniformMap2 = createTileUniformMap();
-            mergeUniformMap(uniformMap2, centralBodyUniformMap);
-
-            uniformMap2.waterMask = tile.waterMaskTexture;
-
-            uniformMap2.center3D = rtc2;
-
-            var viewMatrix = frameState.camera.getViewMatrix();
-
-            var centerEye2 = viewMatrix.multiplyByVector(new Cartesian4(rtc2.x, rtc2.y, rtc2.z, 1.0));
-            uniformMap2.modifiedModelView = viewMatrix.setColumn(3, centerEye2, uniformMap2.modifiedModelView);
-
-            uniformMap2.dayTextures[0] = context.getDefaultTexture();
-            uniformMap2.dayTextureTranslationAndScale[0] = new Cartesian4(0.0, 0.0, 1.0, 1.0);
-            uniformMap2.dayTextureTexCoordsExtent[0] = new Cartesian4(0.0, 0.0, 1.0, 1.0);
-            uniformMap2.dayTextureAlpha[0] = 1.0;
-
-            var boundingSphereCommand = new DrawCommand();
-            boundingSphereCommand.shaderProgram = shaderSet.getShaderProgram(context, 0);
-            boundingSphereCommand.renderState = renderState;
-            boundingSphereCommand.primitiveType = PrimitiveType.LINES;
-            boundingSphereCommand.vertexArray = surface._debug.boundingSphereVA;
-            boundingSphereCommand.uniformMap = uniformMap2;
-
-            colorCommandList.push(boundingSphereCommand);
-        }
-    }
 
     CentralBodySurface.prototype.debugToggleLodUpdate = function(frameState) {
         this._debug.suspendLodUpdate = !this._debug.suspendLodUpdate;
@@ -759,8 +694,16 @@ define([
         return a.distance - b.distance;
     }
 
-    function createTileUniformMap() {
-        return {
+    function mergeUniformMap(target, source) {
+        for (var property in source) {
+            if (source.hasOwnProperty(property)) {
+                target[property] = source[property];
+            }
+        }
+    }
+
+    function createTileUniformMap(centralBodyUniformMap) {
+        var uniformMap = {
             u_center3D : function() {
                 return this.center3D;
             },
@@ -834,24 +777,24 @@ define([
             waterMask : undefined,
             waterMaskTranslationAndScale : new Cartesian4()
         };
+
+        mergeUniformMap(uniformMap, centralBodyUniformMap);
+
+        return uniformMap;
     }
 
-    function mergeUniformMap(target, source) {
-        for (var property in source) {
-            if (source.hasOwnProperty(property)) {
-                target[property] = source[property];
-            }
-        }
-    }
-
-    var float32ArrayScratch = typeof Float32Array !== 'undefined' ? new Float32Array(1) : undefined;
+    var float32ArrayScratch = FeatureDetection.supportsTypedArrays() ? new Float32Array(1) : undefined;
     var modifiedModelViewScratch = new Matrix4();
     var tileExtentScratch = new Cartesian4();
     var rtcScratch = new Cartesian3();
     var centerEyeScratch = new Cartesian4();
+    var southwestScratch = new Cartesian3();
+    var northeastScratch = new Cartesian3();
 
-    function createRenderCommandsForSelectedTiles(surface, context, frameState, shaderSet, projection, centralBodyUniformMap, colorCommandList, renderState) {
-        var viewMatrix = frameState.camera.getViewMatrix();
+    function createRenderCommandsForSelectedTiles(surface, context, frameState, shaderSet, projection, centralBodyUniformMap, commandList, renderState) {
+        displayCredits(surface, frameState);
+
+        var viewMatrix = frameState.camera.viewMatrix;
 
         var maxTextures = context.getMaximumTextureImageUnits();
 
@@ -862,7 +805,7 @@ define([
         var tilesToRenderByTextureCount = surface._tilesToRenderByTextureCount;
         for (var tileSetIndex = 0, tileSetLength = tilesToRenderByTextureCount.length; tileSetIndex < tileSetLength; ++tileSetIndex) {
             var tileSet = tilesToRenderByTextureCount[tileSetIndex];
-            if (typeof tileSet === 'undefined' || tileSet.length === 0) {
+            if (!defined(tileSet) || tileSet.length === 0) {
                 continue;
             }
 
@@ -884,8 +827,8 @@ define([
                 var oneOverMercatorHeight = 0.0;
 
                 if (frameState.mode !== SceneMode.SCENE3D) {
-                    var southwest = projection.project(tile.extent.getSouthwest());
-                    var northeast = projection.project(tile.extent.getNortheast());
+                    var southwest = projection.project(tile.extent.getSouthwest(), southwestScratch);
+                    var northeast = projection.project(tile.extent.getNortheast(), northeastScratch);
 
                     tileExtent.x = southwest.x;
                     tileExtent.y = southwest.y;
@@ -926,7 +869,7 @@ define([
                 centerEye.w = 1.0;
 
                 Matrix4.multiplyByVector(viewMatrix, centerEye, centerEye);
-                viewMatrix.setColumn(3, centerEye, modifiedModelViewScratch);
+                Matrix4.setColumn(viewMatrix, 3, centerEye, modifiedModelViewScratch);
 
                 var tileImageryCollection = tile.imagery;
                 var imageryIndex = 0;
@@ -937,15 +880,19 @@ define([
 
                     ++tileCommandIndex;
                     var command = tileCommands[tileCommandIndex];
-                    if (typeof command === 'undefined') {
+                    if (!defined(command)) {
                         command = new DrawCommand();
+                        command.owner = tile;
                         command.cull = false;
+                        command.boundingVolume = new BoundingSphere();
                         tileCommands[tileCommandIndex] = command;
-                        tileCommandUniformMaps[tileCommandIndex] = createTileUniformMap();
+                        tileCommandUniformMaps[tileCommandIndex] = createTileUniformMap(centralBodyUniformMap);
                     }
-                    var uniformMap = tileCommandUniformMaps[tileCommandIndex];
+                    command.owner = tile;
 
-                    mergeUniformMap(uniformMap, centralBodyUniformMap);
+                    command.debugShowBoundingVolume = (tile === surface._debug.boundingSphereTile);
+
+                    var uniformMap = tileCommandUniformMaps[tileCommandIndex];
 
                     uniformMap.center3D = tile.center;
 
@@ -969,13 +916,13 @@ define([
                         var imagery = tileImagery.readyImagery;
                         ++imageryIndex;
 
-                        if (typeof imagery === 'undefined' || imagery.state !== ImageryState.READY || imagery.imageryLayer.alpha === 0.0) {
+                        if (!defined(imagery) || imagery.state !== ImageryState.READY || imagery.imageryLayer.alpha === 0.0) {
                             continue;
                         }
 
                         var imageryLayer = imagery.imageryLayer;
 
-                        if (typeof tileImagery.textureTranslationAndScale === 'undefined') {
+                        if (!defined(tileImagery.textureTranslationAndScale)) {
                             tileImagery.textureTranslationAndScale = imageryLayer._calculateTextureTranslationAndScale(tile, tileImagery);
                         }
 
@@ -1025,6 +972,14 @@ define([
                         }
                         applyGamma = applyGamma || uniformMap.dayTextureOneOverGamma[numberOfDayTextures] !== 1.0 / ImageryLayer.DEFAULT_GAMMA;
 
+                        if (defined(imagery.credits)) {
+                            var creditDisplay = frameState.creditDisplay;
+                            var credits = imagery.credits;
+                            for (var creditIndex = 0, creditLength = credits.length; creditIndex < creditLength; ++creditIndex) {
+                                creditDisplay.addCredit(credits[creditIndex]);
+                            }
+                        }
+
                         ++numberOfDayTextures;
                     }
 
@@ -1034,26 +989,35 @@ define([
                     uniformMap.waterMask = tile.waterMaskTexture;
                     Cartesian4.clone(tile.waterMaskTranslationAndScale, uniformMap.waterMaskTranslationAndScale);
 
-                    colorCommandList.push(command);
+                    commandList.push(command);
 
                     command.shaderProgram = shaderSet.getShaderProgram(context, tileSetIndex, applyBrightness, applyContrast, applyHue, applySaturation, applyGamma, applyAlpha);
                     command.renderState = renderState;
-                    command.primitiveType = TerrainProvider.wireframe ? PrimitiveType.LINES : PrimitiveType.TRIANGLES;
+                    command.primitiveType = PrimitiveType.TRIANGLES;
                     command.vertexArray = tile.vertexArray;
                     command.uniformMap = uniformMap;
+                    command.pass = Pass.OPAQUE;
 
-                    var boundingVolume = tile.boundingSphere3D;
+                    if (surface._debug.wireframe) {
+                        createWireframeVertexArrayIfNecessary(context, surface, tile);
+                        if (defined(tile.wireframeVertexArray)) {
+                            command.vertexArray = tile.wireframeVertexArray;
+                            command.primitiveType = PrimitiveType.LINES;
+                        }
+                    }
+
+                    var boundingVolume = command.boundingVolume;
 
                     if (frameState.mode !== SceneMode.SCENE3D) {
-                        boundingVolume = BoundingSphere.fromExtentWithHeights2D(tile.extent, frameState.scene2D.projection, tile.minimumHeight, tile.maximumHeight);
-                        boundingVolume.center = new Cartesian3(boundingVolume.center.z, boundingVolume.center.x, boundingVolume.center.y);
+                        BoundingSphere.fromExtentWithHeights2D(tile.extent, frameState.scene2D.projection, tile.minimumHeight, tile.maximumHeight, boundingVolume);
+                        Cartesian3.fromElements(boundingVolume.center.z, boundingVolume.center.x, boundingVolume.center.y, boundingVolume.center);
 
                         if (frameState.mode === SceneMode.MORPHING) {
                             boundingVolume = BoundingSphere.union(tile.boundingSphere3D, boundingVolume, boundingVolume);
                         }
+                    } else {
+                        BoundingSphere.clone(tile.boundingSphere3D, boundingVolume);
                     }
-
-                    command.boundingVolume = boundingVolume;
 
                 } while (imageryIndex < imageryLen);
             }
@@ -1061,6 +1025,56 @@ define([
 
         // trim command list to the number actually needed
         tileCommands.length = Math.max(0, tileCommandIndex + 1);
+    }
+
+    function createWireframeVertexArrayIfNecessary(context, surface, tile) {
+        if (defined(tile.wireframeVertexArray)) {
+            return;
+        }
+
+        if (defined(tile.meshForWireframePromise)) {
+            return;
+        }
+
+        tile.meshForWireframePromise = tile.terrainData.createMesh(surface._terrainProvider.tilingScheme, tile.x, tile.y, tile.level);
+        if (!defined(tile.meshForWireframePromise)) {
+            // deferrred
+            return;
+        }
+
+        var vertexArray = tile.vertexArray;
+
+        when(tile.meshForWireframePromise, function(mesh) {
+            if (tile.vertexArray === vertexArray) {
+                tile.wireframeVertexArray = TerrainProvider.createWireframeVertexArray(context, tile.vertexArray, mesh);
+            }
+            tile.meshForWireframePromise = undefined;
+        });
+    }
+
+    function displayCredits(surface, frameState) {
+        var creditDisplay = frameState.creditDisplay;
+        var credit;
+
+        if (surface._terrainProvider.ready) {
+            credit = surface._terrainProvider.credit;
+            if (defined(credit)) {
+                creditDisplay.addCredit(credit);
+            }
+        }
+
+        var imageryLayerCollection = surface._imageryLayerCollection;
+        for ( var i = 0, len = imageryLayerCollection.length; i < len; ++i) {
+            var layer = imageryLayerCollection.get(i);
+            if (layer.show) {
+                if (layer.getImageryProvider().ready) {
+                    credit = layer.getImageryProvider().credit;
+                    if (defined(credit)) {
+                        creditDisplay.addCredit(credit);
+                    }
+                }
+            }
+        }
     }
 
     return CentralBodySurface;

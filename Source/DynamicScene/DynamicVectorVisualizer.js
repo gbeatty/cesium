@@ -1,6 +1,7 @@
 /*global define*/
 define([
         '../Core/DeveloperError',
+        '../Core/defined',
         '../Core/destroyObject',
         '../Core/Cartesian3',
         '../Core/Color',
@@ -8,6 +9,7 @@ define([
         '../Scene/PolylineCollection'
        ], function(
          DeveloperError,
+         defined,
          destroyObject,
          Cartesian3,
          Color,
@@ -24,32 +26,28 @@ define([
      * @param {Scene} scene The scene the primitives will be rendered in.
      * @param {DynamicObjectCollection} [dynamicObjectCollection] The dynamicObjectCollection to visualize.
      *
-     * @exception {DeveloperError} scene is required.
-     *
      * @see DynamicPolyline
-     * @see Scene
      * @see DynamicObject
-     * @see DynamicObjectCollection
      * @see CompositeDynamicObjectCollection
-     * @see VisualizerCollection
      * @see DynamicBillboardVisualizer
      * @see DynamicConeVisualizer
-     * @see DynamicConeVisualizerUsingCustomSensorr
+     * @see DynamicConeVisualizerUsingCustomSensor
      * @see DynamicLabelVisualizer
      * @see DynamicPointVisualizer
-     * @see DynamicPolygonVisualizer
      * @see DynamicPyramidVisualizer
-     *
      */
     var DynamicVectorVisualizer = function(scene, dynamicObjectCollection) {
-        if (typeof scene === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(scene)) {
             throw new DeveloperError('scene is required.');
         }
+        //>>includeEnd('debug');
+
         this._scene = scene;
         this._unusedIndexes = [];
-        this._primitives = scene.getPrimitives();
+        this._primitives = scene.primitives;
         var polylineCollection = this._polylineCollection = new PolylineCollection();
-        scene.getPrimitives().add(polylineCollection);
+        scene.primitives.add(polylineCollection);
         this._dynamicObjectCollection = undefined;
         this.setDynamicObjectCollection(dynamicObjectCollection);
     };
@@ -80,13 +78,13 @@ define([
     DynamicVectorVisualizer.prototype.setDynamicObjectCollection = function(dynamicObjectCollection) {
         var oldCollection = this._dynamicObjectCollection;
         if (oldCollection !== dynamicObjectCollection) {
-            if (typeof oldCollection !== 'undefined') {
-                oldCollection.objectsRemoved.removeEventListener(DynamicVectorVisualizer.prototype._onObjectsRemoved, this);
+            if (defined(oldCollection)) {
+                oldCollection.collectionChanged.removeEventListener(DynamicVectorVisualizer.prototype._onObjectsRemoved, this);
                 this.removeAllPrimitives();
             }
             this._dynamicObjectCollection = dynamicObjectCollection;
-            if (typeof dynamicObjectCollection !== 'undefined') {
-                dynamicObjectCollection.objectsRemoved.addEventListener(DynamicVectorVisualizer.prototype._onObjectsRemoved, this);
+            if (defined(dynamicObjectCollection)) {
+                dynamicObjectCollection.collectionChanged.addEventListener(DynamicVectorVisualizer.prototype._onObjectsRemoved, this);
             }
         }
     };
@@ -96,14 +94,15 @@ define([
      * DynamicObject counterpart at the given time.
      *
      * @param {JulianDate} time The time to update to.
-     *
-     * @exception {DeveloperError} time is required.
      */
     DynamicVectorVisualizer.prototype.update = function(time) {
-        if (typeof time === 'undefined') {
-            throw new DeveloperError('time is requied.');
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(time)) {
+            throw new DeveloperError('time is required.');
         }
-        if (typeof this._dynamicObjectCollection !== 'undefined') {
+        //>>includeEnd('debug');
+
+        if (defined(this._dynamicObjectCollection)) {
             var dynamicObjects = this._dynamicObjectCollection.getObjects();
             for ( var i = 0, len = dynamicObjects.length; i < len; i++) {
                 updateObject(this, time, dynamicObjects[i]);
@@ -118,7 +117,7 @@ define([
         var i;
         this._polylineCollection.removeAll();
 
-        if (typeof this._dynamicObjectCollection !== 'undefined') {
+        if (defined(this._dynamicObjectCollection)) {
             var dynamicObjects = this._dynamicObjectCollection.getObjects();
             for (i = dynamicObjects.length - 1; i > -1; i--) {
                 dynamicObjects[i]._vectorVisualizerIndex = undefined;
@@ -136,7 +135,7 @@ define([
      *
      * @memberof DynamicVectorVisualizer
      *
-     * @return {Boolean} True if this object was destroyed; otherwise, false.
+     * @returns {Boolean} True if this object was destroyed; otherwise, false.
      *
      * @see DynamicVectorVisualizer#destroy
      */
@@ -154,7 +153,7 @@ define([
      *
      * @memberof DynamicVectorVisualizer
      *
-     * @return {undefined}
+     * @returns {undefined}
      *
      * @exception {DeveloperError} This object was destroyed, i.e., destroy() was called.
      *
@@ -164,29 +163,28 @@ define([
      * visualizer = visualizer && visualizer.destroy();
      */
     DynamicVectorVisualizer.prototype.destroy = function() {
-        this.removeAllPrimitives();
-        this._scene.getPrimitives().remove(this._polylineCollection);
+        this.setDynamicObjectCollection(undefined);
+        this._scene.primitives.remove(this._polylineCollection);
         return destroyObject(this);
     };
 
     function updateObject(dynamicVectorVisualizer, time, dynamicObject) {
-        var dynamicVector = dynamicObject.vector;
-        if (typeof dynamicVector === 'undefined') {
+        var dynamicVector = dynamicObject._vector;
+        if (!defined(dynamicVector)) {
             return;
         }
 
         var polyline;
-        var showProperty = dynamicVector.show;
-        var positionProperty = dynamicObject.position;
-        var directionProperty = dynamicVector.direction;
-        var lengthProperty = dynamicVector.length;
+        var showProperty = dynamicVector._show;
+        var positionProperty = dynamicObject._position;
+        var directionProperty = dynamicVector._direction;
+        var lengthProperty = dynamicVector._length;
         var vectorVisualizerIndex = dynamicObject._vectorVisualizerIndex;
-        var show = dynamicObject.isAvailable(time) && (typeof showProperty === 'undefined' || showProperty.getValue(time));
+        var show = dynamicObject.isAvailable(time) && (!defined(showProperty) || showProperty.getValue(time));
 
-        if (!show || //
-           (typeof directionProperty === 'undefined' || typeof positionProperty === 'undefined' || typeof lengthProperty === 'undefined')) {
+        if (!show || !defined(directionProperty) || !defined(positionProperty) || !defined(lengthProperty)) {
             //Remove the existing primitive if we have one
-            if (typeof vectorVisualizerIndex !== 'undefined') {
+            if (defined(vectorVisualizerIndex)) {
                 polyline = dynamicVectorVisualizer._polylineCollection.get(vectorVisualizerIndex);
                 polyline.setShow(false);
                 dynamicObject._vectorVisualizerIndex = undefined;
@@ -196,24 +194,24 @@ define([
         }
 
         var uniforms;
-        if (typeof vectorVisualizerIndex === 'undefined') {
+        if (!defined(vectorVisualizerIndex)) {
             var unusedIndexes = dynamicVectorVisualizer._unusedIndexes;
             if (unusedIndexes.length > 0) {
                 vectorVisualizerIndex = unusedIndexes.pop();
                 polyline = dynamicVectorVisualizer._polylineCollection.get(vectorVisualizerIndex);
             } else {
-                vectorVisualizerIndex = dynamicVectorVisualizer._polylineCollection.getLength();
+                vectorVisualizerIndex = dynamicVectorVisualizer._polylineCollection.length;
                 polyline = dynamicVectorVisualizer._polylineCollection.add();
                 polyline._visualizerPositions = [new Cartesian3(), new Cartesian3()];
             }
             dynamicObject._vectorVisualizerIndex = vectorVisualizerIndex;
-            polyline.dynamicObject = dynamicObject;
+            polyline.id = dynamicObject;
 
             // CZML_TODO Determine official defaults
             polyline.setWidth(1);
             var material = polyline.getMaterial();
-            if (typeof material === 'undefined' || (material.type !== Material.PolylineArrowType)) {
-                material = Material.fromType(dynamicVectorVisualizer._scene.getContext(), Material.PolylineArrowType);
+            if (!defined(material) || (material.type !== Material.PolylineArrowType)) {
+                material = Material.fromType(Material.PolylineArrowType);
                 polyline.setMaterial(material);
             }
             uniforms = material.uniforms;
@@ -226,35 +224,35 @@ define([
         polyline.setShow(true);
 
         var positions = polyline._visualizerPositions;
-        var position = positionProperty.getValueCartesian(time, positions[0]);
+        var position = positionProperty.getValue(time, positions[0]);
         var direction = directionProperty.getValue(time, positions[1]);
         var length = lengthProperty.getValue(time);
-        if (typeof position !== 'undefined' && typeof direction !== 'undefined' && typeof length !== 'undefined') {
-            Cartesian3.add(position, direction.normalize(direction).multiplyByScalar(length, direction), direction);
+        if (defined(position) && defined(direction) && defined(length)) {
+            Cartesian3.add(position, Cartesian3.multiplyByScalar(Cartesian3.normalize(direction, direction), length, direction), direction);
             polyline.setPositions(positions);
         }
 
-        var property = dynamicVector.color;
-        if (typeof property !== 'undefined') {
+        var property = dynamicVector._color;
+        if (defined(property)) {
             uniforms.color = property.getValue(time, uniforms.color);
         }
 
-        property = dynamicVector.width;
-        if (typeof property !== 'undefined') {
+        property = dynamicVector._width;
+        if (defined(property)) {
             var width = property.getValue(time);
-            if (typeof width !== 'undefined') {
+            if (defined(width)) {
                 polyline.setWidth(width);
             }
         }
     }
 
-    DynamicVectorVisualizer.prototype._onObjectsRemoved = function(dynamicObjectCollection, dynamicObjects) {
+    DynamicVectorVisualizer.prototype._onObjectsRemoved = function(dynamicObjectCollection, added, dynamicObjects) {
         var thisPolylineCollection = this._polylineCollection;
         var thisUnusedIndexes = this._unusedIndexes;
         for ( var i = dynamicObjects.length - 1; i > -1; i--) {
             var dynamicObject = dynamicObjects[i];
             var vectorVisualizerIndex = dynamicObject._vectorVisualizerIndex;
-            if (typeof vectorVisualizerIndex !== 'undefined') {
+            if (defined(vectorVisualizerIndex)) {
                 var polyline = thisPolylineCollection.get(vectorVisualizerIndex);
                 polyline.setShow(false);
                 thisUnusedIndexes.push(vectorVisualizerIndex);

@@ -1,31 +1,35 @@
 /*global define*/
 define([
         '../Core/defaultValue',
-        '../Core/loadImage',
-        '../Core/getImagePixels',
-        '../Core/throttleRequestByServer',
-        '../Core/writeTextToCanvas',
+        '../Core/defined',
+        '../Core/defineProperties',
         '../Core/DeveloperError',
-        '../Core/Math',
         '../Core/Ellipsoid',
         '../Core/Event',
-        './TerrainProvider',
+        '../Core/getImagePixels',
+        '../Core/loadImage',
+        '../Core/Math',
+        '../Core/throttleRequestByServer',
+        './Credit',
         './GeographicTilingScheme',
         './HeightmapTerrainData',
+        './TerrainProvider',
         '../ThirdParty/when'
     ], function(
         defaultValue,
-        loadImage,
-        getImagePixels,
-        throttleRequestByServer,
-        writeTextToCanvas,
+        defined,
+        defineProperties,
         DeveloperError,
-        CesiumMath,
         Ellipsoid,
         Event,
-        TerrainProvider,
+        getImagePixels,
+        loadImage,
+        CesiumMath,
+        throttleRequestByServer,
+        Credit,
         GeographicTilingScheme,
         HeightmapTerrainData,
+        TerrainProvider,
         when) {
     "use strict";
 
@@ -45,7 +49,7 @@ define([
      * @param {Ellipsoid} [description.ellipsoid] The ellipsoid.  If the tilingScheme is specified,
      *                    this parameter is ignored and the tiling scheme's ellipsoid is used instead.
      *                    If neither parameter is specified, the WGS84 ellipsoid is used.
-     * @param {String} [description.credit] A string crediting the data source, which is displayed on the canvas.
+     * @param {Credit|String} [description.credit] The credit, which will is displayed on the canvas.
      *
      * @see TerrainProvider
      *
@@ -58,47 +62,98 @@ define([
      * centralBody.terrainProvider = terrainProvider;
      */
     var ArcGisImageServerTerrainProvider = function ArcGisImageServerTerrainProvider(description) {
-        if (typeof description === 'undefined' || typeof description.url === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(description) || !defined(description.url)) {
             throw new DeveloperError('description.url is required.');
         }
+        //>>includeEnd('debug');
 
         this._url = description.url;
         this._token = description.token;
 
         this._tilingScheme = description.tilingScheme;
-        if (typeof this._tilingScheme === 'undefined') {
+        if (!defined(this._tilingScheme)) {
             this._tilingScheme = new GeographicTilingScheme({
                 ellipsoid : defaultValue(description.ellipsoid, Ellipsoid.WGS84)
             });
         }
 
         this._heightmapWidth = 65;
-        this._levelZeroMaximumGeometricError = TerrainProvider.getEstimatedLevelZeroGeometricErrorForAHeightmap(this._tilingScheme.getEllipsoid(), this._heightmapWidth, this._tilingScheme.getNumberOfXTilesAtLevel(0));
+        this._levelZeroMaximumGeometricError = TerrainProvider.getEstimatedLevelZeroGeometricErrorForAHeightmap(this._tilingScheme.ellipsoid, this._heightmapWidth, this._tilingScheme.getNumberOfXTilesAtLevel(0));
 
         this._proxy = description.proxy;
 
         this._terrainDataStructure = {
-                heightScale : 1.0 / 1000.0,
-                heightOffset : -1000.0,
-                elementsPerHeight : 3,
-                stride : 4,
-                elementMultiplier : 256.0,
-                isBigEndian : true
-            };
+            heightScale : 1.0 / 1000.0,
+            heightOffset : -1000.0,
+            elementsPerHeight : 3,
+            stride : 4,
+            elementMultiplier : 256.0,
+            isBigEndian : true
+        };
 
         this._errorEvent = new Event();
 
-        if (typeof description.credit !== 'undefined') {
-            // Create the copyright message.
-            this._logo = writeTextToCanvas(description.credit, {
-                font : '12px sans-serif'
-            });
+        var credit = description.credit;
+        if (typeof credit === 'string') {
+            credit = new Credit(credit);
         }
+        this._credit = credit;
     };
+
+    defineProperties(ArcGisImageServerTerrainProvider.prototype, {
+        /**
+         * Gets an event that is raised when the terrain provider encounters an asynchronous error.  By subscribing
+         * to the event, you will be notified of the error and can potentially recover from it.  Event listeners
+         * are passed an instance of {@link TileProviderError}.
+         * @memberof ArcGisImageServerTerrainProvider.prototype
+         * @type {Event}
+         */
+        errorEvent : {
+            get : function() {
+                return this._errorEvent;
+            }
+        },
+
+        /**
+         * Gets the credit to display when this terrain provider is active.  Typically this is used to credit
+         * the source of the terrain.  This function should not be called before {@link ArcGisImageServerTerrainProvider#ready} returns true.
+         * @memberof ArcGisImageServerTerrainProvider.prototype
+         * @type {Credit}
+         */
+        credit : {
+            get : function() {
+                return this._credit;
+            }
+        },
+
+        /**
+         * Gets the tiling scheme used by this provider.  This function should
+         * not be called before {@link ArcGisImageServerTerrainProvider#ready} returns true.
+         * @memberof ArcGisImageServerTerrainProvider.prototype
+         * @type {GeographicTilingScheme}
+         */
+        tilingScheme : {
+            get : function() {
+                return this._tilingScheme;
+            }
+        },
+
+        /**
+         * Gets a value indicating whether or not the provider is ready for use.
+         * @memberof ArcGisImageServerTerrainProvider.prototype
+         * @type {Boolean}
+         */
+        ready : {
+            get : function() {
+                return true;
+            }
+        }
+    });
 
     /**
      * Requests the geometry for a given tile.  This function should not be called before
-     * {@link ArcGisImageServerTerrainProvider#isReady} returns true.  The result includes terrain
+     * {@link ArcGisImageServerTerrainProvider#ready} returns true.  The result includes terrain
      * data and indicates that all child tiles are available.
      *
      * @memberof ArcGisImageServerTerrainProvider
@@ -133,12 +188,12 @@ define([
         }
 
         var proxy = this._proxy;
-        if (typeof proxy !== 'undefined') {
+        if (defined(proxy)) {
             url = proxy.getURL(url);
         }
 
         var promise = throttleRequestByServer(url, loadImage);
-        if (typeof promise === 'undefined') {
+        if (!defined(promise)) {
             return undefined;
         }
 
@@ -155,19 +210,6 @@ define([
     };
 
     /**
-     * Gets an event that is raised when the terrain provider encounters an asynchronous error.  By subscribing
-     * to the event, you will be notified of the error and can potentially recover from it.  Event listeners
-     * are passed an instance of {@link TileProviderError}.
-     *
-     * @memberof ArcGisImageServerTerrainProvider
-     *
-     * @returns {Event} The event.
-     */
-    ArcGisImageServerTerrainProvider.prototype.getErrorEvent = function() {
-        return this._errorEvent;
-    };
-
-    /**
      * Gets the maximum geometric error allowed in a tile at a given level.
      *
      * @memberof ArcGisImageServerTerrainProvider
@@ -177,36 +219,6 @@ define([
      */
     ArcGisImageServerTerrainProvider.prototype.getLevelMaximumGeometricError = function(level) {
         return this._levelZeroMaximumGeometricError / (1 << level);
-    };
-
-    /**
-     * Gets the logo to display when this terrain provider is active.  Typically this is used to credit
-     * the source of the terrain.  This function should not be called before {@link ArcGisImageServerTerrainProvider#isReady} returns true.
-     *
-     * @memberof ArcGisImageServerTerrainProvider
-     *
-     * @returns {Image|Canvas} A canvas or image containing the log to display, or undefined if there is no logo.
-     *
-     * @exception {DeveloperError} <code>getLogo</code> must not be called before the terrain provider is ready.
-     */
-    ArcGisImageServerTerrainProvider.prototype.getLogo = function() {
-        return this._logo;
-    };
-
-    /**
-     * Gets the tiling scheme used by this provider.  This function should
-     * not be called before {@link ArcGisImageServerTerrainProvider#isReady} returns true.
-     *
-     * @memberof ArcGisImageServerTerrainProvider
-     *
-     * @returns {GeographicTilingScheme} The tiling scheme.
-     * @see WebMercatorTilingScheme
-     * @see GeographicTilingScheme
-     *
-     * @exception {DeveloperError} <code>getTilingScheme</code> must not be called before the terrain provider is ready.
-     */
-    ArcGisImageServerTerrainProvider.prototype.getTilingScheme = function() {
-        return this._tilingScheme;
     };
 
     /**
@@ -220,17 +232,6 @@ define([
      */
     ArcGisImageServerTerrainProvider.prototype.hasWaterMask = function() {
         return false;
-    };
-
-    /**
-     * Gets a value indicating whether or not the provider is ready for use.
-     *
-     * @memberof ArcGisImageServerTerrainProvider
-     *
-     * @returns {Boolean} True if the provider is ready to use; otherwise, false.
-     */
-    ArcGisImageServerTerrainProvider.prototype.isReady = function() {
-        return true;
     };
 
     return ArcGisImageServerTerrainProvider;

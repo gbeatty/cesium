@@ -8,14 +8,14 @@ define(function() {
      * @exports defined
      *
      * @example
-     * if (defined(positions)) {
+     * if (Cesium.defined(positions)) {
      *      doSomething();
      * } else {
      *      doSomethingElse();
      * }
      */
     var defined = function(value) {
-        return typeof value !== 'undefined';
+        return value !== undefined;
     };
 
     return defined;

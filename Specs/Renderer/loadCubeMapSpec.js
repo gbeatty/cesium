@@ -2,6 +2,7 @@
 defineSuite([
          'Renderer/loadCubeMap',
          'Core/Cartesian3',
+         'Core/defined',
          'Core/PrimitiveType',
          'Renderer/BufferUsage',
          'Specs/createContext',
@@ -10,6 +11,7 @@ defineSuite([
      ], function(
          loadCubeMap,
          Cartesian3,
+         defined,
          PrimitiveType,
          BufferUsage,
          createContext,
@@ -42,7 +44,7 @@ defineSuite([
         });
 
         waitsFor(function() {
-            return typeof cm !== 'undefined';
+            return defined(cm);
         }, 'The cube map should load.', 5000);
 
         runs(function() {
@@ -53,7 +55,7 @@ defineSuite([
             var fs =
                 'uniform samplerCube u_texture;' +
                 'uniform mediump vec3 u_direction;' +
-                'void main() { gl_FragColor = textureCube(u_texture, u_direction); }';
+                'void main() { gl_FragColor = textureCube(u_texture, normalize(u_direction)); }';
             var sp = context.createShaderProgram(vs, fs, {
                 position : 0
             });
@@ -223,13 +225,13 @@ defineSuite([
     it('throws without a context', function() {
         expect(function() {
             loadCubeMap(undefined);
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without urls', function() {
         expect(function() {
             loadCubeMap(context);
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without positiveX', function() {
@@ -241,7 +243,7 @@ defineSuite([
                 positiveZ : 'any.image',
                 negativeZ : 'any.image'
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without negativeX', function() {
@@ -253,7 +255,7 @@ defineSuite([
                 positiveZ : 'any.image',
                 negativeZ : 'any.image'
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without positiveY', function() {
@@ -265,7 +267,7 @@ defineSuite([
                 positiveZ : 'any.image',
                 negativeZ : 'any.image'
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without negativeY', function() {
@@ -277,7 +279,7 @@ defineSuite([
                 positiveZ : 'any.image',
                 negativeZ : 'any.image'
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without positiveZ', function() {
@@ -289,7 +291,7 @@ defineSuite([
                 negativeY : 'any.image',
                 negativeZ : 'any.image'
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without negativeZ', function() {
@@ -301,6 +303,6 @@ defineSuite([
                 negativeY : 'any.image',
                 positiveZ : 'any.image'
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 }, 'WebGL');

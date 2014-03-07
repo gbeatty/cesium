@@ -93,18 +93,18 @@ defineSuite([
     });
 
     it('static clone returns undefined without cartographic parameter', function() {
-        expect(typeof Cartographic.clone(undefined)).toEqual('undefined');
+        expect(Cartographic.clone(undefined)).toBeUndefined();
     });
 
     it('static toString throws without cartographic parameter', function() {
         expect(function() {
             Cartographic.toString(undefined);
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('equalsEpsilon throws without numeric epsilon', function() {
         expect(function() {
             Cartographic.equalsEpsilon(new Cartographic(), new Cartographic(), {});
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 });

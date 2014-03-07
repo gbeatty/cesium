@@ -3,6 +3,7 @@ defineSuite([
          'Scene/Tile',
          'Specs/createContext',
          'Specs/destroyContext',
+         'Core/defined',
          'Core/Extent',
          'Core/Math',
          'Scene/CesiumTerrainProvider',
@@ -15,6 +16,7 @@ defineSuite([
          Tile,
          createContext,
          destroyContext,
+         defined,
          Extent,
          CesiumMath,
          CesiumTerrainProvider,
@@ -30,7 +32,7 @@ defineSuite([
     it('throws without a description', function() {
         expect(function() {
             return new Tile();
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without description.extent', function() {
@@ -39,7 +41,7 @@ defineSuite([
                 x : 0,
                 y : 0
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws without description.level', function() {
@@ -54,7 +56,7 @@ defineSuite([
                 x : 0,
                 y : 0
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('throws with negative x or y properties', function() {
@@ -64,7 +66,7 @@ defineSuite([
                 y : -1.0,
                 level : 1.0
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('creates extent on construction', function() {
@@ -77,7 +79,7 @@ defineSuite([
     it('throws if constructed improperly', function() {
         expect(function() {
             return new Tile();
-        }).toThrow();
+        }).toThrowDeveloperError();
 
         expect(function() {
             return new Tile({
@@ -102,7 +104,7 @@ defineSuite([
                     }
                 }
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
 
         expect(function() {
             return new Tile({
@@ -114,7 +116,7 @@ defineSuite([
                     }
                 }
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
 
         expect(function() {
             return new Tile({
@@ -126,7 +128,7 @@ defineSuite([
                     }
                 }
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
 
         expect(function() {
             return new Tile({
@@ -134,7 +136,7 @@ defineSuite([
                 y : 0,
                 level : 0
             });
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     describe('processStateMachine', function() {
@@ -155,9 +157,7 @@ defineSuite([
                     requestTileGeometry : function(x, y, level) {
                         return undefined;
                     },
-                    getTilingScheme : function() {
-                        return tilingScheme;
-                    },
+                    tilingScheme : tilingScheme,
                     hasWaterMask : function() {
                         return true;
                     }
@@ -169,16 +169,14 @@ defineSuite([
                         deferred.reject();
                         return deferred.promise;
                     },
-                    getTilingScheme : function() {
-                        return tilingScheme;
-                    },
+                    tilingScheme : tilingScheme,
                     hasWaterMask : function() {
                         return true;
                     }
             };
 
             realTerrainProvider = new CesiumTerrainProvider({
-                url : 'http://cesium.agi.com/smallterrain'
+                url : 'http://cesiumjs.org/smallterrain'
             });
         });
 
@@ -187,7 +185,13 @@ defineSuite([
         });
 
         beforeEach(function() {
+            waitsFor(function() {
+                return realTerrainProvider.ready;
+            });
+
             tilingScheme = new WebMercatorTilingScheme();
+            alwaysDeferTerrainProvider.tilingScheme = tilingScheme;
+            alwaysFailTerrainProvider.tilingScheme = tilingScheme;
             rootTiles = tilingScheme.createLevelZeroTiles();
             rootTile = rootTiles[0];
             imageryLayerCollection = new ImageryLayerCollection();
@@ -483,7 +487,7 @@ defineSuite([
                 childTile.processStateMachine(context, realTerrainProvider, imageryLayerCollection);
                 grandchildTile.processStateMachine(context, alwaysDeferTerrainProvider, imageryLayerCollection);
                 return childTile.state === TileState.READY &&
-                       typeof grandchildTile.upsampledTerrain === 'undefined';
+                       !defined(grandchildTile.upsampledTerrain);
             }, 'child to be loaded and grandchild to be upsampled.');
 
             runs(function() {
@@ -497,7 +501,7 @@ defineSuite([
             var allWaterTerrainProvider = {
                     requestTileGeometry : function(x, y, level) {
                         var real = realTerrainProvider.requestTileGeometry(x, y, level);
-                        if (typeof real === 'undefined') {
+                        if (!defined(real)) {
                             return real;
                         }
 
@@ -506,9 +510,7 @@ defineSuite([
                             return terrainData;
                         });
                     },
-                    getTilingScheme : function() {
-                        return realTerrainProvider.getTilingScheme();
-                    },
+                    tilingScheme :  realTerrainProvider.tilingScheme,
                     hasWaterMask : function() {
                         return realTerrainProvider.hasWaterMask();
                     }
@@ -536,7 +538,7 @@ defineSuite([
             var allLandTerrainProvider = {
                     requestTileGeometry : function(x, y, level) {
                         var real = realTerrainProvider.requestTileGeometry(x, y, level);
-                        if (typeof real === 'undefined') {
+                        if (!defined(real)) {
                             return real;
                         }
 
@@ -545,9 +547,7 @@ defineSuite([
                             return terrainData;
                         });
                     },
-                    getTilingScheme : function() {
-                        return realTerrainProvider.getTilingScheme();
-                    },
+                    tilingScheme : realTerrainProvider.tilingScheme,
                     hasWaterMask : function() {
                         return realTerrainProvider.hasWaterMask();
                     }

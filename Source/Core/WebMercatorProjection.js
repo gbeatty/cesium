@@ -1,12 +1,16 @@
 /*global define*/
 define([
         './defaultValue',
+        './defined',
+        './defineProperties',
         './Cartesian3',
         './Cartographic',
         './Math',
         './Ellipsoid'
     ], function(
         defaultValue,
+        defined,
+        defineProperties,
         Cartesian3,
         Cartographic,
         CesiumMath,
@@ -28,9 +32,22 @@ define([
      */
     var WebMercatorProjection = function(ellipsoid) {
         this._ellipsoid = defaultValue(ellipsoid, Ellipsoid.WGS84);
-        this._semimajorAxis = this._ellipsoid.getMaximumRadius();
+        this._semimajorAxis = this._ellipsoid.maximumRadius;
         this._oneOverSemimajorAxis = 1.0 / this._semimajorAxis;
     };
+
+    defineProperties(WebMercatorProjection.prototype, {
+        /**
+         * Gets the {@link Ellipsoid}.
+         * @memberof WebMercatorProjection.prototype
+         * @type {Ellipsoid}
+         */
+        ellipsoid : {
+            get : function() {
+                return this._ellipsoid;
+            }
+        }
+    });
 
     /**
      * Converts a Mercator angle, in the range -PI to PI, to a geodetic latitude
@@ -84,17 +101,6 @@ define([
     WebMercatorProjection.MaximumLatitude = WebMercatorProjection.mercatorAngleToGeodeticLatitude(Math.PI);
 
     /**
-     * Gets the {@link Ellipsoid}.
-     *
-     * @memberof WebMercatorProjection
-     *
-     * @returns {Ellipsoid} The ellipsoid.
-     */
-    WebMercatorProjection.prototype.getEllipsoid = function() {
-        return this._ellipsoid;
-    };
-
-    /**
      * Converts geodetic ellipsoid coordinates, in radians, to the equivalent Web Mercator
      * X, Y, Z coordinates expressed in meters and returned in a {@link Cartesian3}.  The height
      * is copied unmodified to the Z coordinate.
@@ -112,7 +118,7 @@ define([
         var y = WebMercatorProjection.geodeticLatitudeToMercatorAngle(cartographic.latitude) * semimajorAxis;
         var z = cartographic.height;
 
-        if (typeof result === 'undefined') {
+        if (!defined(result)) {
             return new Cartesian3(x, y, z);
         }
 
@@ -140,7 +146,7 @@ define([
         var latitude = WebMercatorProjection.mercatorAngleToGeodeticLatitude(cartesian.y * oneOverEarthSemimajorAxis);
         var height = cartesian.z;
 
-        if (typeof result === 'undefined') {
+        if (!defined(result)) {
             return new Cartographic(longitude, latitude, height);
         }
 

@@ -1,12 +1,16 @@
 /*global define*/
 define([
+        '../../Core/defined',
         '../../Core/defineProperties',
         '../../Core/DeveloperError',
+        '../../Core/isArray',
         '../createCommand',
         '../../ThirdParty/knockout'
     ], function(
+        defined,
         defineProperties,
         DeveloperError,
+        isArray,
         createCommand,
         knockout) {
     "use strict";
@@ -19,19 +23,20 @@ define([
      * @param {ImageryLayerCollection} imageryLayers The imagery layer collection to use.
      * @param {Array} [imageryProviderViewModels=[]] The array of ImageryProviderViewModel instances to use.
      *
-     * @exception {DeveloperError} imageryLayers is required.
      * @exception {DeveloperError} imageryProviderViewModels must be an array.
      *
      * @see ImageryProviderViewModel
      */
     var BaseLayerPickerViewModel = function(imageryLayers, imageryProviderViewModels) {
-        if (typeof imageryLayers === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(imageryLayers)) {
             throw new DeveloperError('imageryLayers is required');
         }
+        //>>includeEnd('debug');
 
-        if (typeof imageryProviderViewModels === 'undefined') {
+        if (!defined(imageryProviderViewModels)) {
             imageryProviderViewModels = [];
-        } else if (!Array.isArray(imageryProviderViewModels)) {
+        } else if (!isArray(imageryProviderViewModels)) {
             throw new DeveloperError('imageryProviderViewModels must be an array');
         }
 
@@ -58,23 +63,21 @@ define([
         /**
          * Gets the currently selected item name.  This property is observable.
          * @type {String}
-         * @default undefined
          */
         this.selectedName = undefined;
         knockout.defineProperty(this, 'selectedName', function() {
             var selected = that.selectedItem;
-            return typeof selected !== 'undefined' ? selected.name : undefined;
+            return defined(selected) ? selected.name : undefined;
         });
 
         /**
          * Gets the image url of the currently selected item.  This property is observable.
          * @type {String}
-         * @default undefined
          */
         this.selectedIconUrl = undefined;
         knockout.defineProperty(this, 'selectedIconUrl', function() {
             var viewModel = that.selectedItem;
-            return typeof viewModel !== 'undefined' ? viewModel.iconUrl : undefined;
+            return defined(viewModel) ? viewModel.iconUrl : undefined;
         });
 
         /**
@@ -95,7 +98,7 @@ define([
                 var currentProviders = that._currentProviders;
                 var currentProvidersLength = currentProviders.length;
                 for (i = 0; i < currentProvidersLength; i++) {
-                    var layersLength = imageryLayers.getLength();
+                    var layersLength = imageryLayers.length;
                     for ( var x = 0; x < layersLength; x++) {
                         var layer = imageryLayers.get(x);
                         if (layer.getImageryProvider() === currentProviders[i]) {
@@ -105,9 +108,9 @@ define([
                     }
                 }
 
-                if (typeof value !== 'undefined') {
+                if (defined(value)) {
                     var newProviders = value.creationCommand();
-                    if (Array.isArray(newProviders)) {
+                    if (isArray(newProviders)) {
                         var newProvidersLength = newProviders.length;
                         for (i = newProvidersLength - 1; i >= 0; i--) {
                             imageryLayers.addImageryProvider(newProviders[i], 0);

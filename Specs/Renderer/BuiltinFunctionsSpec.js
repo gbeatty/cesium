@@ -101,7 +101,7 @@ defineSuite([
         var height = canvas.clientHeight;
         var vp = new BoundingRectangle(0.0, 0.0, width, height);
         context.getUniformState().setViewport(vp);
-        context.getUniformState().update(createFrameState(camera));
+        context.getUniformState().update(context, createFrameState(camera));
 
         var fs =
             'void main() { ' +
@@ -127,7 +127,7 @@ defineSuite([
         var height = canvas.clientHeight;
         var vp = new BoundingRectangle(0.0, 0.0, width, height);
         context.getUniformState().setViewport(vp);
-        context.getUniformState().update(createFrameState(camera));
+        context.getUniformState().update(context, createFrameState(camera));
 
         var fs =
             'void main() { ' +
@@ -144,9 +144,22 @@ defineSuite([
         verifyDraw(fs);
     });
 
+    it('has czm_tangentToEyeSpaceMatrix', function() {
+        var fs =
+            'void main() { ' +
+            '  vec3 tangent = vec3(1.0, 0.0, 0.0); ' +
+            '  vec3 binormal = vec3(0.0, 1.0, 0.0); ' +
+            '  vec3 normal = vec3(0.0, 0.0, 1.0); ' +
+            '  mat3 expected = mat3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0); ' +
+            '  mat3 actual = czm_tangentToEyeSpaceMatrix(normal, tangent, binormal); ' +
+            '  gl_FragColor = vec4(actual == expected); ' +
+            '}';
+        verifyDraw(fs);
+    });
+
     it('has czm_translateRelativeToEye', function() {
         var camera = createCamera(context, new Cartesian3(1.0, 2.0, 3.0));
-        context.getUniformState().update(createFrameState(camera));
+        context.getUniformState().update(context, createFrameState(camera));
 
         var p = new Cartesian3(6.0, 5.0, 4.0);
         var encoded = EncodedCartesian3.fromCartesian(p);
@@ -164,8 +177,8 @@ defineSuite([
             'uniform vec3 u_high;' +
             'uniform vec3 u_low;' +
             'void main() { ' +
-            '  vec3 p = czm_translateRelativeToEye(u_high, u_low);' +
-            '  gl_FragColor = vec4(p == vec3(5.0, 3.0, 1.0)); ' +
+            '  vec4 p = czm_translateRelativeToEye(u_high, u_low);' +
+            '  gl_FragColor = vec4(p == vec4(5.0, 3.0, 1.0, 1.0)); ' +
             '}';
 
         verifyDraw(fs, uniformMap);

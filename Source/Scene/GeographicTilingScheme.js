@@ -1,6 +1,8 @@
 /*global define*/
 define([
         '../Core/defaultValue',
+        '../Core/defined',
+        '../Core/defineProperties',
         '../Core/DeveloperError',
         '../Core/Math',
         '../Core/Cartesian2',
@@ -10,6 +12,8 @@ define([
         './TilingScheme'
     ], function(
         defaultValue,
+        defined,
+        defineProperties,
         DeveloperError,
         CesiumMath,
         Cartesian2,
@@ -45,38 +49,41 @@ define([
         this._numberOfLevelZeroTilesY = defaultValue(description.numberOfLevelZeroTilesY, 1);
     };
 
-    /**
-     * Gets the ellipsoid that is tiled by this tiling scheme.
-     *
-     * @memberof GeographicTilingScheme
-     *
-     * @returns {Ellipsoid} The ellipsoid.
-     */
-    GeographicTilingScheme.prototype.getEllipsoid = function() {
-        return this._ellipsoid;
-    };
 
-    /**
-     * Gets the extent, in radians, covered by this tiling scheme.
-     *
-     * @memberof GeographicTilingScheme
-     *
-     * @returns {Extent} The extent.
-     */
-    GeographicTilingScheme.prototype.getExtent = function() {
-        return this._extent;
-    };
+    defineProperties(GeographicTilingScheme.prototype, {
+        /**
+         * Gets the ellipsoid that is tiled by this tiling scheme.
+         * @memberof GeographicTilingScheme.prototype
+         * @type {Ellipsoid}
+         */
+        ellipsoid : {
+            get : function() {
+                return this._ellipsoid;
+            }
+        },
 
-    /**
-     * Gets the map projection used by this tiling scheme.
-     *
-     * @memberof GeographicTilingScheme
-     *
-     * @returns {Projection} The map projection.
-     */
-    GeographicTilingScheme.prototype.getProjection = function() {
-        return this._projection;
-    };
+        /**
+         * Gets the extent, in radians, covered by this tiling scheme.
+         * @memberof GeographicTilingScheme.prototype
+         * @type {Extent}
+         */
+        extent : {
+            get : function() {
+                return this._extent;
+            }
+        },
+
+        /**
+         * Gets the map projection used by this tiling scheme.
+         * @memberof GeographicTilingScheme.prototype
+         * @type {Projection}
+         */
+        projection : {
+            get : function() {
+                return this._projection;
+            }
+        }
+    });
 
     /**
      * Gets the total number of tiles in the X direction at a specified level-of-detail.
@@ -107,7 +114,7 @@ define([
      *
      * @memberof GeographicTilingScheme
      *
-     * @return {Array} An array containing the tiles at level of detail zero, starting with the
+     * @returns {Array} An array containing the tiles at level of detail zero, starting with the
      * tile in the northwest corner of the globe and followed by the tile (if any) to its east.
      */
     GeographicTilingScheme.prototype.createLevelZeroTiles = function() {
@@ -125,20 +132,20 @@ define([
      *        should be created.
      * @returns {Extent} The specified 'result', or a new object containing the native extent if 'result'
      *          is undefined.
-     *
-     * @exception {DeveloperError} <code>extent</code> is required.
      */
     GeographicTilingScheme.prototype.extentToNativeExtent = function(extent, result) {
-        if (typeof extent === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(extent)) {
             throw new DeveloperError('extent is required.');
         }
+        //>>includeEnd('debug');
 
         var west = CesiumMath.toDegrees(extent.west);
         var south = CesiumMath.toDegrees(extent.south);
         var east = CesiumMath.toDegrees(extent.east);
         var north = CesiumMath.toDegrees(extent.north);
 
-        if (typeof result === 'undefined') {
+        if (!defined(result)) {
             return new Extent(west, south, east, north);
         }
 
@@ -201,7 +208,7 @@ define([
         var north = extent.north - y * yTileHeight;
         var south = extent.north - (y + 1) * yTileHeight;
 
-        if (typeof result === 'undefined') {
+        if (!defined(result)) {
             result = new Extent(west, south, east, north);
         }
 
@@ -252,7 +259,7 @@ define([
             yTileCoordinate = yTiles - 1;
         }
 
-        if (typeof result === 'undefined') {
+        if (!defined(result)) {
             return new Cartesian2(xTileCoordinate, yTileCoordinate);
         }
 

@@ -1,5 +1,6 @@
 /*global define*/
 define([
+        '../../Core/defined',
         '../../Core/defineProperties',
         '../../Core/destroyObject',
         '../../Core/DeveloperError',
@@ -7,6 +8,7 @@ define([
         './BaseLayerPickerViewModel',
         '../../ThirdParty/knockout'
     ], function(
+        defined,
         defineProperties,
         destroyObject,
         DeveloperError,
@@ -34,9 +36,7 @@ define([
      * @param {Element} container The parent HTML container node for this widget.
      * @param {ImageryLayerCollection} imageryLayers The imagery layer collection to use.
      *
-     * @exception {DeveloperError} container is required.
      * @exception {DeveloperError} Element with id "container" does not exist in the document.
-     * @exception {DeveloperError} imageryLayers is required.
      *
      * @see ImageryProvider
      * @see ImageryProviderViewModel
@@ -44,95 +44,103 @@ define([
      *
      * @example
      * // In HTML head, include a link to the BaseLayerPicker.css stylesheet,
-     * // and in the body, include: &lt;div id="baseLayerPickerContainer"&gt;&lt;/div&gt;
+     * // and in the body, include: &lt;div id="baseLayerPickerContainer"
+     * //   style="position:absolute;top:24px;right:24px;width:38px;height:38px;"&gt;&lt;/div&gt;
      *
      * //Create the list of available providers we would like the user to select from.
      * //This example uses 3, OpenStreetMap, The Black Marble, and a single, non-streaming world image.
      * var providerViewModels = [];
-     * providerViewModels.push(new ImageryProviderViewModel({
+     * providerViewModels.push(new Cesium.ImageryProviderViewModel({
      *      name : 'Open\u00adStreet\u00adMap',
-     *      iconUrl : require.toUrl('../Images/ImageryProviders/openStreetMap.png'),
+     *      iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/openStreetMap.png'),
      *      tooltip : 'OpenStreetMap (OSM) is a collaborative project to create a free editable \
      *map of the world.\nhttp://www.openstreetmap.org',
      *      creationFunction : function() {
-     *          return new OpenStreetMapImageryProvider({
+     *          return new Cesium.OpenStreetMapImageryProvider({
      *              url : 'http://tile.openstreetmap.org/'
      *          });
      *      }
      *  }));
      *
-     *  providerViewModels.push(new ImageryProviderViewModel({
+     *  providerViewModels.push(new Cesium.ImageryProviderViewModel({
      *      name : 'Black Marble',
-     *      iconUrl : require.toUrl('../Images/ImageryProviders/blackMarble.png'),
+     *      iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/blackMarble.png'),
      *      tooltip : 'The lights of cities and villages trace the outlines of civilization \
      *in this global view of the Earth at night as seen by NASA/NOAA\'s Suomi NPP satellite.',
      *      creationFunction : function() {
-     *          return new TileMapServiceImageryProvider({
-     *              url : 'http://cesium.agi.com/blackmarble',
+     *          return new Cesium.TileMapServiceImageryProvider({
+     *              url : 'http://cesiumjs.org/blackmarble',
      *              maximumLevel : 8,
      *              credit : 'Black Marble imagery courtesy NASA Earth Observatory'
      *          });
      *      }
      *  }));
      *
-     *  providerViewModels.push(new ImageryProviderViewModel({
+     *  providerViewModels.push(new Cesium.ImageryProviderViewModel({
      *      name : 'Natural Earth\u00a0II',
-     *      iconUrl : buildModuleUrl('Widgets/Images/ImageryProviders/naturalEarthII.png'),
+     *      iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/naturalEarthII.png'),
      *      tooltip : 'Natural Earth II, darkened for contrast.\nhttp://www.naturalearthdata.com/',
      *      creationFunction : function() {
-     *          return new TileMapServiceImageryProvider({
-     *              url : buildModuleUrl('Assets/Textures/NaturalEarthII')
+     *          return new Cesium.TileMapServiceImageryProvider({
+     *              url : Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII')
      *          });
      *      }
      *  }));
      *
-     * //Finally, create the actual widget using our view models.
-     * var layers = centralBody.getImageryLayers();
-     * var baseLayerPicker = new BaseLayerPicker('baseLayerPickerContainer', layers, providerViewModels);
+     * //Create a CesiumWidget without imagery, if you haven't already done so.
+     * var cesiumWidget = new Cesium.CesiumWidget('cesiumContainer', { imageryProvider: false });
+     *
+     * //Finally, create the baseLayerPicker widget using our view models.
+     * var layers = cesiumWidget.centralBody.imageryLayers;
+     * var baseLayerPicker = new Cesium.BaseLayerPicker('baseLayerPickerContainer', layers, providerViewModels);
      *
      * //Use the first item in the list as the current selection.
      * baseLayerPicker.viewModel.selectedItem = providerViewModels[0];
      */
     var BaseLayerPicker = function(container, imageryLayers, imageryProviderViewModels) {
-        if (typeof container === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(container)) {
             throw new DeveloperError('container is required.');
         }
-
-        if (typeof imageryLayers === 'undefined') {
+        if (!defined(imageryLayers)) {
             throw new DeveloperError('imageryLayers is required.');
         }
+        //>>includeEnd('debug');
 
         container = getElement(container);
 
         var viewModel = new BaseLayerPickerViewModel(imageryLayers, imageryProviderViewModels);
-        this._viewModel = viewModel;
-        this._container = container;
-        this._element = document.createElement('img');
 
-        var element = this._element;
-        element.setAttribute('draggable', 'false');
-        element.className = 'cesium-baseLayerPicker-selected';
+        var element = document.createElement('button');
+        element.type = 'button';
+        element.className = 'cesium-button cesium-toolbar-button';
         element.setAttribute('data-bind', '\
-                attr: {title: selectedName, src: selectedIconUrl},\
-                click: toggleDropDown');
+attr: { title: selectedName },\
+click: toggleDropDown');
         container.appendChild(element);
 
+        var imgElement = document.createElement('img');
+        imgElement.setAttribute('draggable', 'false');
+        imgElement.className = 'cesium-baseLayerPicker-selected';
+        imgElement.setAttribute('data-bind', '\
+attr: { src: selectedIconUrl }');
+        element.appendChild(imgElement);
+
         var choices = document.createElement('div');
-        this._choices = choices;
         choices.className = 'cesium-baseLayerPicker-dropDown';
         choices.setAttribute('data-bind', '\
-                css: { "cesium-baseLayerPicker-visible" : dropDownVisible,\
-                       "cesium-baseLayerPicker-hidden" : !dropDownVisible },\
-                foreach: imageryProviderViewModels');
+css: { "cesium-baseLayerPicker-visible" : dropDownVisible,\
+       "cesium-baseLayerPicker-hidden" : !dropDownVisible },\
+foreach: imageryProviderViewModels');
         container.appendChild(choices);
 
         var provider = document.createElement('div');
         provider.className = 'cesium-baseLayerPicker-item';
         provider.setAttribute('data-bind', '\
-                css: {"cesium-baseLayerPicker-selectedItem" : $data === $parent.selectedItem},\
-                attr: {title: tooltip},\
-                visible: creationCommand.canExecute,\
-                click: function($data) { $parent.selectedItem = $data }');
+css: { "cesium-baseLayerPicker-selectedItem" : $data === $parent.selectedItem },\
+attr: { title: tooltip },\
+visible: creationCommand.canExecute,\
+click: function($data) { $parent.selectedItem = $data; }');
         choices.appendChild(provider);
 
         var providerIcon = document.createElement('img');
@@ -146,10 +154,16 @@ define([
         providerLabel.setAttribute('data-bind', 'text: name');
         provider.appendChild(providerLabel);
 
-        knockout.applyBindings(viewModel, container);
+        knockout.applyBindings(viewModel, element);
+        knockout.applyBindings(viewModel, choices);
+
+        this._viewModel = viewModel;
+        this._container = container;
+        this._element = element;
+        this._choices = choices;
 
         this._closeDropDown = function(e) {
-            if (!container.contains(e.target)) {
+            if (!(element.contains(e.target) || choices.contains(e.target))) {
                 viewModel.dropDownVisible = false;
             }
         };
@@ -200,10 +214,10 @@ define([
     BaseLayerPicker.prototype.destroy = function() {
         document.removeEventListener('mousedown', this._closeDropDown, true);
         document.removeEventListener('touchstart', this._closeDropDown, true);
-        var container = this._container;
-        knockout.cleanNode(container);
-        container.removeChild(this._element);
-        container.removeChild(this._choices);
+        knockout.cleanNode(this._element);
+        knockout.cleanNode(this._choices);
+        this._container.removeChild(this._element);
+        this._container.removeChild(this._choices);
         return destroyObject(this);
     };
 

@@ -16,8 +16,8 @@ define([
         target = defaultValue(target, Cartesian3.ZERO);
         up = defaultValue(up, Cartesian3.UNIT_Z);
 
-        var camera = new Camera(context.getCanvas());
-        camera.controller.lookAt(eye, target, up);
+        var camera = new Camera(context);
+        camera.lookAt(eye, target, up);
         camera.frustum.fovy = CesiumMath.toRadians(60.0);
         camera.frustum.aspectRatio = 1.0;
         camera.frustum.near = defaultValue(near, 0.01);

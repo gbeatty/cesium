@@ -3,6 +3,8 @@ define([
         'require',
         './buildModuleUrl',
         './defaultValue',
+        './defined',
+        './destroyObject',
         './isCrossOriginUrl',
         '../ThirdParty/when',
         '../ThirdParty/Uri'
@@ -10,6 +12,8 @@ define([
         require,
         buildModuleUrl,
         defaultValue,
+        defined,
+        destroyObject,
         isCrossOriginUrl,
         when,
         Uri) {
@@ -20,19 +24,27 @@ define([
 
         var data = event.data;
         var id = data.id;
-        var result = data.result;
+
+        if (!defined(id)) {
+            // This is not one of ours.
+            return;
+        }
 
         var deferreds = processor._deferreds;
         var deferred = deferreds[id];
 
-        deferred.resolve(result);
+        if (defined(data.error)) {
+            deferred.reject(data.error);
+        } else {
+            deferred.resolve(data.result);
+        }
 
         delete deferreds[id];
     }
 
     var _bootstrapperUrl;
     function getBootstrapperUrl() {
-        if (typeof _bootstrapperUrl !== 'undefined') {
+        if (defined(_bootstrapperUrl)) {
             return _bootstrapperUrl;
         }
 
@@ -69,10 +81,12 @@ define([
         //bootstrap
         var bootstrapMessage = {
             loaderConfig : {},
-            workerModule : 'Workers/' + processor._workerName
+            workerModule : TaskProcessor._workerModulePrefix + processor._workerName
         };
 
-        if (typeof require.toUrl !== 'undefined') {
+        if (defined(TaskProcessor._loaderConfig)) {
+            bootstrapMessage.loaderConfig = TaskProcessor._loaderConfig;
+        } else if (defined(require.toUrl)) {
             var baseUrl = new Uri('..').resolve(new Uri(buildModuleUrl('Workers/cesiumWorkerBootstrapper.js'))).toString();
             bootstrapMessage.loaderConfig.baseUrl = baseUrl;
         } else {
@@ -113,6 +127,8 @@ define([
         this._nextID = 0;
     };
 
+    var emptyTransferableObjectArray = [];
+
     /**
      * Schedule a task to be processed by the web worker asynchronously.  If there are currently more
      * tasks active than the maximum set by the constructor, will immediately return undefined.
@@ -126,21 +142,21 @@ define([
      *                    if there are too many active tasks,
      *
      * @example
-     * var taskProcessor = new TaskProcessor('myWorkerName');
+     * var taskProcessor = new Cesium.TaskProcessor('myWorkerName');
      * var promise = taskProcessor.scheduleTask({
      *     someParameter : true,
      *     another : 'hello'
      * });
-     * if (typeof promise === 'undefined') {
+     * if (!Cesium.defined(promise)) {
      *     // too many active tasks - try again later
      * } else {
-     *     when(promise, function(result) {
+     *     Cesium.when(promise, function(result) {
      *         // use the result of the task
      *     });
      * }
      */
     TaskProcessor.prototype.scheduleTask = function(parameters, transferableObjects) {
-        if (typeof this._worker === 'undefined') {
+        if (!defined(this._worker)) {
             createWorker(this);
         }
 
@@ -149,6 +165,10 @@ define([
         }
 
         ++this._activeTasks;
+
+        if (!defined(transferableObjects)) {
+            transferableObjects = emptyTransferableObjectArray;
+        }
 
         var id = this._nextID++;
         var deferred = when.defer();
@@ -161,6 +181,44 @@ define([
 
         return deferred.promise;
     };
+
+    /**
+     * Returns true if this object was destroyed; otherwise, false.
+     * <br /><br />
+     * If this object was destroyed, it should not be used; calling any function other than
+     * <code>isDestroyed</code> will result in a {@link DeveloperError} exception.
+     *
+     * @memberof TaskProcessor
+     *
+     * @returns {Boolean} True if this object was destroyed; otherwise, false.
+     *
+     * @see TaskProcessor#destroy
+     */
+    TaskProcessor.prototype.isDestroyed = function() {
+        return false;
+    };
+
+    /**
+     * Destroys this object.  This will immediately terminate the Worker.
+     * <br /><br />
+     * Once an object is destroyed, it should not be used; calling any function other than
+     * <code>isDestroyed</code> will result in a {@link DeveloperError} exception.
+     *
+     * @memberof TaskProcessor
+     *
+     * @returns {undefined}
+     */
+    TaskProcessor.prototype.destroy = function() {
+        if (defined(this._worker)) {
+            this._worker.terminate();
+        }
+        return destroyObject(this);
+    };
+
+    // exposed for testing purposes
+    TaskProcessor._defaultWorkerModulePrefix = 'Workers/';
+    TaskProcessor._workerModulePrefix = TaskProcessor._defaultWorkerModulePrefix;
+    TaskProcessor._loaderConfig = undefined;
 
     return TaskProcessor;
 });

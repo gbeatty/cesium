@@ -1,6 +1,7 @@
 /*global defineSuite*/
 defineSuite([
          'Scene/SingleTileImageryProvider',
+         'Core/defined',
          'Core/jsonp',
          'Core/loadImage',
          'Core/DefaultProxy',
@@ -13,6 +14,7 @@ defineSuite([
          'ThirdParty/when'
      ], function(
          SingleTileImageryProvider,
+         defined,
          jsonp,
          loadImage,
          DefaultProxy,
@@ -45,20 +47,20 @@ defineSuite([
             credit : credit
         });
 
-        expect(provider.getUrl()).toEqual(url);
-        expect(provider.getExtent()).toEqual(extent);
+        expect(provider.url).toEqual(url);
+        expect(provider.extent).toEqual(extent);
 
         waitsFor(function() {
-            return provider.isReady();
+            return provider.ready;
         }, 'imagery provider to become ready');
 
         runs(function() {
-            expect(provider.getTilingScheme()).toBeInstanceOf(GeographicTilingScheme);
-            expect(provider.getTilingScheme().getExtent()).toEqual(extent);
-            expect(provider.getTileWidth()).toEqual(16);
-            expect(provider.getTileHeight()).toEqual(16);
-            expect(provider.getMaximumLevel()).toEqual(0);
-            expect(provider.getTileDiscardPolicy()).toBeUndefined();
+            expect(provider.tilingScheme).toBeInstanceOf(GeographicTilingScheme);
+            expect(provider.tilingScheme.extent).toEqual(extent);
+            expect(provider.tileWidth).toEqual(16);
+            expect(provider.tileHeight).toEqual(16);
+            expect(provider.maximumLevel).toEqual(0);
+            expect(provider.tileDiscardPolicy).toBeUndefined();
         });
     });
 
@@ -66,7 +68,7 @@ defineSuite([
         function constructWithoutUrl() {
             return new SingleTileImageryProvider({});
         }
-        expect(constructWithoutUrl).toThrow();
+        expect(constructWithoutUrl).toThrowDeveloperError();
     });
 
     it('requests the single image immediately upon construction', function() {
@@ -86,7 +88,7 @@ defineSuite([
         expect(calledCreateImage).toEqual(true);
 
         waitsFor(function() {
-            return provider.isReady();
+            return provider.ready;
         }, 'imagery provider to become ready');
 
         var tile000Image;
@@ -98,7 +100,7 @@ defineSuite([
         });
 
         waitsFor(function() {
-            return typeof tile000Image !== 'undefined';
+            return defined(tile000Image);
         });
 
         runs(function() {
@@ -112,13 +114,13 @@ defineSuite([
         });
 
         waitsFor(function() {
-            return provider.isReady();
+            return provider.ready;
         }, 'imagery provider to become ready');
 
         var providerWithCredit;
 
         runs(function() {
-            expect(provider.getLogo()).toBeUndefined();
+            expect(provider.credit).toBeUndefined();
 
             providerWithCredit = new SingleTileImageryProvider({
                 url : 'Data/Images/Red16x16.png',
@@ -127,11 +129,11 @@ defineSuite([
         });
 
         waitsFor(function() {
-            return providerWithCredit.isReady();
+            return providerWithCredit.ready;
         }, 'imagery provider to become ready');
 
         runs(function() {
-            expect(providerWithCredit.getLogo()).toBeDefined();
+            expect(providerWithCredit.credit).toBeDefined();
         });
     });
 
@@ -153,7 +155,7 @@ defineSuite([
         });
 
         expect(provider).toBeDefined();
-        expect(provider.getProxy()).toEqual(proxy);
+        expect(provider.proxy).toEqual(proxy);
         expect(calledCreateImage).toEqual(true);
     });
 
@@ -165,7 +167,7 @@ defineSuite([
         var layer = new ImageryLayer(provider);
 
         var tries = 0;
-        provider.getErrorEvent().addEventListener(function(error) {
+        provider.errorEvent.addEventListener(function(error) {
             expect(error.timesRetried).toEqual(tries);
             ++tries;
             if (tries < 3) {
@@ -185,7 +187,7 @@ defineSuite([
         };
 
         waitsFor(function() {
-            return provider.isReady();
+            return provider.ready;
         }, 'imagery provider to become ready');
 
         var imagery;

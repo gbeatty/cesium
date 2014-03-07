@@ -1,5 +1,6 @@
 /*global defineSuite*/
 defineSuite([
+         'Specs/createCamera',
          'Specs/createContext',
          'Specs/destroyContext',
          'Specs/createFrameState',
@@ -9,8 +10,12 @@ defineSuite([
          'Core/PrimitiveType',
          'Core/defaultValue',
          'Renderer/BufferUsage',
-         'Renderer/ClearCommand'
+         'Renderer/ClearCommand',
+         'Scene/FrameState',
+         'Scene/OrthographicFrustum',
+         'Scene/SceneMode'
      ], 'Renderer/AutomaticUniforms', function(
+         createCamera,
          createContext,
          destroyContext,
          createFrameState,
@@ -20,7 +25,10 @@ defineSuite([
          PrimitiveType,
          defaultValue,
          BufferUsage,
-         ClearCommand) {
+         ClearCommand,
+         FrameState,
+         OrthographicFrustum,
+         SceneMode) {
     "use strict";
     /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
@@ -36,22 +44,13 @@ defineSuite([
 
     function createMockCamera(view, projection, infiniteProjection, position, direction, right, up) {
         return {
-            getViewMatrix : function() {
-                return defaultValue(view, Matrix4.IDENTITY.clone());
-            },
-            getInverseViewMatrix : function() {
-                var m = defaultValue(view, Matrix4.IDENTITY.clone());
-                return Matrix4.inverseTransformation(m);
-            },
+            viewMatrix : defaultValue(view, Matrix4.clone(Matrix4.IDENTITY)),
+            inverseViewMatrix : Matrix4.inverseTransformation(defaultValue(view, Matrix4.clone(Matrix4.IDENTITY))),
             frustum : {
                 near : 1.0,
                 far : 1000.0,
-                getProjectionMatrix : function() {
-                    return defaultValue(projection, Matrix4.IDENTITY.clone());
-                },
-                getInfiniteProjectionMatrix : function() {
-                    return defaultValue(infiniteProjection, Matrix4.IDENTITY.clone());
-                },
+                projectionMatrix : defaultValue(projection, Matrix4.clone(Matrix4.IDENTITY)),
+                infiniteProjectionMatrix : defaultValue(infiniteProjection, Matrix4.clone(Matrix4.IDENTITY)),
                 computeCullingVolume : function() {
                     return undefined;
                 },
@@ -59,11 +58,11 @@ defineSuite([
                     return new Cartesian2(1.0, 0.1);
                 }
             },
-            position : defaultValue(position, Cartesian3.ZERO.clone()),
-            getPositionWC : function() { return this.position; },
-            getDirectionWC : function() { return defaultValue(direction, Cartesian3.UNIT_Z.clone()); },
-            getRightWC : function() { return defaultValue(right, Cartesian3.UNIT_X.clone()); },
-            getUpWC : function() { return defaultValue(up, Cartesian3.UNIT_Y.clone()); }
+            position : defaultValue(position, Cartesian3.clone(Cartesian3.ZERO)),
+            positionWC : defaultValue(position, Cartesian3.clone(Cartesian3.ZERO)),
+            directionWC : defaultValue(direction, Cartesian3.clone(Cartesian3.UNIT_Z)),
+            rightWC : defaultValue(right, Cartesian3.clone(Cartesian3.UNIT_X)),
+            upWC : defaultValue(up, Cartesian3.clone(Cartesian3.UNIT_Y))
         };
     }
 
@@ -94,7 +93,6 @@ defineSuite([
 
     it('can declare automatic uniforms', function() {
         var fs =
-            'uniform vec4 czm_viewport; ' +
             'void main() { ' +
             '  gl_FragColor = vec4((czm_viewport.x == 0.0) && (czm_viewport.y == 0.0) && (czm_viewport.z == 1.0) && (czm_viewport.w == 1.0)); ' +
             '}';
@@ -166,7 +164,7 @@ defineSuite([
 
     it('has czm_view', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                 1.0,  2.0,  3.0,  4.0,
                 5.0,  6.0,  7.0,  8.0,
@@ -186,7 +184,7 @@ defineSuite([
 
     it('has czm_view3D', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                 1.0,  2.0,  3.0,  4.0,
                 5.0,  6.0,  7.0,  8.0,
@@ -206,7 +204,7 @@ defineSuite([
 
     it('has czm_viewRotation', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                 1.0,  2.0,  3.0,  4.0,
                 5.0,  6.0,  7.0,  8.0,
@@ -225,7 +223,7 @@ defineSuite([
 
     it('has czm_viewRotation3D', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                 1.0,  2.0,  3.0,  4.0,
                 5.0,  6.0,  7.0,  8.0,
@@ -244,7 +242,7 @@ defineSuite([
 
     it('has czm_inverseView', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                0.0, -1.0, 0.0, 7.0,
                1.0,  0.0, 0.0, 8.0,
@@ -264,7 +262,7 @@ defineSuite([
 
     it('has czm_inverseView3D', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                0.0, -1.0, 0.0, 7.0,
                1.0,  0.0, 0.0, 8.0,
@@ -284,7 +282,7 @@ defineSuite([
 
     it('has czm_inverseViewRotation', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                0.0, -1.0, 0.0, 7.0,
                1.0,  0.0, 0.0, 8.0,
@@ -304,7 +302,7 @@ defineSuite([
 
     it('has czm_inverseViewRotation3D', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                0.0, -1.0, 0.0, 7.0,
                1.0,  0.0, 0.0, 8.0,
@@ -324,7 +322,7 @@ defineSuite([
 
     it('has czm_projection', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             undefined,
             new Matrix4(
                1.0,  2.0,  3.0,  4.0,
@@ -345,7 +343,7 @@ defineSuite([
 
     it('has czm_inverseProjection', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             undefined,
             new Matrix4(
                0.0, -1.0, 0.0, 1.0,
@@ -366,7 +364,7 @@ defineSuite([
 
     it('has czm_infiniteProjection', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(undefined, undefined,
+        us.update(context, createFrameState(createMockCamera(undefined, undefined,
             new Matrix4(1.0,  2.0,  3.0,  4.0,
                         5.0,  6.0,  7.0,  8.0,
                         9.0, 10.0, 11.0, 12.0,
@@ -385,7 +383,7 @@ defineSuite([
 
     it('has czm_modelView', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                1.0, 0.0, 0.0, 1.0,
                0.0, 1.0, 0.0, 1.0,
@@ -409,7 +407,7 @@ defineSuite([
 
     it('has czm_modelView3D', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                1.0, 0.0, 0.0, 1.0,
                0.0, 1.0, 0.0, 1.0,
@@ -433,7 +431,7 @@ defineSuite([
 
     it('has czm_modelViewRelativeToEye', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(
                1.0, 0.0, 0.0, 1.0,
                0.0, 1.0, 0.0, 1.0,
@@ -457,7 +455,7 @@ defineSuite([
 
     it('has czm_inverseModelView', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(Matrix4.IDENTITY.clone())));
+        us.update(context, createFrameState(createMockCamera(Matrix4.clone(Matrix4.IDENTITY))));
 
         var fs =
             'void main() { ' +
@@ -476,7 +474,7 @@ defineSuite([
 
     it('has czm_inverseModelView3D', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(Matrix4.IDENTITY.clone())));
+        us.update(context, createFrameState(createMockCamera(Matrix4.clone(Matrix4.IDENTITY))));
 
         var fs =
             'void main() { ' +
@@ -495,7 +493,7 @@ defineSuite([
 
     it('has czm_viewProjection', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(1.0, 0.0, 0.0, 0.0,
                         0.0, 1.0, 0.0, 8.0,
                         0.0, 0.0, 1.0, 0.0,
@@ -517,9 +515,33 @@ defineSuite([
         verifyDraw(fs);
     });
 
+    it('has czm_inverseViewProjection', function() {
+        var us = context.getUniformState();
+        us.update(context, createFrameState(createMockCamera(
+            new Matrix4(1.0, 0.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0, 8.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        0.0, 0.0, 0.0, 1.0),
+            new Matrix4(1.0, 0.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0, 0.0,
+                        0.0, 0.0, 1.0, 9.0,
+                        0.0, 0.0, 0.0, 1.0))));
+
+        var fs =
+            'void main() { ' +
+            '  bool b0 = (czm_inverseViewProjection[0][0] == 1.0) && (czm_inverseViewProjection[1][0] == 0.0) && (czm_inverseViewProjection[2][0] == 0.0) && (czm_inverseViewProjection[3][0] ==  0.0); ' +
+            '  bool b1 = (czm_inverseViewProjection[0][1] == 0.0) && (czm_inverseViewProjection[1][1] == 1.0) && (czm_inverseViewProjection[2][1] == 0.0) && (czm_inverseViewProjection[3][1] == -8.0); ' +
+            '  bool b2 = (czm_inverseViewProjection[0][2] == 0.0) && (czm_inverseViewProjection[1][2] == 0.0) && (czm_inverseViewProjection[2][2] == 1.0) && (czm_inverseViewProjection[3][2] == -9.0); ' +
+            '  bool b3 = (czm_inverseViewProjection[0][3] == 0.0) && (czm_inverseViewProjection[1][3] == 0.0) && (czm_inverseViewProjection[2][3] == 0.0) && (czm_inverseViewProjection[3][3] ==  1.0); ' +
+            '  gl_FragColor = vec4(b0 && b1 && b2 && b3); ' +
+            '}';
+
+        verifyDraw(fs);
+    });
+
     it('has czm_modelViewProjection', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(1.0, 0.0, 0.0, 0.0,
                         0.0, 1.0, 0.0, 8.0,
                         0.0, 0.0, 1.0, 0.0,
@@ -545,9 +567,37 @@ defineSuite([
                 0.0, 0.0, 0.0, 1.0));
     });
 
+    it('has czm_inverseModelViewProjection', function() {
+        var us = context.getUniformState();
+        us.update(context, createFrameState(createMockCamera(
+            new Matrix4(1.0, 0.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0, 8.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        0.0, 0.0, 0.0, 1.0),
+            new Matrix4(1.0, 0.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0, 0.0,
+                        0.0, 0.0, 1.0, 9.0,
+                        0.0, 0.0, 0.0, 1.0))));
+
+        var fs =
+            'void main() { ' +
+            '  bool b0 = (czm_inverseModelViewProjection[0][0] == 1.0) && (czm_inverseModelViewProjection[1][0] == 0.0) && (czm_inverseModelViewProjection[2][0] == 0.0) && (czm_inverseModelViewProjection[3][0] == -7.0); ' +
+            '  bool b1 = (czm_inverseModelViewProjection[0][1] == 0.0) && (czm_inverseModelViewProjection[1][1] == 1.0) && (czm_inverseModelViewProjection[2][1] == 0.0) && (czm_inverseModelViewProjection[3][1] == -8.0); ' +
+            '  bool b2 = (czm_inverseModelViewProjection[0][2] == 0.0) && (czm_inverseModelViewProjection[1][2] == 0.0) && (czm_inverseModelViewProjection[2][2] == 1.0) && (czm_inverseModelViewProjection[3][2] == -9.0); ' +
+            '  bool b3 = (czm_inverseModelViewProjection[0][3] == 0.0) && (czm_inverseModelViewProjection[1][3] == 0.0) && (czm_inverseModelViewProjection[2][3] == 0.0) && (czm_inverseModelViewProjection[3][3] == 1.0); ' +
+            '  gl_FragColor = vec4(b0 && b1 && b2 && b3); ' +
+            '}';
+
+        verifyDraw(fs, new Matrix4(
+                1.0, 0.0, 0.0, 7.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0));
+    });
+
     it('has czm_modelViewProjectionRelativeToEye', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(1.0, 0.0, 0.0, 0.0,
                         0.0, 1.0, 0.0, 8.0,
                         0.0, 0.0, 1.0, 0.0,
@@ -575,7 +625,7 @@ defineSuite([
 
     it('has czm_modelViewInfiniteProjection', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(
+        us.update(context, createFrameState(createMockCamera(
             new Matrix4(1.0, 0.0, 0.0, 0.0,
                         0.0, 1.0, 0.0, 8.0,
                         0.0, 0.0, 1.0, 0.0,
@@ -668,7 +718,7 @@ defineSuite([
 
     it('has czm_encodedCameraPositionMCHigh and czm_encodedCameraPositionMCLow', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera(undefined, undefined, undefined, new Cartesian3(-1000.0, 0.0, 100000.0))));
+        us.update(context, createFrameState(createMockCamera(undefined, undefined, undefined, new Cartesian3(-1000.0, 0.0, 100000.0))));
 
         var fs =
             'void main() { ' +
@@ -681,7 +731,7 @@ defineSuite([
 
     it('has czm_entireFrustum', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs = 'void main() { gl_FragColor = vec4((czm_entireFrustum.x == 1.0) && (czm_entireFrustum.y == 1000.0)); }';
         verifyDraw(fs);
@@ -689,7 +739,7 @@ defineSuite([
 
     it('has czm_pixelSizeInMeters', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs = 'void main() { gl_FragColor = vec4(czm_pixelSizeInMeters == 1.0); }';
         verifyDraw(fs);
@@ -697,7 +747,7 @@ defineSuite([
 
     it('has czm_sunPositionWC', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs = 'void main() { gl_FragColor = vec4(czm_sunPositionWC != vec3(0.0)); }';
         verifyDraw(fs);
@@ -705,7 +755,7 @@ defineSuite([
 
     it('has czm_sunPositionColumbusView', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs = 'void main() { gl_FragColor = vec4(czm_sunPositionColumbusView != vec3(0.0)); }';
         verifyDraw(fs);
@@ -713,7 +763,7 @@ defineSuite([
 
     it('has czm_sunDirectionEC', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs = 'void main() { gl_FragColor = vec4(czm_sunDirectionEC != vec3(0.0)); }';
         verifyDraw(fs);
@@ -721,7 +771,7 @@ defineSuite([
 
     it('has czm_sunDirectionWC', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs = 'void main() { gl_FragColor = vec4(czm_sunDirectionWC != vec3(0.0)); }';
         verifyDraw(fs);
@@ -729,7 +779,7 @@ defineSuite([
 
     it('has czm_moonDirectionEC', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs = 'void main() { gl_FragColor = vec4(czm_moonDirectionEC != vec3(0.0)); }';
         verifyDraw(fs);
@@ -737,7 +787,7 @@ defineSuite([
 
     it('has czm_viewerPositionWC', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs = 'void main() { gl_FragColor = vec4(czm_viewerPositionWC == vec3(0.0)); }';
         verifyDraw(fs);
@@ -761,7 +811,7 @@ defineSuite([
 
     it('has czm_temeToPseudoFixed', function() {
         var us = context.getUniformState();
-        us.update(createFrameState(createMockCamera()));
+        us.update(context, createFrameState(createMockCamera()));
 
         var fs =
             'void main() { ' +
@@ -770,6 +820,76 @@ defineSuite([
             '    (czm_temeToPseudoFixed[0][1] != 0.0) && (czm_temeToPseudoFixed[1][1] != 0.0) && (czm_temeToPseudoFixed[2][1] == 0.0) && ' +
             '    (czm_temeToPseudoFixed[0][2] == 0.0) && (czm_temeToPseudoFixed[1][2] == 0.0) && (czm_temeToPseudoFixed[2][2] == 1.0) ' +
             '  ); ' +
+            '}';
+        verifyDraw(fs);
+    });
+
+    it('has czm_sceneMode', function() {
+        var fs =
+            'void main() { ' +
+            '  gl_FragColor = vec4(czm_sceneMode == 2.0); ' +   // 3D
+            '}';
+        verifyDraw(fs);
+    });
+
+    it('has czm_sceneMode2D', function() {
+        var fs =
+            'void main() { ' +
+            '  gl_FragColor = vec4(czm_sceneMode2D == 0.0); ' +
+            '}';
+        verifyDraw(fs);
+    });
+
+    it('has czm_sceneModeColumbusView', function() {
+        var fs =
+            'void main() { ' +
+            '  gl_FragColor = vec4(czm_sceneModeColumbusView == 1.0); ' +
+            '}';
+        verifyDraw(fs);
+    });
+
+    it('has czm_sceneMode3D', function() {
+        var fs =
+            'void main() { ' +
+            '  gl_FragColor = vec4(czm_sceneMode3D == 2.0); ' +
+            '}';
+        verifyDraw(fs);
+    });
+
+    it('has czm_sceneModeMorphing', function() {
+        var fs =
+            'void main() { ' +
+            '  gl_FragColor = vec4(czm_sceneModeMorphing == 3.0); ' +
+            '}';
+        verifyDraw(fs);
+    });
+
+    it('has czm_eyeHeight2D == 0,0 in Scene3D', function() {
+        var fs =
+            'void main() { ' +
+            '  gl_FragColor = vec4(czm_eyeHeight2D.x == 0.0, czm_eyeHeight2D.y == 0.0, 1.0, 1.0); ' +
+            '}';
+        verifyDraw(fs);
+    });
+
+    it('has czm_eyeHeight2D in Scene2D', function() {
+        var us = context.getUniformState();
+        var camera = createCamera(context);
+        var frustum = new OrthographicFrustum();
+        frustum.near = 1.0;
+        frustum.far = 2.0;
+        frustum.left = -2.0;
+        frustum.right = 2.0;
+        frustum.top = 1.0;
+        frustum.bottom = -1.0;
+        camera.frustum = frustum;
+        var frameState = createFrameState(camera);
+        frameState.mode = SceneMode.SCENE2D;
+
+        us.update(context, frameState);
+        var fs =
+            'void main() { ' +
+            '  gl_FragColor = vec4(czm_eyeHeight2D.x == 2.0, czm_eyeHeight2D.y == 4.0, 1.0, 1.0); ' +
             '}';
         verifyDraw(fs);
     });

@@ -6,6 +6,7 @@ defineSuite([
          'Specs/destroyContext',
          'Specs/render',
          'Core/Cartesian3',
+         'Core/defined',
          'Core/Ellipsoid',
          'Core/Extent',
          'Core/GeographicProjection',
@@ -24,6 +25,7 @@ defineSuite([
          destroyContext,
          render,
          Cartesian3,
+         defined,
          Ellipsoid,
          Extent,
          GeographicProjection,
@@ -43,7 +45,7 @@ defineSuite([
         var tilesToRenderByTextureCount = surface._tilesToRenderByTextureCount;
         for (var tileSetIndex = 0, tileSetLength = tilesToRenderByTextureCount.length; tileSetIndex < tileSetLength; ++tileSetIndex) {
             var tileSet = tilesToRenderByTextureCount[tileSetIndex];
-            if (typeof tileSet === 'undefined' || tileSet.length === 0) {
+            if (!defined(tileSet) || tileSet.length === 0) {
                 continue;
             }
 
@@ -54,11 +56,11 @@ defineSuite([
             }
         }
 
-        if (typeof minimumTiles !== 'undefined') {
+        if (defined(minimumTiles)) {
             expect(tileCount).not.toBeLessThan(minimumTiles);
         }
 
-        if (typeof maximumTiles !== 'undefined') {
+        if (defined(maximumTiles)) {
             expect(tileCount).not.toBeGreaterThan(maximumTiles);
         }
     }
@@ -71,22 +73,22 @@ defineSuite([
         // update until the load queue is empty.
         waitsFor(function() {
             surface._debug.enableDebugOutput = true;
-            var commandLists = [];
-            cb.update(context, frameState, commandLists);
-            return typeof cb._surface._tileLoadQueue.head === 'undefined' && surface._debug.tilesWaitingForChildren === 0;
+            var commandList = [];
+            cb.update(context, frameState, commandList);
+            return !defined(cb._surface._tileLoadQueue.head) && surface._debug.tilesWaitingForChildren === 0;
         }, 'updating to complete');
     }
 
     function switchTo2D() {
         frameState.mode = SceneMode.SCENE2D;
         var frustum = new OrthographicFrustum();
-        frustum.right = Ellipsoid.WGS84.getMaximumRadius() * Math.PI;
+        frustum.right = Ellipsoid.WGS84.maximumRadius * Math.PI;
         frustum.left = -frustum.right;
         frustum.top = frustum.right;
         frustum.bottom = -frustum.top;
         frameState.camera.frustum = frustum;
-        frameState.camera.controller.update(frameState.mode, frameState.scene2D);
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0030, 0.0030), frameState.scene2D.projection);
+        frameState.camera.update(frameState.mode, frameState.scene2D);
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0030, 0.0030), frameState.scene2D.projection);
     }
 
     var context;
@@ -120,7 +122,7 @@ defineSuite([
                     imageryLayerCollection : new ImageryLayerCollection()
                 });
             }
-            expect(constructWithoutTerrainProvider).toThrow();
+            expect(constructWithoutTerrainProvider).toThrowDeveloperError();
         });
 
         it('throws if a ImageryLayerCollection is not provided', function() {
@@ -129,13 +131,13 @@ defineSuite([
                     terrainProvider : new EllipsoidTerrainProvider()
                 });
             }
-            expect(constructWithoutImageryLayerCollection).toThrow();
+            expect(constructWithoutImageryLayerCollection).toThrowDeveloperError();
         });
     }, 'WebGL');
 
     describe('layer updating', function() {
         it('removing a layer removes it from all tiles', function() {
-            var layerCollection = cb.getImageryLayers();
+            var layerCollection = cb.imageryLayers;
 
             layerCollection.removeAll();
             var layer = layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
@@ -161,7 +163,7 @@ defineSuite([
         });
 
         it('adding a layer adds it to all tiles after update', function() {
-            var layerCollection = cb.getImageryLayers();
+            var layerCollection = cb.imageryLayers;
 
             layerCollection.removeAll();
             layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
@@ -184,7 +186,7 @@ defineSuite([
                     var hasImageFromLayer2 = false;
                     for (var i = 0; i < tile.imagery.length; ++i) {
                         var imageryTile = tile.imagery[i].readyImagery;
-                        if (typeof imageryTile === 'undefined') {
+                        if (!defined(imageryTile)) {
                             imageryTile = tile.imagery[i].loadingImagery;
                         }
                         if (imageryTile.imageryLayer === layer2) {
@@ -197,7 +199,7 @@ defineSuite([
         });
 
         it('moving a layer moves the corresponding TileImagery instances on every tile', function() {
-            var layerCollection = cb.getImageryLayers();
+            var layerCollection = cb.imageryLayers;
 
             layerCollection.removeAll();
             var layer1 = layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
@@ -252,7 +254,7 @@ defineSuite([
     }, 'WebGL');
 
     it('renders in 2D geographic', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
@@ -267,7 +269,7 @@ defineSuite([
     });
 
     it('renders in 2D web mercator', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
@@ -282,12 +284,12 @@ defineSuite([
     });
 
     it('renders in Columbus View geographic', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
-        frameState.camera.controller.update(SceneMode.COLUMBUS_VIEW, { projection : new GeographicProjection(Ellipsoid.WGS84) });
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0030, 0.0030), Ellipsoid.WGS84);
+        frameState.camera.update(SceneMode.COLUMBUS_VIEW, { projection : new GeographicProjection(Ellipsoid.WGS84) });
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0030, 0.0030), Ellipsoid.WGS84);
 
         updateUntilDone(cb);
 
@@ -297,12 +299,12 @@ defineSuite([
     });
 
     it('renders in Columbus View web mercator', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
-        frameState.camera.controller.update(SceneMode.COLUMBUS_VIEW, { projection : new GeographicProjection(Ellipsoid.WGS84) });
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0030, 0.0030), Ellipsoid.WGS84);
+        frameState.camera.update(SceneMode.COLUMBUS_VIEW, { projection : new GeographicProjection(Ellipsoid.WGS84) });
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0030, 0.0030), Ellipsoid.WGS84);
 
         updateUntilDone(cb);
 
@@ -312,11 +314,11 @@ defineSuite([
     });
 
     it('renders in 3D', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
 
         updateUntilDone(cb);
 
@@ -326,19 +328,19 @@ defineSuite([
     });
 
     it('renders in 3D and then Columbus View', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
 
         updateUntilDone(cb);
 
         runs(function() {
             expect(render(context, frameState, cb)).toBeGreaterThan(0);
 
-            frameState.camera.controller.update(SceneMode.COLUMBUS_VIEW, { projection : new GeographicProjection(Ellipsoid.WGS84) });
-            frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0030, 0.0030), Ellipsoid.WGS84);
+            frameState.camera.update(SceneMode.COLUMBUS_VIEW, { projection : new GeographicProjection(Ellipsoid.WGS84) });
+            frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0030, 0.0030), Ellipsoid.WGS84);
         });
 
         updateUntilDone(cb);
@@ -349,7 +351,7 @@ defineSuite([
     });
 
     it('renders even if imagery root tiles fail to load', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
 
         var providerWithInvalidRootTiles = new WebMapServiceImageryProvider({
@@ -359,7 +361,7 @@ defineSuite([
 
         layerCollection.addImageryProvider(providerWithInvalidRootTiles);
 
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
 
         updateUntilDone(cb);
 
@@ -369,7 +371,7 @@ defineSuite([
     });
 
     it('passes layer adjustment values as uniforms', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         var layer = layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
@@ -380,36 +382,32 @@ defineSuite([
         layer.saturation = 0.123;
         layer.hue = 0.456;
 
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
 
         updateUntilDone(cb);
 
         runs(function() {
-            var commandLists = [];
-            expect(render(context, frameState, cb, commandLists)).toBeGreaterThan(0);
+            var commandList = [];
+            expect(render(context, frameState, cb, commandList)).toBeGreaterThan(0);
 
             var tileCommandCount = 0;
 
-            for (var i = 0; i < commandLists.length; ++i) {
-                var commandList = commandLists[i].colorList;
-                var commandListLength = commandList.length;
-                for (var j = 0; j < commandListLength; ++j) {
-                    var command = commandList[j];
+            for (var i = 0; i < commandList.length; ++i) {
+                var command = commandList[i];
 
-                    var uniforms = command.uniformMap;
-                    if (typeof uniforms === 'undefined' || typeof uniforms.u_dayTextureAlpha === 'undefined') {
-                        continue;
-                    }
-
-                    ++tileCommandCount;
-
-                    expect(uniforms.u_dayTextureAlpha()).toEqual([0.123]);
-                    expect(uniforms.u_dayTextureBrightness()).toEqual([0.456]);
-                    expect(uniforms.u_dayTextureContrast()).toEqual([0.654]);
-                    expect(uniforms.u_dayTextureOneOverGamma()).toEqual([1.0/0.321]);
-                    expect(uniforms.u_dayTextureSaturation()).toEqual([0.123]);
-                    expect(uniforms.u_dayTextureHue()).toEqual([0.456]);
+                var uniforms = command.uniformMap;
+                if (!defined(uniforms) || !defined(uniforms.u_dayTextureAlpha)) {
+                    continue;
                 }
+
+                ++tileCommandCount;
+
+                expect(uniforms.u_dayTextureAlpha()).toEqual([0.123]);
+                expect(uniforms.u_dayTextureBrightness()).toEqual([0.456]);
+                expect(uniforms.u_dayTextureContrast()).toEqual([0.654]);
+                expect(uniforms.u_dayTextureOneOverGamma()).toEqual([1.0/0.321]);
+                expect(uniforms.u_dayTextureSaturation()).toEqual([0.123]);
+                expect(uniforms.u_dayTextureHue()).toEqual([0.456]);
             }
 
             expect(tileCommandCount).toBeGreaterThan(0);
@@ -417,7 +415,7 @@ defineSuite([
     });
 
     it('passes functional layer adjustment values as uniforms', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         var layer = layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
@@ -439,36 +437,32 @@ defineSuite([
         layer.saturation = createFunction(0.123);
         layer.hue = createFunction(0.456);
 
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
 
         updateUntilDone(cb);
 
         runs(function() {
-            var commandLists = [];
-            expect(render(context, frameState, cb, commandLists)).toBeGreaterThan(0);
+            var commandList = [];
+            expect(render(context, frameState, cb, commandList)).toBeGreaterThan(0);
 
             var tileCommandCount = 0;
 
-            for (var i = 0; i < commandLists.length; ++i) {
-                var commandList = commandLists[i].colorList;
-                var commandListLength = commandList.length;
-                for (var j = 0; j < commandListLength; ++j) {
-                    var command = commandList[j];
+            for (var i = 0; i < commandList.length; ++i) {
+                var command = commandList[i];
 
-                    var uniforms = command.uniformMap;
-                    if (typeof uniforms === 'undefined' || typeof uniforms.u_dayTextureAlpha === 'undefined') {
-                        continue;
-                    }
-
-                    ++tileCommandCount;
-
-                    expect(uniforms.u_dayTextureAlpha()).toEqual([0.123]);
-                    expect(uniforms.u_dayTextureBrightness()).toEqual([0.456]);
-                    expect(uniforms.u_dayTextureContrast()).toEqual([0.654]);
-                    expect(uniforms.u_dayTextureOneOverGamma()).toEqual([1.0/0.321]);
-                    expect(uniforms.u_dayTextureSaturation()).toEqual([0.123]);
-                    expect(uniforms.u_dayTextureHue()).toEqual([0.456]);
+                var uniforms = command.uniformMap;
+                if (!defined(uniforms) || !defined(uniforms.u_dayTextureAlpha)) {
+                    continue;
                 }
+
+                ++tileCommandCount;
+
+                expect(uniforms.u_dayTextureAlpha()).toEqual([0.123]);
+                expect(uniforms.u_dayTextureBrightness()).toEqual([0.456]);
+                expect(uniforms.u_dayTextureContrast()).toEqual([0.654]);
+                expect(uniforms.u_dayTextureOneOverGamma()).toEqual([1.0/0.321]);
+                expect(uniforms.u_dayTextureSaturation()).toEqual([0.123]);
+                expect(uniforms.u_dayTextureHue()).toEqual([0.456]);
             }
 
             expect(tileCommandCount).toBeGreaterThan(0);
@@ -476,37 +470,33 @@ defineSuite([
     });
 
     it('skips layer with uniform alpha value of zero', function() {
-        var layerCollection = cb.getImageryLayers();
+        var layerCollection = cb.imageryLayers;
         layerCollection.removeAll();
         var layer = layerCollection.addImageryProvider(new SingleTileImageryProvider({url : 'Data/Images/Red16x16.png'}));
 
         layer.alpha = 0.0;
 
-        frameState.camera.controller.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
+        frameState.camera.viewExtent(new Extent(0.0001, 0.0001, 0.0025, 0.0025), Ellipsoid.WGS84);
 
         updateUntilDone(cb);
 
         runs(function() {
-            var commandLists = [];
-            expect(render(context, frameState, cb, commandLists)).toBeGreaterThan(0);
+            var commandList = [];
+            expect(render(context, frameState, cb, commandList)).toBeGreaterThan(0);
 
             var tileCommandCount = 0;
 
-            for (var i = 0; i < commandLists.length; ++i) {
-                var commandList = commandLists[i].colorList;
-                var commandListLength = commandList.length;
-                for (var j = 0; j < commandListLength; ++j) {
-                    var command = commandList[j];
+            for (var i = 0; i < commandList.length; ++i) {
+                var command = commandList[i];
 
-                    var uniforms = command.uniformMap;
-                    if (typeof uniforms === 'undefined' || typeof uniforms.u_dayTextureAlpha === 'undefined') {
-                        continue;
-                    }
-
-                    ++tileCommandCount;
-
-                    expect(uniforms.u_dayTextureAlpha()).toEqual([]);
+                var uniforms = command.uniformMap;
+                if (!defined(uniforms) || !defined(uniforms.u_dayTextureAlpha)) {
+                    continue;
                 }
+
+                ++tileCommandCount;
+
+                expect(uniforms.u_dayTextureAlpha()).toEqual([]);
             }
 
             expect(tileCommandCount).toBeGreaterThan(0);

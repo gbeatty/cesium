@@ -1,8 +1,10 @@
 /*global define*/
 define([
+        '../Core/defined',
         '../Core/destroyObject',
         './ImageryState'
     ], function(
+        defined,
         destroyObject,
         ImageryState) {
     "use strict";
@@ -30,10 +32,11 @@ define([
         this.imageUrl = undefined;
         this.image = undefined;
         this.texture = undefined;
+        this.credits = undefined;
         this.referenceCount = 0;
 
-        if (typeof extent === 'undefined' && imageryLayer.getImageryProvider().isReady()) {
-            var tilingScheme = imageryLayer.getImageryProvider().getTilingScheme();
+        if (!defined(extent) && imageryLayer.getImageryProvider().ready) {
+            var tilingScheme = imageryLayer.getImageryProvider().tilingScheme;
             extent = tilingScheme.tileXYToExtent(x, y, level);
         }
 
@@ -57,15 +60,15 @@ define([
         if (this.referenceCount === 0) {
             this.imageryLayer.removeImageryFromCache(this);
 
-            if (typeof this.parent !== 'undefined') {
+            if (defined(this.parent)) {
                 this.parent.releaseReference();
             }
 
-            if (typeof this.image !== 'undefined' && typeof this.image.destroy !== 'undefined') {
+            if (defined(this.image) && defined(this.image.destroy)) {
                 this.image.destroy();
             }
 
-            if (typeof this.texture !== 'undefined' && typeof this.texture.destroy !== 'undefined') {
+            if (defined(this.texture) && defined(this.texture.destroy)) {
                 this.texture.destroy();
             }
 

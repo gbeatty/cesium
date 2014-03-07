@@ -3,8 +3,10 @@ define([
         'DynamicScene/CompositeDynamicObjectCollection',
         'DynamicScene/DynamicObjectView',
         'DynamicScene/DynamicObjectCollection',
-        'DynamicScene/processCzml',
-        'DynamicScene/VisualizerCollection',
+        'DynamicScene/CzmlDataSource',
+        'DynamicScene/DataSourceDisplay',
+        'DynamicScene/DataSourceCollection',
+        'DynamicScene/DynamicObject',
         'Scene/Billboard',
         'Scene/BingMapsImageryProvider',
         'Scene/Camera',
@@ -21,6 +23,7 @@ define([
         'Core/Cartographic',
         'Core/ClockRange',
         'Core/ClockStep',
+        'Core/defined',
         'Core/Ellipsoid',
         'Core/Extent',
         'Core/Iso8601',
@@ -39,8 +42,10 @@ define([
         CompositeDynamicObjectCollection,
         DynamicObjectView,
         DynamicObjectCollection,
-        processCzml,
-        VisualizerCollection,
+        CzmlDataSource,
+        DataSourceDisplay,
+        DataSourceCollection,
+        DynamicObject,
         Billboard,
         BingMapsImageryProvider,
         Camera,
@@ -57,6 +62,7 @@ define([
         Cartographic,
         ClockRange,
         ClockStep,
+        defined,
         Ellipsoid,
         Extent,
         Iso8601,
@@ -79,43 +85,44 @@ define([
     }
 
     function disableInput(scene) {
-        var controller = scene.getScreenSpaceCameraController();
-        controller.enableTranslate = false;
-        controller.enableZoom = false;
-        controller.enableRotate = false;
-        controller.enableTilt = false;
-        controller.enableLook = false;
+        var controller = scene.screenSpaceCameraController;
+        controller.enableInputs = false;
     }
 
     function enableInput(scene) {
-        var controller = scene.getScreenSpaceCameraController();
-        controller.enableTranslate = true;
-        controller.enableZoom = true;
-        controller.enableRotate = true;
-        controller.enableTilt = true;
-        controller.enableLook = true;
+        var controller = scene.screenSpaceCameraController;
+        controller.enableInputs = true;
     }
 
     function flyToObject(scene, dynamicObject) {
         disableInput(scene);
 
+        var time = cesiumWidget.clock.currentTime;
+
         dynamicObjectView = new DynamicObjectView(dynamicObject, scene);
-        dynamicObjectView.update(cesiumWidget.clock.currentTime);
+        dynamicObjectView.update(time);
+
+        var objectPosition = dynamicObject.position.getValue(time);
+        var cameraOffset = new Cartesian3(0, -1000, 100);
+        var direction = Cartesian3.negate(Cartesian3.normalize(cameraOffset));
+        var up = Cartesian3.normalize(Cartesian3.cross(Cartesian3.cross(direction, objectPosition), direction));
 
         var cameraFlightPath = CameraFlightPath.createAnimation(
-            scene.getFrameState(), {
-                destination : new Cartesian3(0, -1000, 600),
-                duration : 12000,
+            scene, {
+                destination : Cartesian3.add(objectPosition, cameraOffset),
+                direction : direction,
+                up : up,
+                duration : 1000,
                 onComplete : function() {
                     enableInput(scene);
             }
         });
-        scene.getAnimations().add(cameraFlightPath);
+        scene.animations.add(cameraFlightPath);
     }
 
     function createQuaternion(direction, up) {
-        var right = direction.cross(up);
-        up = right.cross(direction);
+        var right = Cartesian3.cross(direction, up);
+        up = Cartesian3.cross(right, direction);
         var viewMat = new Matrix3( right.x,      right.y,      right.z,
                                    up.x,         up.y,         up.z,
                                   -direction.x, -direction.y, -direction.z);
@@ -132,32 +139,34 @@ define([
         disableInput(cesiumWidget.scene);
         cesiumWidget.clock.shouldAnimate = false;
 
-        var camera = cesiumWidget.scene.getCamera();
-        var initialCameraPositionENU = camera.position;
-        var initialCameraPositionWC = camera.getPositionWC();
-        var initialObjectPositionWC = pathObject.position.getValueCartesian(cesiumWidget.clock.currentTime);
+        var camera = cesiumWidget.scene.camera;
+        var initialCameraPositionENU = Cartesian3.clone(camera.position);
+        var initialCameraPositionWC = Cartesian3.clone(camera.positionWC);
+        var initialObjectPositionWC = pathObject.position.getValue(cesiumWidget.clock.currentTime);
 
-        var cameraOffsetWC = initialCameraPositionWC.subtract(initialObjectPositionWC);
-        cameraOffsetWC = cameraOffsetWC.normalize().multiplyByScalar(75);
-        var finalCameraPositionENU = initialCameraPositionENU.normalize().multiplyByScalar(75);
-        var finalObjectPositionWC = pathObject.position.getValueCartesian(jdate);
-        var finalCameraPositionWC = finalObjectPositionWC.add(cameraOffsetWC);
+        var cameraOffsetWC = Cartesian3.subtract(initialCameraPositionWC, initialObjectPositionWC);
+        cameraOffsetWC = Cartesian3.multiplyByScalar(Cartesian3.normalize(cameraOffsetWC), 75);
+        var finalCameraPositionENU = Cartesian3.multiplyByScalar(Cartesian3.normalize(initialCameraPositionENU), 75);
+        var finalObjectPositionWC = pathObject.position.getValue(jdate);
+        var finalCameraPositionWC = Cartesian3.add(finalObjectPositionWC, cameraOffsetWC);
 
-        var finalDirection = cameraOffsetWC.negate().normalize();
-        var finalRight = finalDirection.cross(finalObjectPositionWC).normalize();
-        var finalUp = finalRight.cross(finalDirection).normalize();
+        var finalDirection = Cartesian3.normalize(Cartesian3.negate(cameraOffsetWC));
+        var finalRight = Cartesian3.normalize(Cartesian3.cross(finalDirection, finalObjectPositionWC));
+        var finalUp = Cartesian3.normalize(Cartesian3.cross(finalRight, finalDirection));
         var finalRefFrame = Transforms.eastNorthUpToFixedFrame(finalObjectPositionWC);
-        var finalOffsetENU = Matrix4.getRotation(finalRefFrame).multiplyByVector(cameraOffsetWC);
+        var finalOffsetENU = Matrix4.multiplyByVector(Matrix4.getRotation(finalRefFrame), cameraOffsetWC);
 
-        var initialOrientation = createQuaternion(camera.getDirectionWC(), camera.getUpWC());
+        var initialOrientation = createQuaternion(camera.directionWC, camera.upWC);
         var finalOrientation = createQuaternion(finalDirection, finalUp);
 
         // put the camera in world coordinate ref frame
-        camera.position = camera.getPositionWC();
-        camera.direction = Cartesian3.fromCartesian4(camera.getDirectionWC());
-        camera.up = Cartesian3.fromCartesian4(camera.getUpWC());
-        camera.right = Cartesian3.fromCartesian4(camera.getRightWC());
-        camera.transform = Matrix4.IDENTITY.clone();
+        /*camera.position = camera.positionWC;
+        camera.direction = camera.directionWC;
+        camera.up = camera.upWC;
+        camera.right = camera.rightWC;
+        camera.transform = Matrix4.IDENTITY.clone();*/
+
+        camera.setTransform(Matrix4.IDENTITY);
 
 
         var updateCamera = function(value) {
@@ -166,9 +175,9 @@ define([
             var rotationMatrix = Matrix3.fromQuaternion(orientation);
 
             camera.position = Cartesian3.lerp(initialCameraPositionWC, finalCameraPositionWC, time);
-            camera.right = rotationMatrix.getRow(0);
-            camera.up = rotationMatrix.getRow(1);
-            camera.direction = rotationMatrix.getRow(2).negate();
+            camera.right = Matrix3.getRow(rotationMatrix, 0);
+            camera.up = Matrix3.getRow(rotationMatrix, 1);
+            camera.direction = Cartesian3.negate(Matrix3.getRow(rotationMatrix, 2));
         };
 
         var duration = 3000;
@@ -186,9 +195,9 @@ define([
                 onComplete : function() {
                     camera.transform = finalRefFrame;
                     camera.position = finalCameraPositionENU;
-                    camera.direction = camera.position.negate().normalize();
-                    camera.right = camera.direction.cross(Cartesian3.UNIT_Z).normalize();
-                    camera.up = camera.right.cross(camera.direction).normalize();
+                    camera.direction = Cartesian3.normalize(Cartesian3.negate(camera.position));
+                    camera.right = Cartesian3.normalize(Cartesian3.cross(camera.direction, Cartesian3.UNIT_Z));
+                    camera.up = Cartesian3.normalize(Cartesian3.cross(camera.right, camera.direction));
                     enableInput(cesiumWidget.scene);
                     cesiumWidget.clock.shouldAnimate = true;
                     cesiumWidget.clock.currentTime = jdate;
@@ -196,7 +205,7 @@ define([
                 }
             };
 
-        cesiumWidget.scene.getAnimations().add(animation);
+        cesiumWidget.scene.animations.add(animation);
 
     }
 
@@ -231,23 +240,24 @@ define([
         if(pathObject !== 'undefined') {
 
             // calculate instantaneous speed
-            var currentPosition = pathObject.position.getValueCartesian(clock.currentTime);
-            var startPosition = pathObject.position.getValueCartesian(clock.currentTime.addSeconds(-2.0));
+            var currentPosition = pathObject.position.getValue(clock.currentTime);
+            var startPosition = pathObject.position.getValue(clock.currentTime.addSeconds(-2.0));
             var distance = Cartesian3.distance(currentPosition, startPosition);
             var speed = distance * 1.23694; // m/s -> mph
             speed = Math.round(speed); // round to 2 decimal places
 
             // calculate slope
-            startPosition = pathObject.position.getValueCartographic(clock.currentTime.addSeconds(-2.0));
-            currentPosition = pathObject.position.getValueCartographic(clock.currentTime);
+            var earth = cesiumWidget.centralBody.ellipsoid;
+            startPosition = earth.cartesianToCartographic(pathObject.position.getValue(clock.currentTime.addSeconds(-2.0)));
+            currentPosition = earth.cartesianToCartographic(pathObject.position.getValue(clock.currentTime));
             var altitude = Math.round(currentPosition.height * 3.28084);
             var referencePoint = currentPosition.clone();
             referencePoint.height = startPosition.height;
-            startPosition = Ellipsoid.WGS84.cartographicToCartesian(startPosition);
-            currentPosition = Ellipsoid.WGS84.cartographicToCartesian(currentPosition);
-            referencePoint = Ellipsoid.WGS84.cartographicToCartesian(referencePoint);
-            var vec1 = referencePoint.subtract(startPosition);
-            var vec2 = currentPosition.subtract(startPosition);
+            startPosition = earth.cartographicToCartesian(startPosition);
+            currentPosition = earth.cartographicToCartesian(currentPosition);
+            referencePoint = earth.cartographicToCartesian(referencePoint);
+            var vec1 = Cartesian3.subtract(referencePoint, startPosition);
+            var vec2 = Cartesian3.subtract(currentPosition, startPosition);
             var slope = CesiumMath.toDegrees(Cartesian3.angleBetween(vec1, vec2));
             slope = Math.round(slope);
 
@@ -292,11 +302,14 @@ define([
 
         var selectedObject = cesiumWidget.scene.pick(e.position);
 
-        if (typeof selectedObject !== 'undefined' && typeof selectedObject.dynamicObject !== 'undefined') {
+        if (defined(selectedObject) && defined(selectedObject.primitive) && defined(selectedObject.primitive.id)) {
             try {
-                var jdate = JulianDate.fromIso8601( selectedObject.dynamicObject.id );
-                flyToTime(jdate);
-            } catch(e) {
+                if( selectedObject.primitive.id instanceof DynamicObject) {
+                    var dynamicObject = selectedObject.primitive.id;
+                    var jdate = JulianDate.fromIso8601(dynamicObject.id);
+                    flyToTime(jdate);
+                }
+            } catch (e) {
             }
         }
     }
@@ -343,8 +356,6 @@ define([
         cesiumWidget.centralBody.depthTestAgainstTerrain = true;
         cesiumWidget.clock.onTick.addEventListener(updateData);
 
-        cesiumWidget.centralBody.logoOffset = new Cartesian2(300, 30);
-
         // initialize the animation controller
         var clockViewModel = new ClockViewModel(cesiumWidget.clock);
         clockViewModel.owner = this;
@@ -368,7 +379,7 @@ define([
 
 
         var slopeImageryProvider = new TileMapServiceImageryProvider({
-            url : 'Gallery/slopeShadeTiles',
+            url : 'Gallery/SlopeShadeTiles',
             fileExtension: 'png',
             maximumLevel: 15,
             extent: new Extent(
@@ -377,7 +388,7 @@ define([
                 CesiumMath.toRadians(-111.3080556),
                 CesiumMath.toRadians(40.7639815))
         });
-        var layers = cesiumWidget.centralBody.getImageryLayers();
+        var layers = cesiumWidget.centralBody.imageryLayers;
         slopeLayer = layers.addImageryProvider(slopeImageryProvider);
         slopeLayer.show = false;
         slopeLayer.alpha = 0.6;
@@ -424,14 +435,16 @@ define([
         handler.setInputAction(function (movement) {
             var scene = cesiumWidget.scene;
             var pickedObject = scene.pick(movement.endPosition);
-            if(animatingBillboard === undefined &&
-                pickedObject instanceof Billboard &&
-                pickedObject.dynamicObject.id !== "path" &&
+            if(defined(pickedObject) &&
+                defined(pickedObject.primitive) &&
+                !defined(animatingBillboard) &&
+                pickedObject.primitive instanceof Billboard &&
+                pickedObject.primitive.id._id !== "path" &&
                 !pickedObject.highlighted) {
 
                 // on enter
-                animatingBillboard = pickedObject;
-                animation = animation || scene.getAnimations().add({
+                animatingBillboard = pickedObject.primitive;
+                animation = animation || scene.animations.add({
                     onUpdate : updateAnimation,
                     onComplete : animationComplete,
                     startValue : {
@@ -444,11 +457,15 @@ define([
                     easingFunction : Tween.Easing.Quartic.Out
                 });
             }
-            else if (animatingBillboard !== undefined &&
-                    pickedObject !== animatingBillboard &&
-                    animatingBillboard.highlighted) {
+            else if (defined(animatingBillboard) &&
+                    animatingBillboard.highlighted &&
+                    (   !defined(pickedObject) ||
+                        (defined(pickedObject) &&
+                        defined(pickedObject.primitive) &&
+                        pickedObject.primitive !== animatingBillboard)
+                    )) {
                 // on exit
-                animation = animation || scene.getAnimations().add({
+                animation = animation || scene.animations.add({
                     onUpdate : updateAnimation,
                     onComplete : finalAnimationComplete,
                     startValue : {
@@ -473,30 +490,33 @@ define([
         location = "Deer Valley, UT";
 
         // load path czml
-        loadJson(pathCzml).then(function(czml) {
+        var pathCzmlDataSource = new CzmlDataSource();
+        pathCzmlDataSource.loadUrl(pathCzml).then(function() {
 
-            var dynamicObjectCollection =  new DynamicObjectCollection();
-            processCzml(czml, dynamicObjectCollection, pathCzml);
+            var dynamicObjectCollection =  pathCzmlDataSource.getDynamicObjectCollection();
             setTimeFromBuffer(dynamicObjectCollection);
 
             // set the camera to follow the path
-            var lookAtObject = dynamicObjectCollection.getObject("path");
+            var lookAtObject = dynamicObjectCollection.getById("path");
             flyToObject(cesiumWidget.scene, lookAtObject);
             pathObject = lookAtObject;
 
             // get the current trail object
-            currentTrail = dynamicObjectCollection.getObject("CurrentTrail");
+            currentTrail = dynamicObjectCollection.getById("CurrentTrail");
 
-            pathVisualizers = VisualizerCollection.createCzmlStandardCollection(cesiumWidget.scene, dynamicObjectCollection);
+            var dataSourceCollection = new DataSourceCollection();
+            dataSourceCollection.add(pathCzmlDataSource);
+            pathVisualizers = new DataSourceDisplay(cesiumWidget.scene, dataSourceCollection);
             setLoading(false);
+
         });
 
         // load trails
-        loadJson(trailsCzml).then(function(czml) {
-
-            trailMapCzml =  new DynamicObjectCollection();
-            processCzml(czml, trailMapCzml, trailsCzml);
-            trailsVisualizers = VisualizerCollection.createCzmlStandardCollection(cesiumWidget.scene, trailMapCzml);
+        var trailsCzmlDataSource = new CzmlDataSource();
+        trailsCzmlDataSource.loadUrl(trailsCzml).then(function() {
+            var dataSourceCollection = new DataSourceCollection();
+            dataSourceCollection.add(trailsCzmlDataSource);
+            trailsVisualizers = new DataSourceDisplay(cesiumWidget.scene, dataSourceCollection);
         });
 
     });

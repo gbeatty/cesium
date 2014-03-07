@@ -1,10 +1,10 @@
 /*global define*/
 define([
-        '../Core/destroyObject',
-        '../Core/defaultValue'
+        '../Core/defined',
+        '../Core/destroyObject'
     ], function(
-        destroyObject,
-        defaultValue) {
+        defined,
+        destroyObject) {
     "use strict";
 
     /**
@@ -13,10 +13,10 @@ define([
      * @alias CentralBodySurfaceShaderSet
      * @private
      */
-    function CentralBodySurfaceShaderSet(attributeIndices) {
+    function CentralBodySurfaceShaderSet(attributeLocations) {
         this.baseVertexShaderString = undefined;
         this.baseFragmentShaderString = undefined;
-        this._attributeIndices = attributeIndices;
+        this._attributeLocations = attributeLocations;
         this._shaders = {};
     }
 
@@ -34,12 +34,30 @@ define([
     function getShaderKey(textureCount, applyBrightness, applyContrast, applyHue, applySaturation, applyGamma, applyAlpha) {
         var key = '';
         key += textureCount;
-        key += applyBrightness ? '_brightness' : '';
-        key += applyContrast ? '_contrast' : '';
-        key += applyHue ? '_hue' : '';
-        key += applySaturation ? '_saturation' : '';
-        key += applyGamma ? '_gamma' : '';
-        key += applyAlpha ? '_alpha' : '';
+
+        if (applyBrightness) {
+            key += '_brightness';
+        }
+
+        if (applyContrast) {
+            key += '_contrast';
+        }
+
+        if (applyHue) {
+            key += '_hue';
+        }
+
+        if (applySaturation) {
+            key += '_saturation';
+        }
+
+        if (applyGamma) {
+            key += '_gamma';
+        }
+
+        if (applyAlpha) {
+            key += '_alpha';
+        }
 
         return key;
     }
@@ -47,7 +65,7 @@ define([
     CentralBodySurfaceShaderSet.prototype.getShaderProgram = function(context, textureCount, applyBrightness, applyContrast, applyHue, applySaturation, applyGamma, applyAlpha) {
         var key = getShaderKey(textureCount, applyBrightness, applyContrast, applyHue, applySaturation, applyGamma, applyAlpha);
         var shader = this._shaders[key];
-        if (typeof shader === 'undefined') {
+        if (!defined(shader)) {
             var vs = this.baseVertexShaderString;
             var fs =
                 (applyBrightness ? '#define APPLY_BRIGHTNESS\n' : '') +
@@ -70,22 +88,19 @@ define([
                     '   textureCoordinates,\n' +
                     '   u_dayTextureTexCoordsExtent[' + i + '],\n' +
                     '   u_dayTextureTranslationAndScale[' + i + '],\n' +
-                    '   u_dayTextureAlpha[' + i + '],\n' +
-                    '   u_dayTextureBrightness[' + i + '],\n' +
-                    '   u_dayTextureContrast[' + i + '],\n' +
-                    '   u_dayTextureHue[' + i + '],\n' +
-                    '   u_dayTextureSaturation[' + i + '],\n' +
-                    '   u_dayTextureOneOverGamma[' + i + ']);\n';
+                    (applyAlpha ?      '   u_dayTextureAlpha[' + i + '],\n' : '1.0,\n') +
+                    (applyBrightness ? '   u_dayTextureBrightness[' + i + '],\n' : '0.0,\n') +
+                    (applyContrast ?   '   u_dayTextureContrast[' + i + '],\n' : '0.0,\n') +
+                    (applyHue ?        '   u_dayTextureHue[' + i + '],\n' : '0.0,\n') +
+                    (applySaturation ? '   u_dayTextureSaturation[' + i + '],\n' : '0.0,\n') +
+                    (applyGamma ?      '   u_dayTextureOneOverGamma[' + i + ']);\n' : '0.0);\n') ;
             }
 
             fs +=
                 '    return color;\n' +
                 '}';
 
-            shader = context.getShaderCache().getShaderProgram(
-                vs,
-                fs,
-                this._attributeIndices);
+            shader = context.getShaderCache().getShaderProgram(vs, fs, this._attributeLocations);
             this._shaders[key] = shader;
         }
         return shader;

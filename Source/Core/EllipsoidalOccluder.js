@@ -1,11 +1,15 @@
 /*global define*/
 define([
         './defaultValue',
+        './defined',
+        './defineProperties',
         './DeveloperError',
         './Cartesian3',
         './BoundingSphere'
     ], function(
         defaultValue,
+        defined,
+        defineProperties,
         DeveloperError,
         Cartesian3,
         BoundingSphere) {
@@ -15,7 +19,7 @@ define([
      * Determine whether or not other objects are visible or hidden behind the visible horizon defined by
      * an {@link Ellipsoid} and a camera position.  The ellipsoid is assumed to be located at the
      * origin of the coordinate system.  This class uses the algorithm described in the
-     * <a href="http://cesium.agi.com/2013/04/25/Horizon-culling/">Horizon Culling</a> blog post.
+     * <a href="http://cesiumjs.org/2013/04/25/Horizon-culling/">Horizon Culling</a> blog post.
      *
      * @alias EllipsoidalOccluder
      *
@@ -24,71 +28,64 @@ define([
      *        specified, {@link EllipsoidalOccluder#setCameraPosition} must be called before
      *        testing visibility.
      *
-     * @exception {DeveloperError} <code>ellipsoid</code> is required.
-     *
      * @constructor
      *
      * @example
      * // Construct an ellipsoidal occluder with radii 1.0, 1.1, and 0.9.
-     * var cameraPosition = new Cartesian3(5.0, 6.0, 7.0);
-     * var occluderEllipsoid = new Ellipsoid(1.0, 1.1, 0.9);
-     * var occluder = new EllipsoidalOccluder(occluderEllipsoid, cameraPosition);
+     * var cameraPosition = new Cesium.Cartesian3(5.0, 6.0, 7.0);
+     * var occluderEllipsoid = new Cesium.Ellipsoid(1.0, 1.1, 0.9);
+     * var occluder = new Cesium.EllipsoidalOccluder(occluderEllipsoid, cameraPosition);
      */
     var EllipsoidalOccluder = function(ellipsoid, cameraPosition) {
-        if (typeof ellipsoid === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(ellipsoid)) {
             throw new DeveloperError('ellipsoid is required.');
         }
+        //>>includeEnd('debug');
 
         this._ellipsoid = ellipsoid;
         this._cameraPosition = new Cartesian3();
         this._cameraPositionInScaledSpace = new Cartesian3();
         this._distanceToLimbInScaledSpaceSquared = 0.0;
 
-        // setCameraPosition fills in the above values
-        if (typeof cameraPosition !== 'undefined') {
-            this.setCameraPosition(cameraPosition);
+        // cameraPosition fills in the above values
+        if (defined(cameraPosition)) {
+            this.cameraPosition = cameraPosition;
         }
     };
 
-    /**
-     * Returns the occluding ellipsoid.
-     *
-     * @memberof EllipsoidalOccluder
-     *
-     * @return {Ellipsoid} The ellipsoid.
-     */
-    EllipsoidalOccluder.prototype.getEllipsoid = function() {
-        return this._ellipsoid;
-    };
+    defineProperties(EllipsoidalOccluder.prototype, {
+        /**
+         * Gets the occluding ellipsoid.
+         * @memberof EllipsoidalOccluder.prototype
+         * @type {Ellipsoid}
+         */
+        ellipsoid : {
+            get: function() {
+                return this._ellipsoid;
+            }
+        },
+        /**
+         * Gets or sets the position of the camera.
+         * @memberof EllipsoidalOccluder.prototype
+         * @type {Cartesian3}
+         */
+        cameraPosition : {
+            get : function() {
+                return this._cameraPosition;
+            },
+            set : function(cameraPosition) {
+                // See http://cesiumjs.org/2013/04/25/Horizon-culling/
+                var ellipsoid = this._ellipsoid;
+                var cv = ellipsoid.transformPositionToScaledSpace(cameraPosition, this._cameraPositionInScaledSpace);
+                var vhMagnitudeSquared = Cartesian3.magnitudeSquared(cv) - 1.0;
 
-    /**
-     * Sets the position of the camera.
-     *
-     * @memberof EllipsoidalOccluder
-     *
-     * @param {Cartesian3} cameraPosition The new position of the camera.
-     */
-    EllipsoidalOccluder.prototype.setCameraPosition = function(cameraPosition) {
-        // See http://cesium.agi.com/2013/04/25/Horizon-culling/
-        var ellipsoid = this._ellipsoid;
-        var cv = ellipsoid.transformPositionToScaledSpace(cameraPosition, this._cameraPositionInScaledSpace);
-        var vhMagnitudeSquared = Cartesian3.magnitudeSquared(cv) - 1.0;
-
-        Cartesian3.clone(cameraPosition, this._cameraPosition);
-        this._cameraPositionInScaledSpace = cv;
-        this._distanceToLimbInScaledSpaceSquared = vhMagnitudeSquared;
-    };
-
-    /**
-     * Gets the position of the camera.
-     *
-     * @memberof EllipsoidalOccluder
-     *
-     * @returns {Cartesian3} The position of the camera.
-     */
-    EllipsoidalOccluder.prototype.getCameraPosition = function() {
-        return this._cameraPosition;
-    };
+                Cartesian3.clone(cameraPosition, this._cameraPosition);
+                this._cameraPositionInScaledSpace = cv;
+                this._distanceToLimbInScaledSpaceSquared = vhMagnitudeSquared;
+            }
+        }
+    });
 
     var scratchCartesian = new Cartesian3();
 
@@ -99,13 +96,13 @@ define([
      *
      * @param {Cartesian3} occludee The point to test for visibility.
      *
-     * @return {boolean} <code>true</code> if the occludee is visible; otherwise <code>false</code>.
+     * @returns {boolean} <code>true</code> if the occludee is visible; otherwise <code>false</code>.
      *
      * @example
-     * var cameraPosition = new Cartesian3(0, 0, 2.5);
-     * var ellipsoid = new Ellipsoid(1.0, 1.1, 0.9);
-     * var occluder = new EllipsoidalOccluder(ellipsoid, cameraPosition);
-     * var point = new Cartesian3(0, -3, -3);
+     * var cameraPosition = new Cesium.Cartesian3(0, 0, 2.5);
+     * var ellipsoid = new Cesium.Ellipsoid(1.0, 1.1, 0.9);
+     * var occluder = new Cesium.EllipsoidalOccluder(ellipsoid, cameraPosition);
+     * var point = new Cesium.Cartesian3(0, -3, -3);
      * occluder.isPointVisible(point); //returns true
      */
     EllipsoidalOccluder.prototype.isPointVisible = function(occludee) {
@@ -123,24 +120,24 @@ define([
      *
      * @param {Cartesian3} occludeeScaledSpacePosition The point to test for visibility, represented in the scaled space.
      *
-     * @return {boolean} <code>true</code> if the occludee is visible; otherwise <code>false</code>.
+     * @returns {boolean} <code>true</code> if the occludee is visible; otherwise <code>false</code>.
      *
      * @example
-     * var cameraPosition = new Cartesian3(0, 0, 2.5);
-     * var ellipsoid = new Ellipsoid(1.0, 1.1, 0.9);
-     * var occluder = new EllipsoidalOccluder(ellipsoid, cameraPosition);
-     * var point = new Cartesian3(0, -3, -3);
+     * var cameraPosition = new Cesium.Cartesian3(0, 0, 2.5);
+     * var ellipsoid = new Cesium.Ellipsoid(1.0, 1.1, 0.9);
+     * var occluder = new Cesium.EllipsoidalOccluder(ellipsoid, cameraPosition);
+     * var point = new Cesium.Cartesian3(0, -3, -3);
      * var scaledSpacePoint = ellipsoid.transformPositionToScaledSpace(point);
      * occluder.isScaledSpacePointVisible(scaledSpacePoint); //returns true
      */
     EllipsoidalOccluder.prototype.isScaledSpacePointVisible = function(occludeeScaledSpacePosition) {
-        // See http://cesium.agi.com/2013/04/25/Horizon-culling/
+        // See http://cesiumjs.org/2013/04/25/Horizon-culling/
         var cv = this._cameraPositionInScaledSpace;
         var vhMagnitudeSquared = this._distanceToLimbInScaledSpaceSquared;
         var vt = Cartesian3.subtract(occludeeScaledSpacePosition, cv, scratchCartesian);
-        var vtDotVc = -vt.dot(cv);
+        var vtDotVc = -Cartesian3.dot(vt, cv);
         var isOccluded = vtDotVc > vhMagnitudeSquared &&
-                         vtDotVc * vtDotVc / vt.magnitudeSquared() > vhMagnitudeSquared;
+                         vtDotVc * vtDotVc / Cartesian3.magnitudeSquared(vt) > vhMagnitudeSquared;
         return !isOccluded;
     };
 
@@ -161,17 +158,17 @@ define([
      * @returns {Cartesian3} The computed horizon culling point, expressed in the ellipsoid-scaled space.
      */
     EllipsoidalOccluder.prototype.computeHorizonCullingPoint = function(directionToPoint, positions, result) {
-        if (typeof directionToPoint === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(directionToPoint)) {
             throw new DeveloperError('directionToPoint is required');
         }
-        if (typeof positions === 'undefined') {
+        if (!defined(positions)) {
             throw new DeveloperError('positions is required');
         }
+        //>>includeEnd('debug');
 
         var ellipsoid = this._ellipsoid;
-
         var scaledSpaceDirectionToPoint = computeScaledSpaceDirectionToPoint(ellipsoid, directionToPoint);
-
         var resultMagnitude = 0.0;
 
         for (var i = 0, len = positions.length; i < len; ++i) {
@@ -204,22 +201,21 @@ define([
      * @returns {Cartesian3} The computed horizon culling point, expressed in the ellipsoid-scaled space.
      */
     EllipsoidalOccluder.prototype.computeHorizonCullingPointFromVertices = function(directionToPoint, vertices, stride, center, result) {
-        if (typeof directionToPoint === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(directionToPoint)) {
             throw new DeveloperError('directionToPoint is required');
         }
-        if (typeof vertices === 'undefined') {
+        if (!defined(vertices)) {
             throw new DeveloperError('vertices is required');
         }
-        if (typeof stride === 'undefined') {
+        if (!defined(stride)) {
             throw new DeveloperError('stride is required');
         }
+        //>>includeEnd('debug');
 
         center = defaultValue(center, Cartesian3.ZERO);
-
         var ellipsoid = this._ellipsoid;
-
         var scaledSpaceDirectionToPoint = computeScaledSpaceDirectionToPoint(ellipsoid, directionToPoint);
-
         var resultMagnitude = 0.0;
 
         for (var i = 0, len = vertices.length; i < len; i += stride) {
@@ -249,16 +245,18 @@ define([
      * @returns {Cartesian3} The computed horizon culling point, expressed in the ellipsoid-scaled space.
      */
     EllipsoidalOccluder.prototype.computeHorizonCullingPointFromExtent = function(extent, ellipsoid, result) {
-        if (typeof extent === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(extent)) {
             throw new DeveloperError('extent is required.');
         }
+        //>>includeEnd('debug');
 
-        var positions = extent.subsample(ellipsoid, subsampleScratch);
+        var positions = extent.subsample(ellipsoid, 0.0, subsampleScratch);
         var bs = BoundingSphere.fromPoints(positions);
 
         // If the bounding sphere center is too close to the center of the occluder, it doesn't make
         // sense to try to horizon cull it.
-        if (bs.center.magnitude() < 0.1 * ellipsoid.getMinimumRadius()) {
+        if (Cartesian3.magnitude(bs.center) < 0.1 * ellipsoid.minimumRadius) {
             return undefined;
         }
 
@@ -270,16 +268,16 @@ define([
 
     function computeMagnitude(ellipsoid, position, scaledSpaceDirectionToPoint) {
         var scaledSpacePosition = ellipsoid.transformPositionToScaledSpace(position, scaledSpaceScratch);
-        var magnitudeSquared = scaledSpacePosition.magnitudeSquared();
+        var magnitudeSquared = Cartesian3.magnitudeSquared(scaledSpacePosition);
         var magnitude = Math.sqrt(magnitudeSquared);
-        var direction = scaledSpacePosition.divideByScalar(magnitude, directionScratch);
+        var direction = Cartesian3.divideByScalar(scaledSpacePosition, magnitude, directionScratch);
 
         // For the purpose of this computation, points below the ellipsoid are consider to be on it instead.
         magnitudeSquared = Math.max(1.0, magnitudeSquared);
         magnitude = Math.max(1.0, magnitude);
 
-        var cosAlpha = direction.dot(scaledSpaceDirectionToPoint);
-        var sinAlpha = direction.cross(scaledSpaceDirectionToPoint).magnitude();
+        var cosAlpha = Cartesian3.dot(direction, scaledSpaceDirectionToPoint);
+        var sinAlpha = Cartesian3.magnitude(Cartesian3.cross(direction, scaledSpaceDirectionToPoint));
         var cosBeta = 1.0 / magnitude;
         var sinBeta = Math.sqrt(magnitudeSquared - 1.0) * cosBeta;
 
@@ -293,14 +291,14 @@ define([
             return undefined;
         }
 
-        return scaledSpaceDirectionToPoint.multiplyByScalar(resultMagnitude, result);
+        return Cartesian3.multiplyByScalar(scaledSpaceDirectionToPoint, resultMagnitude, result);
     }
 
     var directionToPointScratch = new Cartesian3();
 
     function computeScaledSpaceDirectionToPoint(ellipsoid, directionToPoint) {
         ellipsoid.transformPositionToScaledSpace(directionToPoint, directionToPointScratch);
-        return directionToPointScratch.normalize(directionToPointScratch);
+        return Cartesian3.normalize(directionToPointScratch, directionToPointScratch);
     }
 
     return EllipsoidalOccluder;

@@ -3,6 +3,7 @@ defineSuite([
          'DynamicScene/DataSourceDisplay',
          'Core/Iso8601',
          'Core/JulianDate',
+         'DynamicScene/DataSourceCollection',
          'Specs/createScene',
          'Specs/destroyScene',
          'Specs/MockDataSource'
@@ -10,15 +11,18 @@ defineSuite([
          DataSourceDisplay,
          Iso8601,
          JulianDate,
+         DataSourceCollection,
          createScene,
          destroyScene,
          MockDataSource) {
     "use strict";
     /*global jasmine,describe,xdescribe,it,xit,expect,beforeEach,afterEach,beforeAll,afterAll,spyOn,runs,waits,waitsFor*/
 
+    var dataSourceCollection;
     var scene;
     beforeAll(function() {
         scene = createScene();
+        dataSourceCollection = new DataSourceCollection();
     });
 
     afterAll(function() {
@@ -61,31 +65,29 @@ defineSuite([
         this.destroyed = true;
     };
 
+    var visualizerCallback = function() {
+        return [new MockVisualizer()];
+    };
+
     it('constructor sets expected values', function() {
-        var visualizerTypes = [MockVisualizer];
-        var display = new DataSourceDisplay(scene, visualizerTypes);
+        var display = new DataSourceDisplay(scene, dataSourceCollection, visualizerCallback);
         expect(display.getScene()).toBe(scene);
-        expect(display.getVisualizerTypes()).toEqual(visualizerTypes);
-        expect(display.getDataSources().getLength()).toEqual(0);
+        expect(display.getDataSources()).toBe(dataSourceCollection);
         expect(display.isDestroyed()).toEqual(false);
         display.destroy();
     });
 
-    it('destroy destroys underlying data sources', function() {
-        var display = new DataSourceDisplay(scene);
+    it('destroy does not destroy underlying data sources', function() {
         var dataSource = new MockDataSource();
-        var dataSourceNoDestroy = new MockDataSource();
-        delete dataSourceNoDestroy.destroy;
-        display.getDataSources().add(dataSource);
-        display.getDataSources().add(dataSourceNoDestroy);
+        dataSourceCollection.add(dataSource);
+
+        var display = new DataSourceDisplay(scene, dataSourceCollection);
 
         expect(dataSource.destroyed).toEqual(false);
-        expect(dataSourceNoDestroy.destroyed).toEqual(false);
 
         display.destroy();
 
-        expect(dataSource.destroyed).toEqual(true);
-        expect(dataSourceNoDestroy.destroyed).toEqual(false);
+        expect(dataSource.destroyed).toEqual(false);
         expect(display.isDestroyed()).toEqual(true);
     });
 
@@ -94,14 +96,14 @@ defineSuite([
         var dynamicSource = new MockDataSource();
         dynamicSource.isTimeVarying = true;
 
-        var display = new DataSourceDisplay(scene, [MockVisualizer]);
-        display.getDataSources().add(staticSource);
-        display.getDataSources().add(dynamicSource);
+        var display = new DataSourceDisplay(scene, dataSourceCollection, visualizerCallback);
+        dataSourceCollection.add(staticSource);
+        dataSourceCollection.add(dynamicSource);
 
-        var staticSourceVisualizer = staticSource._visualizerCollection.getVisualizers()[0];
+        var staticSourceVisualizer = staticSource._visualizers[0];
         expect(staticSourceVisualizer).toBeInstanceOf(MockVisualizer);
 
-        var dynamicSourceVisualizer = dynamicSource._visualizerCollection.getVisualizers()[0];
+        var dynamicSourceVisualizer = dynamicSource._visualizers[0];
         expect(dynamicSourceVisualizer).toBeInstanceOf(MockVisualizer);
 
         //Nothing should have happened yet because we haven't called update.
@@ -137,11 +139,11 @@ defineSuite([
 
     it('a static source can become dynamic (and vice versa)', function() {
         var source = new MockDataSource();
+        dataSourceCollection.add(source);
 
-        var display = new DataSourceDisplay(scene, [MockVisualizer]);
-        display.getDataSources().add(source);
+        var display = new DataSourceDisplay(scene, dataSourceCollection, visualizerCallback);
 
-        var sourceVisualizer = source._visualizerCollection.getVisualizers()[0];
+        var sourceVisualizer = source._visualizers[0];
         expect(sourceVisualizer).toBeInstanceOf(MockVisualizer);
 
         //Nothing should have happened yet because we haven't called update.
@@ -174,7 +176,6 @@ defineSuite([
         expect(sourceVisualizer.lastUpdateTime).toBe(newTime);
         expect(sourceVisualizer.updatesCalled).toEqual(3);
 
-
         //Switch back to static
         source.isTimeVarying = false;
         source.getChangedEvent().raiseEvent(source);
@@ -195,15 +196,21 @@ defineSuite([
 
     it('constructor throws if scene undefined', function() {
         expect(function(){
-            return new DataSourceDisplay(undefined, []);
-        }).toThrow();
+            return new DataSourceDisplay(undefined, dataSourceCollection, []);
+        }).toThrowDeveloperError();
+    });
+
+    it('constructor throws if dataSourceCollection undefined', function() {
+        expect(function(){
+            return new DataSourceDisplay(scene, undefined, []);
+        }).toThrowDeveloperError();
     });
 
     it('update throws if time undefined', function() {
-        var display = new DataSourceDisplay(scene);
+        var display = new DataSourceDisplay(scene, dataSourceCollection);
         expect(function(){
             return display.update();
-        }).toThrow();
+        }).toThrowDeveloperError();
         display.destroy();
     });
-});
+}, 'WebGL');

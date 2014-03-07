@@ -62,11 +62,11 @@ defineSuite([
 
         camera = createCamera(context);
         camera.position = new Cartesian3(1.02, 0.0, 0.0);
-        camera.up = Cartesian3.UNIT_Z;
-        camera.direction = camera.position.normalize().negate();
+        camera.up = Cartesian3.clone(Cartesian3.UNIT_Z);
+        camera.direction = Cartesian3.negate(Cartesian3.normalize(camera.position));
 
         us = context.getUniformState();
-        us.update(createFrameState(camera));
+        us.update(context, createFrameState(camera));
     });
 
     afterEach(function() {
@@ -102,6 +102,7 @@ defineSuite([
                               ellipsoid.cartographicToCartesian(Cartographic.fromDegrees( degree,  degree, 0.0)),
                               ellipsoid.cartographicToCartesian(Cartographic.fromDegrees(-degree,  degree, 0.0))
                              ]);
+        polygon.asynchronous = false;
         return polygon;
     }
 
@@ -112,16 +113,17 @@ defineSuite([
     it('get throws if index is undefined', function() {
         expect(function() {
             primitives.get(undefined);
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('has zero primitives when constructed', function() {
-        expect(primitives.getLength()).toEqual(0);
+        expect(primitives.length).toEqual(0);
     });
 
     it('adds a primitive with add()', function() {
-        primitives.add(createLabels());
-        expect(primitives.getLength()).toEqual(1);
+        var p = createLabels();
+        expect(primitives.add(p)).toBe(p);
+        expect(primitives.length).toEqual(1);
     });
 
     it('removes the first primitive', function() {
@@ -131,14 +133,14 @@ defineSuite([
         primitives.add(p0);
         primitives.add(p1);
 
-        expect(primitives.getLength()).toEqual(2);
+        expect(primitives.length).toEqual(2);
 
         expect(primitives.remove(p0)).toEqual(true);
-        expect(primitives.getLength()).toEqual(1);
+        expect(primitives.length).toEqual(1);
         expect(primitives.get(0)).toBe(p1);
 
         expect(primitives.remove(p1)).toEqual(true);
-        expect(primitives.getLength()).toEqual(0);
+        expect(primitives.length).toEqual(0);
     });
 
     it('removes the last primitive', function() {
@@ -148,14 +150,14 @@ defineSuite([
         primitives.add(p0);
         primitives.add(p1);
 
-        expect(primitives.getLength()).toEqual(2);
+        expect(primitives.length).toEqual(2);
 
         expect(primitives.remove(p1)).toEqual(true);
-        expect(primitives.getLength()).toEqual(1);
+        expect(primitives.length).toEqual(1);
         expect(primitives.get(0)).toBe(p0);
 
         expect(primitives.remove(p0)).toEqual(true);
-        expect(primitives.getLength()).toEqual(0);
+        expect(primitives.length).toEqual(0);
     });
 
     it('removes a primitive twice', function() {
@@ -175,10 +177,10 @@ defineSuite([
         primitives.add(createLabels());
         primitives.add(createLabels());
 
-        expect(primitives.getLength()).toEqual(3);
+        expect(primitives.length).toEqual(3);
 
         primitives.removeAll();
-        expect(primitives.getLength()).toEqual(0);
+        expect(primitives.length).toEqual(0);
     });
 
     it('contains a primitive', function() {
@@ -247,9 +249,9 @@ defineSuite([
     it('setting a central body', function() {
         var ellipsoid = Ellipsoid.UNIT_SPHERE;
         var cb = new CentralBody(ellipsoid);
-        primitives.setCentralBody(cb);
+        primitives.centralBody = cb;
 
-        expect(primitives.getCentralBody()).toBe(cb);
+        expect(primitives.centralBody).toBe(cb);
     });
 
     it('renders a primitive added with add()', function() {
@@ -314,7 +316,7 @@ defineSuite([
         primitives.add(labels);
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(l);
+        expect(pickedObject.primitive).toEqual(l);
     });
 
     it('does not pick', function() {
@@ -336,7 +338,7 @@ defineSuite([
         primitives.add(children);
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(l);
+        expect(pickedObject.primitive).toEqual(l);
     });
 
     it('picks a primitive added with render order (0)', function() {
@@ -347,7 +349,7 @@ defineSuite([
         primitives.add(p1);
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p1);
+        expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('picks a primitive added with render order (1)', function() {
@@ -358,7 +360,7 @@ defineSuite([
         primitives.add(p0);
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p0);
+        expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with raise (0)', function() {
@@ -370,7 +372,7 @@ defineSuite([
         primitives.raise(p1); // Already on top
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p1);
+        expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('picks a primitive added with raise (1)', function() {
@@ -382,7 +384,7 @@ defineSuite([
         primitives.raise(p0); // Moved to top
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p0);
+        expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with raiseToTop (0)', function() {
@@ -394,7 +396,7 @@ defineSuite([
         primitives.raiseToTop(p1); // Already on top
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p1);
+        expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('picks a primitive added with raiseToTop (1)', function() {
@@ -406,7 +408,7 @@ defineSuite([
         primitives.raiseToTop(p0); // Moved to top
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p0);
+        expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with lower (0)', function() {
@@ -418,7 +420,7 @@ defineSuite([
         primitives.lower(p1); // Moved back
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p0);
+        expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with lower (1)', function() {
@@ -430,7 +432,7 @@ defineSuite([
         primitives.lower(p0); // Already on bottom
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p1);
+        expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('picks a primitive added with lowerToBottom (0)', function() {
@@ -442,7 +444,7 @@ defineSuite([
         primitives.lowerToBottom(p1); // Moved back
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p0);
+        expect(pickedObject.primitive).toEqual(p0);
     });
 
     it('picks a primitive added with lowerToBottom (1)', function() {
@@ -454,7 +456,7 @@ defineSuite([
         primitives.lowerToBottom(p0); // Already on bottom
 
         var pickedObject = pick(context, frameState, primitives, 0, 0);
-        expect(pickedObject).toEqual(p1);
+        expect(pickedObject.primitive).toEqual(p1);
     });
 
     it('renders a central body', function() {
@@ -465,7 +467,7 @@ defineSuite([
             expect(context.readPixels()).toEqual([0, 0, 0, 0]);
 
             var cb = new CentralBody(Ellipsoid.UNIT_SPHERE);
-            primitives.setCentralBody(cb);
+            primitives.centralBody = cb;
 
             savedCamera = frameState.camera;
             frameState.camera = camera;
@@ -536,13 +538,13 @@ defineSuite([
         expect(labels.isDestroyed()).toEqual(true);
     });
 
-    it('destroys primitive on setCentralBody', function() {
+    it('destroys primitive on set centralBody', function() {
         var cb = new CentralBody(Ellipsoid.UNIT_SPHERE);
 
-        primitives.setCentralBody(cb);
+        primitives.centralBody = cb;
         expect(cb.isDestroyed()).toEqual(false);
 
-        primitives.setCentralBody(null);
+        primitives.centralBody = null;
         expect(cb.isDestroyed()).toEqual(true);
     });
 
@@ -588,14 +590,14 @@ defineSuite([
         expect(labels.isDestroyed()).toEqual(true);
     });
 
-    it('does not destroy primitive on setCentralBody', function() {
+    it('does not destroy primitive on set centralBody', function() {
         var cb = new CentralBody(Ellipsoid.UNIT_SPHERE);
 
         primitives.destroyPrimitives = false;
-        primitives.setCentralBody(cb);
+        primitives.centralBody = cb;
         expect(cb.isDestroyed()).toEqual(false);
 
-        primitives.setCentralBody(null);
+        primitives.centralBody = null;
         expect(cb.isDestroyed()).toEqual(false);
 
         cb.destroy();
@@ -605,7 +607,7 @@ defineSuite([
     it('throws when add() without an primitive', function() {
         expect(function() {
             primitives.add();
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('raise throws when primitive is not in composite', function() {
@@ -613,7 +615,7 @@ defineSuite([
 
         expect(function() {
             primitives.raise(p);
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('raiseToTop throws when primitive is not in composite', function() {
@@ -621,7 +623,7 @@ defineSuite([
 
         expect(function() {
             primitives.raiseToTop(p);
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('lower throws when primitive is not in composite', function() {
@@ -629,7 +631,7 @@ defineSuite([
 
         expect(function() {
             primitives.lower(p);
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 
     it('lowerToBottom throws when primitive is not in composite', function() {
@@ -637,6 +639,6 @@ defineSuite([
 
         expect(function() {
             primitives.lowerToBottom(p);
-        }).toThrow();
+        }).toThrowDeveloperError();
     });
 }, 'WebGL');

@@ -4,6 +4,7 @@ define([
         '../Core/Cartesian2',
         '../Core/createGuid',
         '../Core/defaultValue',
+        '../Core/defined',
         '../Core/destroyObject',
         '../Core/DeveloperError',
         './PixelFormat'
@@ -12,6 +13,7 @@ define([
         Cartesian2,
         createGuid,
         defaultValue,
+        defined,
         destroyObject,
         DeveloperError,
         PixelFormat) {
@@ -47,27 +49,26 @@ define([
      *
      * @internalConstructor
      *
-     * @exception {DeveloperError} context is required.
      * @exception {DeveloperError} borderWidthInPixels must be greater than or equal to zero.
      * @exception {DeveloperError} initialSize must be greater than zero.
      */
     var TextureAtlas = function(description) {
         description = defaultValue(description, defaultValue.EMPTY_OBJECT);
-
         var context = description.context;
-        if (typeof context === 'undefined') {
+        var borderWidthInPixels = defaultValue(description.borderWidthInPixels, 1.0);
+        var initialSize = defaultValue(description.initialSize, defaultInitialSize);
+
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(context)) {
             throw new DeveloperError('context is required.');
         }
-
-        var borderWidthInPixels = defaultValue(description.borderWidthInPixels, 1.0);
         if (borderWidthInPixels < 0) {
             throw new DeveloperError('borderWidthInPixels must be greater than or equal to zero.');
         }
-
-        var initialSize = defaultValue(description.initialSize, defaultInitialSize);
         if (initialSize.x < 1 || initialSize.y < 1) {
             throw new DeveloperError('initialSize must be greater than zero.');
         }
+        //>>includeEnd('debug');
 
         this._context = context;
         this._pixelFormat = defaultValue(description.pixelFormat, PixelFormat.RGBA);
@@ -85,12 +86,12 @@ define([
 
         // Add initial images if there are any.
         var images = description.images;
-        if (typeof images !== 'undefined' && images.length > 0) {
+        if (defined(images) && images.length > 0) {
             this.addImages(images);
         }
 
         var image = description.image;
-        if (typeof image !== 'undefined') {
+        if (defined(image)) {
             this.addImage(image);
         }
     };
@@ -117,7 +118,7 @@ define([
             // Resize texture coordinates.
             for ( var i = 0; i < textureAtlas._textureCoordinates.length; i++) {
                 var texCoord = textureAtlas._textureCoordinates[i];
-                if (typeof texCoord !== 'undefined') {
+                if (defined(texCoord)) {
                     texCoord.x *= widthRatio;
                     texCoord.y *= heightRatio;
                     texCoord.width *= widthRatio;
@@ -134,7 +135,7 @@ define([
 
             // Copy old texture into new using an fbo.
             var framebuffer = textureAtlas._context.createFramebuffer({
-                colorTexture : textureAtlas._texture
+                colorTextures : [textureAtlas._texture]
             });
             framebuffer._bind();
             newTexture.copyFromFramebuffer(0, 0, 0, 0, oldAtlasWidth, oldAtlasHeight);
@@ -160,16 +161,16 @@ define([
     // a new image based on existing image 'nodes'.
     // Inspired by: http://blackpawn.com/texts/lightmaps/default.html
     function findNode(textureAtlas, node, image) {
-        if (typeof node === 'undefined') {
+        if (!defined(node)) {
             return undefined;
         }
 
         // If a leaf node
-        if (typeof node.childNode1 === 'undefined' &&
-            typeof node.childNode2 === 'undefined') {
+        if (!defined(node.childNode1) &&
+            !defined(node.childNode2)) {
 
             // Node already contains an image, don't add to it.
-            if (typeof node.imageIndex !== 'undefined') {
+            if (defined(node.imageIndex)) {
                 return undefined;
             }
 
@@ -216,14 +217,15 @@ define([
 
     // Adds image of given index to the texture atlas. Called from addImage and addImages.
     function addImage(textureAtlas, image, index) {
-        if (typeof image === 'undefined') {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(image)) {
             throw new DeveloperError('image is required.');
         }
+        //>>includeEnd('debug');
 
         var node = findNode(textureAtlas, textureAtlas._root, image);
-
         // Found a node that can hold the image.
-        if (typeof node !== 'undefined') {
+        if (defined(node)) {
             node.imageIndex = index;
 
             // Add texture coordinate and write to texture
@@ -256,10 +258,7 @@ define([
      *
      * @returns {Number} The index of the newly added image.
      *
-     * @exception {DeveloperError} image is required.
-     *
      * @see TextureAtlas#addImages
-     *
      */
     TextureAtlas.prototype.addImage = function(image) {
         var index = this.getNumberOfImages();
@@ -282,16 +281,14 @@ define([
      *
      * @returns {Number} The first index of the newly added images.
      *
-     * @exception {DeveloperError} images is required and must have length greater than zero.
-     *
      * @see TextureAtlas#addImage
-     *
      */
     TextureAtlas.prototype.addImages = function(images) {
-        // Check if image array is valid.
-        if (typeof images === 'undefined' || (images.length < 1)) {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(images) || (images.length < 1)) {
             throw new DeveloperError('images is required and must have length greater than zero.');
         }
+        //>>includeEnd('debug');
 
         // Store images in containers that have an index.
         var i;
@@ -332,8 +329,6 @@ define([
      * @param {Array} subRegions An array of {@link BoundingRectangle} sub-regions measured in pixels from the bottom-left.
      *
      * @returns {Number} The index of the first newly-added region.
-     *
-     * @exception {DeveloperError} image is required.
      */
     TextureAtlas.prototype.addSubRegions = function(image, subRegions) {
         var index = this.addImage(image);
