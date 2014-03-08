@@ -1242,7 +1242,6 @@ define([
                 waterBlendColor : new Color(0.0, 1.0, 0.699, 1.0),
                 waterSpecularMap : Material.DefaultImageId,
                 waterNormalMap : Material.DefaultImageId,
-                waterFoamTexture : Material.DefaultImageId,
                 waterAnimationSpeed : 0.01,
                 waveFrequency : 10.0,
                 waveAmplitude : 1.0,

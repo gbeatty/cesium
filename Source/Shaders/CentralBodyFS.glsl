@@ -173,30 +173,21 @@ float waveFade(float edge0, float edge1, float x)
     return pow(1.0 - y, 5.0);
 }
 
-// Based on water rendering by Jonas Wagner:
-// http://29a.ch/2012/7/19/webgl-terrain-rendering-water-fog
-
-const float oceanFrequency = 125000.0;
-const float oceanAnimationSpeed = 0.006;
-const float oceanAmplitude = 2.0;
-const float oceanSpecularIntensity = 0.5;
 
 vec4 computeWaterColor(vec3 positionEyeCoordinates, vec2 textureCoordinates, mat3 enuToEye, vec3 imageryColor, float specularMapValue)
 {
-    float time = czm_frameNumber * oceanAnimationSpeed;
     
+    // The double normalize below works around a bug in Firefox on Android devices.
     vec3 positionToEyeEC = -positionEyeCoordinates;
     float positionToEyeECLength = length(positionToEyeEC);
-
-    // The double normalize below works around a bug in Firefox on Android devices.
     vec3 normalizedpositionToEyeEC = normalize(normalize(positionToEyeEC));
     
     // Fade out the waves as the camera moves far from the surface.
     float waveIntensity = waveFade(70000.0, 1000000.0, positionToEyeECLength);
 
 #ifdef SHOW_OCEAN_WAVES
-    vec4 noise = czm_getWaterNoise(u_oceanNormalMap, textureCoordinates * oceanFrequency, time);
-    vec3 normalTangentSpace = noise.xyz * vec3(1.0, 1.0, (1.0 / oceanAmplitude));
+
+    vec3 normalTangentSpace = ComputeWaterSurfaceTangent(textureCoordinates, positionToEyeEC, specularMapValue, false);
     
     // fade out the normal perturbation as we move farther from the water surface
     normalTangentSpace.xy *= waveIntensity;
@@ -224,10 +215,12 @@ vec4 computeWaterColor(vec3 positionEyeCoordinates, vec2 textureCoordinates, mat
 
     // Add specular highlights in 3D, and in all modes when zoomed in.
     float specularIntensity = czm_getSpecular(czm_sunDirectionEC, normalizedpositionToEyeEC, normalEC, 10.0) + 0.25 * czm_getSpecular(czm_moonDirectionEC, normalizedpositionToEyeEC, normalEC, 10.0);
-    float surfaceReflectance = mix(0.0, mix(u_zoomedOutOceanSpecularIntensity, oceanSpecularIntensity, waveIntensity), specularMapValue);
+    float surfaceReflectance = mix(0.0, mix(u_zoomedOutOceanSpecularIntensity, waterSpecularIntensity, waveIntensity), specularMapValue);
     float specular = specularIntensity * surfaceReflectance;
     
-    return vec4(imageryColor + diffuseHighlight + nonDiffuseHighlight + specular, 1.0); 
+    vec4 waterColor = vec4(imageryColor + diffuseHighlight + nonDiffuseHighlight + specular, 1.0); 
+     
+    return waterColor;
 }
 
 #endif // #ifdef SHOW_REFLECTIVE_OCEAN

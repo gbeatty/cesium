@@ -177,13 +177,12 @@ require(['Cesium'], function(Cesium) {
                 uniforms : {
                     waterSpecularMap: '../images/earthspec1k.jpg',
                     waterNormalMap: require.toUrl('Assets/Textures/waterRipplesNormals.jpg'),
-                    waterFoamTexture: require.toUrl('Assets/Textures/waterFoam.jpg'),
-                    waterAnimationSpeed: 0.000003,
-                    waveFrequency: 10000.0,
-                    waveAmplitude: 0.1,
+                    waterAnimationSpeed: 0.000004,
+                    waveFrequency: 5000.0,
+                    waveAmplitude: 0.2,
                     waveSteepness: 0.3,
-                    waterSurfaceRoughness: 0.8,
-                    waterSpecularIntensity: 0.5
+                    waterSurfaceRoughness: 0.5,
+                    waterSpecularIntensity: 0.4
                 }
             }
         });

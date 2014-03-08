@@ -11,6 +11,7 @@ define([
         '../Core/Cartesian2',
         '../Core/Cartesian3',
         '../Core/Cartographic',
+        '../Core/Color',
         '../Core/ComponentDatatype',
         '../Core/Ellipsoid',
         '../Core/Extent',
@@ -42,6 +43,7 @@ define([
         '../Shaders/CentralBodyVS',
         '../Shaders/CentralBodyVSDepth',
         '../Shaders/CentralBodyVSPole',
+        '../Shaders/Materials/Water',
         '../ThirdParty/when'
     ], function(
         buildModuleUrl,
@@ -55,6 +57,7 @@ define([
         Cartesian2,
         Cartesian3,
         Cartographic,
+        Color,
         ComponentDatatype,
         Ellipsoid,
         Extent,
@@ -86,6 +89,7 @@ define([
         CentralBodyVS,
         CentralBodyVSDepth,
         CentralBodyVSPole,
+        Water,
         when) {
     "use strict";
 
@@ -245,11 +249,24 @@ define([
         this.lightingFadeInDistance = 9000000.0;
 
         this._lastOceanNormalMapUrl = undefined;
-        this._oceanNormalMap = undefined;
         this._zoomedOutOceanSpecularIntensity = 0.5;
         this._showingPrettyOcean = false;
         this._hasWaterMask = false;
         this._lightingFadeDistance = new Cartesian2(this.lightingFadeOutDistance, this.lightingFadeInDistance);
+
+
+        this._waterBaseColor = new Color(0.0, 0.0, 0.0, 1.0);     // not used
+        this._waterBlendColor = new Color(0.0, 0.0, 0.0, 1.0);    // not used
+        this._waterSpecularMap = undefined; // not used
+        this._waterNormalMap = undefined;
+        this._waterAnimationSpeed = 0.0000012;
+        this._waveFrequency = 20000.0;
+        this._waveAmplitude = 0.28;
+        this._waveSteepness = 0.0;
+        this._waveDirection = new Cartesian2(1.0, 0.0);
+        this._waterSurfaceRoughness = 0.8;
+        this._waterSpecularIntensity = 0.5;
+        this._waterFadeFactor = 8.0;
 
         var that = this;
 
@@ -257,11 +274,44 @@ define([
             u_zoomedOutOceanSpecularIntensity : function() {
                 return that._zoomedOutOceanSpecularIntensity;
             },
-            u_oceanNormalMap : function() {
-                return that._oceanNormalMap;
-            },
             u_lightingFadeDistance : function() {
                 return that._lightingFadeDistance;
+            },
+            waterBaseColor : function() {
+                return that._waterBaseColor;
+            },
+            waterBlendColor : function() {
+                return that._waterBlendColor;
+            },
+            waterSpecularMap : function() {
+                return that._waterSpecularMap;
+            },
+            waterNormalMap : function() {
+                return that._waterNormalMap;
+            },
+            waterAnimationSpeed : function() {
+                return that._waterAnimationSpeed;
+            },
+            waveFrequency : function() {
+                return that._waveFrequency;
+            },
+            waveAmplitude : function() {
+                return that._waveAmplitude;
+            },
+            waveSteepness : function() {
+                return that._waveSteepness;
+            },
+            waveDirection : function() {
+                return that._waveDirection;
+            },
+            waterSurfaceRoughness : function() {
+                return that._waterSurfaceRoughness;
+            },
+            waterSpecularIntensity : function() {
+                return that._waterSpecularIntensity;
+            },
+            waterFadeFactor : function() {
+                return that._waterFadeFactor;
             }
         };
     };
@@ -651,11 +701,16 @@ define([
 
             var that = this;
             when(loadImage(this.oceanNormalMapUrl), function(image) {
-                that._oceanNormalMap = that._oceanNormalMap && that._oceanNormalMap.destroy();
-                that._oceanNormalMap = context.createTexture2D({
+                that._waterNormalMap = that._waterNormalMap && that._waterNormalMap.destroy();
+                that._waterNormalMap = context.createTexture2D({
                     source : image
                 });
             });
+        }
+
+        if(this._waterSpecularMap === undefined)
+        {
+            this._waterSpecularMap = context.getDefaultTexture();
         }
 
         // Initial compile or re-compile if uber-shader parameters changed
@@ -671,7 +726,7 @@ define([
             projectionChanged ||
             hasWaterMaskChanged ||
             hasEnableLightingChanged ||
-            (defined(this._oceanNormalMap)) !== this._showingPrettyOcean) {
+            (defined(this._waterNormalMap)) !== this._showingPrettyOcean) {
 
             var getPosition3DMode = 'vec4 getPosition(vec3 position3DWC) { return getPosition3DMode(position3DWC); }';
             var getPosition2DMode = 'vec4 getPosition(vec3 position3DWC) { return getPosition2DMode(position3DWC); }';
@@ -714,7 +769,7 @@ define([
                 sources : [CentralBodyVS, getPositionMode, get2DYPositionFraction]
             });
 
-            var showPrettyOcean = hasWaterMask && defined(this._oceanNormalMap);
+            var showPrettyOcean = hasWaterMask && defined(this._waterNormalMap);
 
             this._surfaceShaderSet.baseFragmentShaderString = createShaderSource({
                 defines : [
@@ -722,7 +777,7 @@ define([
                     (showPrettyOcean ? 'SHOW_OCEAN_WAVES' : ''),
                     (this.enableLighting ? 'ENABLE_LIGHTING' : '')
                 ],
-                sources : [CentralBodyFS]
+                sources : [Water, CentralBodyFS]
             });
             this._surfaceShaderSet.invalidateShaders();
 
@@ -732,7 +787,7 @@ define([
             this._northPoleCommand.shaderProgram = poleShaderProgram;
             this._southPoleCommand.shaderProgram = poleShaderProgram;
 
-            this._showingPrettyOcean = defined(this._oceanNormalMap);
+            this._showingPrettyOcean = defined(this._waterNormalMap);
             this._hasWaterMask = hasWaterMask;
             this._enableLighting = this.enableLighting;
         }
@@ -849,7 +904,7 @@ define([
 
         this._surface = this._surface && this._surface.destroy();
 
-        this._oceanNormalMap = this._oceanNormalMap && this._oceanNormalMap.destroy();
+        this._waterNormalMap = this._waterNormalMap && this._waterNormalMap.destroy();
 
         return destroyObject(this);
     };

@@ -361,8 +361,10 @@ define([
             case _gl.SAMPLER_2D:
             case _gl.SAMPLER_CUBE:
                 return function() {
-                    _gl.activeTexture(_gl.TEXTURE0 + this.textureUnitIndex);
-                    _gl.bindTexture(this.value._getTarget(), this.value._getTexture());
+                    if(defined(this.value)) {
+                        _gl.activeTexture(_gl.TEXTURE0 + this.textureUnitIndex);
+                        _gl.bindTexture(this.value._getTarget(), this.value._getTexture());
+                    }
                 };
             case _gl.INT:
             case _gl.BOOL:
