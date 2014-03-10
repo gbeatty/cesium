@@ -342,7 +342,6 @@ define(['../Core/Cartesian2',
         return result;
     }
 
-    function Video(){}
     function unwrapInterval(type, czmlInterval, sourceUri) {
         /*jshint sub:true*/
         switch (type) {
@@ -390,7 +389,7 @@ define(['../Core/Cartesian2',
             return unwrapUriInterval(czmlInterval, sourceUri);
         case VerticalOrigin:
             return VerticalOrigin[defaultValue(czmlInterval.verticalOrigin, czmlInterval)];
-        case Video:
+        case HTMLVideoElement:
             return unwrapVideoInterval(czmlInterval, sourceUri);
         default:
             throw new DeveloperError(type);
@@ -771,7 +770,7 @@ define(['../Core/Cartesian2',
                 existingMaterial = new VideoMaterialProperty();
             }
             materialData = packetData.video;
-            processPacketData(Video, existingMaterial, 'video', materialData.video, undefined, sourceUri);
+            processPacketData(HTMLVideoElement, existingMaterial, 'video', materialData.video, undefined, sourceUri);
             processPacketData(Number, existingMaterial, 'horizontalRepeat', materialData.horizontalRepeat, undefined, sourceUri);
             processPacketData(Number, existingMaterial, 'verticalRepeat', materialData.verticalRepeat, undefined, sourceUri);
             processPacketData(Boolean, existingMaterial, 'loop', materialData.loop, undefined, sourceUri);

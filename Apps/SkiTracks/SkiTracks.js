@@ -112,7 +112,7 @@ define([
                 destination : Cartesian3.add(objectPosition, cameraOffset),
                 direction : direction,
                 up : up,
-                duration : 1000,
+                duration : 12000,
                 onComplete : function() {
                     enableInput(scene);
             }

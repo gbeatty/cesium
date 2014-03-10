@@ -7,7 +7,8 @@ define([
         '../Core/destroyObject',
         '../Core/Color',
         '../Scene/Material',
-        '../Scene/ViewportQuad'
+        '../Scene/ViewportQuad',
+        './MaterialProperty'
        ], function(
          BoundingRectangle,
          Cartesian2,
@@ -16,7 +17,8 @@ define([
          destroyObject,
          Color,
          Material,
-         ViewportQuad) {
+         ViewportQuad,
+         MaterialProperty) {
     "use strict";
 
     /**
@@ -246,10 +248,7 @@ define([
             screenOverlay.rectangle = new BoundingRectangle(position.x, position.y, width, height);
         }
 
-        var material = dynamicScreenOverlay.material;
-        if (typeof material !== 'undefined') {
-            screenOverlay.material = material.getValue(time, material, screenOverlay.material);
-        }
+        screenOverlay.material = MaterialProperty.getValue(time, dynamicScreenOverlay._material, screenOverlay.material, this._scene.context);
     };
 
     DynamicScreenOverlayVisualizer.prototype._onObjectsRemoved = function(dynamicObjectCollection, dynamicObjects) {

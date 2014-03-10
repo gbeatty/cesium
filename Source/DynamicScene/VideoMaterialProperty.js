@@ -1,5 +1,6 @@
 /*global define*/
 define([
+        '../Core/Iso8601',
         '../Core/defined',
         '../Core/defineProperties',
         '../Core/Event',
@@ -7,6 +8,7 @@ define([
         './ConstantProperty',
         './Property'
     ], function(
+        Iso8601,
         defined,
         defineProperties,
         Event,
@@ -14,6 +16,66 @@ define([
         ConstantProperty,
         Property) {
     "use strict";
+
+    // custom video events that will bubble up the dom tree
+    var videoLoadingEvent = document.createEvent("Event");
+    videoLoadingEvent.initEvent("videoLoading",true,true);
+
+    var videoLoadedEvent = document.createEvent("Event");
+    videoLoadedEvent.initEvent("videoLoaded",true,true);
+
+    var triggerVideoLoadingEvent = function(evt) {
+        evt.target.dispatchEvent(videoLoadingEvent);
+    };
+
+    var triggerVideoLoadedEvent = function(evt) {
+        evt.target.dispatchEvent(videoLoadedEvent);
+    };
+
+    function syncVideo(videoElement, animationRate, result, currentTime) {
+
+
+
+        var playbackRate = (animationRate * result.speed).toFixed(2);
+        if(videoElement.playbackRate < 0) {
+            // browsers don't handle negative playback rates
+            videoElement.playbackRate = 0;
+        }
+        else if(videoElement.playbackRate.toFixed(2) !== playbackRate) {
+            videoElement.playbackRate = playbackRate;
+        }
+
+        if(videoElement.paused) {
+            videoElement.play();
+        }
+
+        var duration = videoElement.duration;
+        //TODO: We should probably be checking the video.seekable segments
+        //before setting the currentTime, but if there are no seekable
+        //segments, then this code will have no affect, so the net result
+        //seems to be the same.
+        var videoTime = result.startTime.getSecondsDifference(currentTime);
+        videoTime = videoTime * result.speed;
+        if (result.loop) {
+            videoTime = videoTime % duration;
+            if (videoTime < 0.0) {
+                videoTime = duration - videoTime;
+            }
+        } else if (videoTime > duration) {
+            videoTime = duration;
+        } else if (videoTime < 0.0) {
+            videoTime = 0.0;
+        }
+
+        // seek to correct time if video has gotten out of sync
+        if( Math.abs(videoTime - videoElement.currentTime) > 0.2 ) {
+            videoElement.currentTime = videoTime;
+        }
+
+        // set a timer to stop the video if the video material isn't being accessed
+        window.clearTimeout(videoElement.timeoutId);
+        videoElement.timeoutId = window.setTimeout(function () { videoElement.pause(); }, 100);
+    }
 
     /**
      * A {@link MaterialProperty} that maps to video {@link Material} uniforms.
@@ -34,6 +96,16 @@ define([
         this._loopSubscription = undefined;
         this._speed = undefined;
         this._speedSubscription = undefined;
+
+        this.startTime = new ConstantProperty(Iso8601.MINIMUM_VALUE);
+        this.loop = new ConstantProperty(false);
+        this.speed = new ConstantProperty(1);
+        this.horizontalRepeat = new ConstantProperty(1);
+        this.verticalRepeat = new ConstantProperty(1);
+
+        this._videoUrl = undefined;
+        this._videoElement = undefined;
+        this._texture = undefined;
     };
 
     defineProperties(VideoMaterialProperty.prototype, {
@@ -113,7 +185,7 @@ define([
      * @type {String} The type of material.
      */
     VideoMaterialProperty.prototype.getType = function(time) {
-        return 'Video';
+        return 'Image';
     };
 
     /**
@@ -124,7 +196,10 @@ define([
      * @param {Object} [result] The object to store the value into, if omitted, a new instance is created and returned.
      * @returns {Object} The modified result parameter or a new instance if the result parameter was not supplied.
      */
-    VideoMaterialProperty.prototype.getValue = function(time, result) {
+    var videoLoaded = false;
+    var previousTime = 'undefined';
+    var previousSystemTime = 'undefined';
+    VideoMaterialProperty.prototype.getValue = function(time, result, context) {
         if (!defined(result)) {
             result = {};
         }
@@ -135,6 +210,76 @@ define([
         result.loop = defined(this._loop) ? this._loop.getValue(time) : undefined;
         result.speed = defined(this._speed) ? this._speed.getValue(time) : undefined;
         result.startTime = defined(this._startTime) ? this._startTime.getValue(time) : undefined;
+
+        var videoProperty = this.video;
+        if (defined(videoProperty)) {
+            var url = videoProperty.getValue(time);
+            if (defined(url) && this._videoUrl !== url) {
+                videoLoaded = false;
+                this._videoUrl = url;
+                if (defined(this._videoElement)) {
+                    // pause, and completely unload the video.
+                    this._videoElement.pause();
+                    this._videoElement.removeEventListener("waiting", triggerVideoLoadingEvent, false);
+                    this._videoElement.removeEventListener("playing", triggerVideoLoadedEvent, false);
+                    this._videoElement.src = ""; // force video to unload and stop downloading
+                    this._videoElement.load();
+                    document.body.removeChild(this._videoElement);
+                }
+
+                var videoElement = this._videoElement = document.createElement('video');
+                document.body.appendChild(videoElement);
+
+                videoElement.addEventListener("waiting", triggerVideoLoadingEvent, false);
+
+                videoElement.addEventListener("playing", triggerVideoLoadedEvent, false);
+
+                var that = this;
+                videoElement.addEventListener("canplaythrough", function() {
+
+                    videoElement.playbackRate = 0.0; // let the sync function control playback rate
+                    videoElement.play();
+
+                    videoElement.width = videoElement.videoWidth;
+                    videoElement.height = videoElement.videoHeight;
+                    that._texture = context.createTexture2D({
+                        source : videoElement
+                    });
+                    result.image = that._texture;
+
+                    videoElement.dispatchEvent(videoLoadedEvent);
+                    videoLoaded = true;
+                }, false);
+
+                videoElement.dispatchEvent(videoLoadingEvent);
+                videoElement.style.display = 'none';
+                videoElement.preload = 'auto';
+                videoElement.playbackRate = 1.0;
+                //videoElement.muted = true;
+                videoElement.src = url;
+                videoElement.load();
+            }
+        }
+
+        var currentSystemTime = new Date().getTime();
+        if(videoLoaded && previousTime !== 'undefined' && previousSystemTime !== 'undefined') {
+
+            var deltaAnimationTime = previousTime.getSecondsDifference(time);
+            var deltaSystemTime = (currentSystemTime-previousSystemTime) / 1000.0;
+            var animationRate = deltaAnimationTime / deltaSystemTime;
+            syncVideo(this._videoElement, animationRate, result, time);
+
+            // copy the video frame into the material texture
+            this._texture.copyFrom(this._videoElement);
+        }
+
+        previousSystemTime = currentSystemTime;
+        previousTime = time;
+
+
+
+
+
         return result;
     };
 
