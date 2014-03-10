@@ -215,7 +215,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T20:01:05Z"
+            "date":"2013-02-01T20:01:05Z"
           },
           "video":"SkiTracksVideos/deer_valley 1.webm"
         }
@@ -251,7 +251,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T20:15:05Z"
+            "date":"2013-02-01T20:15:05Z"
           },
           "video":"SkiTracksVideos/deer_valley 2.webm"
         }
@@ -287,7 +287,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T20:27:14Z"
+            "date":"2013-02-01T20:27:14Z"
           },
           "video":"SkiTracksVideos/deer_valley 3.webm"
         }
@@ -323,7 +323,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T20:40:51Z"
+            "date":"2013-02-01T20:40:51Z"
           },
           "video":"SkiTracksVideos/deer_valley 4.webm"
         }
@@ -359,7 +359,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T20:46:33Z"
+            "date":"2013-02-01T20:46:33Z"
           },
           "video":"SkiTracksVideos/deer_valley 5.webm"
         }
@@ -395,7 +395,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T21:04:12Z"
+            "date":"2013-02-01T21:04:12Z"
           },
           "video":"SkiTracksVideos/deer_valley 7.webm"
         }
@@ -431,7 +431,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T21:20:58Z"
+            "date":"2013-02-01T21:20:58Z"
           },
           "video":"SkiTracksVideos/deer_valley 8.webm"
         }
@@ -467,7 +467,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T21:43:35Z"
+            "date":"2013-02-01T21:43:35Z"
           },
           "video":"SkiTracksVideos/deer_valley 10.webm"
         }
@@ -503,7 +503,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T22:05:10Z"
+            "date":"2013-02-01T22:05:10Z"
           },
           "video":"SkiTracksVideos/deer_valley 11.webm"
         }
@@ -539,7 +539,7 @@
           "loop":true,
           "speed":1.0,
           "startTime":{
-            "time":"2013-02-01T22:41:50Z"
+            "date":"2013-02-01T22:41:50Z"
           },
           "video":"SkiTracksVideos/deer_valley 12.webm"
         }

@@ -772,6 +772,11 @@ define(['../Core/Cartesian2',
             }
             materialData = packetData.video;
             processPacketData(Video, existingMaterial, 'video', materialData.video, undefined, sourceUri);
+            processPacketData(Number, existingMaterial, 'horizontalRepeat', materialData.horizontalRepeat, undefined, sourceUri);
+            processPacketData(Number, existingMaterial, 'verticalRepeat', materialData.verticalRepeat, undefined, sourceUri);
+            processPacketData(Boolean, existingMaterial, 'loop', materialData.loop, undefined, sourceUri);
+            processPacketData(Number, existingMaterial, 'speed', materialData.speed, undefined, sourceUri);
+            processPacketData(JulianDate, existingMaterial, 'startTime', materialData.startTime, undefined, sourceUri);
         }
 
         if (defined(existingInterval)) {
