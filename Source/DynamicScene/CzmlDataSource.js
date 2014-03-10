@@ -54,6 +54,7 @@ define(['../Core/Cartesian2',
         './DynamicPolyline',
         './DynamicPolygon',
         './DynamicPyramid',
+        './DynamicScreenOverlay',
         './DynamicVector',
         './PositionPropertyArray',
         './ReferenceProperty',
@@ -61,6 +62,7 @@ define(['../Core/Cartesian2',
         './SampledProperty',
         './TimeIntervalCollectionPositionProperty',
         './TimeIntervalCollectionProperty',
+        './VideoMaterialProperty',
         '../ThirdParty/Uri',
         '../ThirdParty/when'
     ], function(
@@ -119,6 +121,7 @@ define(['../Core/Cartesian2',
         DynamicPolyline,
         DynamicPolygon,
         DynamicPyramid,
+        DynamicScreenOverlay,
         DynamicVector,
         PositionPropertyArray,
         ReferenceProperty,
@@ -126,6 +129,7 @@ define(['../Core/Cartesian2',
         SampledProperty,
         TimeIntervalCollectionPositionProperty,
         TimeIntervalCollectionProperty,
+        VideoMaterialProperty,
         Uri,
         when) {
     "use strict";
@@ -215,6 +219,16 @@ define(['../Core/Cartesian2',
 
     function unwrapImageInterval(czmlInterval, sourceUri) {
         var result = defaultValue(czmlInterval.image, czmlInterval);
+        if (defined(sourceUri)) {
+            var baseUri = new Uri(document.location.href);
+            sourceUri = new Uri(sourceUri);
+            result = new Uri(result).resolve(sourceUri.resolve(baseUri)).toString();
+        }
+        return result;
+    }
+
+    function unwrapVideoInterval(czmlInterval, sourceUri) {
+        var result = defaultValue(czmlInterval.video, czmlInterval);
         if (defined(sourceUri)) {
             var baseUri = new Uri(document.location.href);
             sourceUri = new Uri(sourceUri);
@@ -328,6 +342,7 @@ define(['../Core/Cartesian2',
         return result;
     }
 
+    function Video(){}
     function unwrapInterval(type, czmlInterval, sourceUri) {
         /*jshint sub:true*/
         switch (type) {
@@ -375,6 +390,8 @@ define(['../Core/Cartesian2',
             return unwrapUriInterval(czmlInterval, sourceUri);
         case VerticalOrigin:
             return VerticalOrigin[defaultValue(czmlInterval.verticalOrigin, czmlInterval)];
+        case Video:
+            return unwrapVideoInterval(czmlInterval, sourceUri);
         default:
             throw new DeveloperError(type);
         }
@@ -749,6 +766,12 @@ define(['../Core/Cartesian2',
             materialData = packetData.image;
             processPacketData(Image, existingMaterial, 'image', materialData.image, undefined, sourceUri);
             existingMaterial.repeat = combineIntoCartesian2(existingMaterial.repeat, materialData.horizontalRepeat, materialData.verticalRepeat);
+        } else if (defined(packetData.video)) {
+            if (!(existingMaterial instanceof VideoMaterialProperty)) {
+                existingMaterial = new VideoMaterialProperty();
+            }
+            materialData = packetData.video;
+            processPacketData(Video, existingMaterial, 'video', materialData.video, undefined, sourceUri);
         }
 
         if (defined(existingInterval)) {
@@ -1285,6 +1308,30 @@ define(['../Core/Cartesian2',
         }
     }
 
+    function processScreenOverlay(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
+        var screenOverlayData = packet.screenOverlay;
+        if (!defined(screenOverlayData)) {
+            return;
+        }
+
+        var interval = screenOverlayData.interval;
+        if (defined(interval)) {
+            interval = TimeInterval.fromIso8601(interval);
+        }
+
+        var screenOverlay = dynamicObject.screenOverlay;
+        if (!defined(screenOverlay)) {
+            dynamicObject.screenOverlay = screenOverlay = new DynamicScreenOverlay();
+        }
+
+        processPacketData(Boolean, screenOverlay, 'show', screenOverlayData.show, interval, sourceUri);
+        processPacketData(Cartesian2, screenOverlay, 'position', screenOverlayData.position, interval, sourceUri);
+        processPacketData(Number, screenOverlay, 'width', screenOverlayData.width, interval, sourceUri);
+        processPacketData(Number, screenOverlay, 'height', screenOverlayData.height, interval, sourceUri);
+        processMaterialPacketData(screenOverlay, 'material', screenOverlayData.material, interval, sourceUri);
+
+    }
+
     function processVector(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
         var vectorData = packet.vector;
         if (!defined(vectorData)) {
@@ -1430,6 +1477,7 @@ define(['../Core/Cartesian2',
     processPolygon, //
     processPolyline, //
     processPyramid, //
+    processScreenOverlay, //
     processVector, //
     processPosition, //
     processViewFrom, //

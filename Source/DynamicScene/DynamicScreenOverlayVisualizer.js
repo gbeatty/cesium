@@ -50,7 +50,7 @@ define([
         }
         this._scene = scene;
         this._unusedIndexes = [];
-        this._primitives = scene.getPrimitives();
+        this._primitives = scene.primitives;
         this._screenOverlayCollection = [];
         this._dynamicObjectCollection = undefined;
         this.setDynamicObjectCollection(dynamicObjectCollection);
@@ -88,7 +88,7 @@ define([
             }
             this._dynamicObjectCollection = dynamicObjectCollection;
             if (typeof dynamicObjectCollection !== 'undefined') {
-                dynamicObjectCollection.objectsRemoved.addEventListener(DynamicScreenOverlayVisualizer.prototype._onObjectsRemoved, this);
+                dynamicObjectCollection.collectionChanged.addEventListener(DynamicScreenOverlayVisualizer.prototype._onObjectsRemoved, this);
             }
         }
     };
@@ -177,7 +177,6 @@ define([
     var width;
     var height;
     DynamicScreenOverlayVisualizer.prototype._updateObject = function(time, dynamicObject) {
-        var context = this._scene.getContext();
         var dynamicScreenOverlay = dynamicObject.screenOverlay;
         if (typeof dynamicScreenOverlay === 'undefined') {
             return;
@@ -224,7 +223,7 @@ define([
             } else {
                 screenOverlayVisualizerIndex = this._screenOverlayCollection.length;
                 screenOverlay = new ViewportQuad();
-                screenOverlay.material = Material.fromType(context, Material.ColorType);
+                screenOverlay.material = Material.fromType(Material.ColorType);
 
                 this._screenOverlayCollection.push(screenOverlay);
                 this._primitives.add(screenOverlay);
@@ -249,7 +248,7 @@ define([
 
         var material = dynamicScreenOverlay.material;
         if (typeof material !== 'undefined') {
-            screenOverlay.material = material.getValue(time, context, screenOverlay.material);
+            screenOverlay.material = material.getValue(time, material, screenOverlay.material);
         }
     };
 
