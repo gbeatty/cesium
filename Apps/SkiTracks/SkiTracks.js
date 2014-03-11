@@ -356,6 +356,9 @@ define([
         cesiumWidget.centralBody.depthTestAgainstTerrain = true;
         cesiumWidget.clock.onTick.addEventListener(updateData);
 
+        // disable tilting with the middle mouse button
+        cesiumWidget.scene.screenSpaceCameraController.tiltEventTypes = undefined;
+
         // initialize the animation controller
         var clockViewModel = new ClockViewModel(cesiumWidget.clock);
         clockViewModel.owner = this;
