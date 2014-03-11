@@ -32,24 +32,24 @@ define([
         evt.target.dispatchEvent(videoLoadedEvent);
     };
 
-    function syncVideo(videoElement, animationRate, result, currentTime) {
+    function syncVideo(video, animationRate, result, currentTime) {
 
 
 
         var playbackRate = (animationRate * result.speed).toFixed(2);
-        if(videoElement.playbackRate < 0) {
+        if(playbackRate < 0) {
             // browsers don't handle negative playback rates
-            videoElement.playbackRate = 0;
+            video.playbackRate = 0;
         }
-        else if(videoElement.playbackRate.toFixed(2) !== playbackRate) {
-            videoElement.playbackRate = playbackRate;
-        }
-
-        if(videoElement.paused) {
-            videoElement.play();
+        else if(video.playbackRate.toFixed(2) !== playbackRate) {
+            video.playbackRate = playbackRate;
         }
 
-        var duration = videoElement.duration;
+        if(video.paused) {
+            video.play();
+        }
+
+        var duration = video.duration;
         //TODO: We should probably be checking the video.seekable segments
         //before setting the currentTime, but if there are no seekable
         //segments, then this code will have no affect, so the net result
@@ -68,13 +68,16 @@ define([
         }
 
         // seek to correct time if video has gotten out of sync
-        if( Math.abs(videoTime - videoElement.currentTime) > 0.2 ) {
-            videoElement.currentTime = videoTime;
+        if( Math.abs(videoTime - video.currentTime) > 0.2 ) {
+            video.currentTime = videoTime;
         }
 
         // set a timer to stop the video if the video material isn't being accessed
-        window.clearTimeout(videoElement.timeoutId);
-        videoElement.timeoutId = window.setTimeout(function () { videoElement.pause(); }, 100);
+        window.clearTimeout(video.timeoutId);
+        video.timeoutId = window.setTimeout(
+                function () {
+                    video.pause();
+                }, 300);
     }
 
     /**
@@ -103,9 +106,6 @@ define([
         this.horizontalRepeat = new ConstantProperty(1);
         this.verticalRepeat = new ConstantProperty(1);
 
-        this._videoUrl = undefined;
-        this._videoElement = undefined;
-        this._texture = undefined;
     };
 
     defineProperties(VideoMaterialProperty.prototype, {
@@ -199,6 +199,9 @@ define([
     var videoLoaded = false;
     var previousTime = 'undefined';
     var previousSystemTime = 'undefined';
+    var videoUrl;
+    var videoElement;
+    var texture;
     VideoMaterialProperty.prototype.getValue = function(time, result, context) {
         if (!defined(result)) {
             result = {};
@@ -214,20 +217,20 @@ define([
         var videoProperty = this.video;
         if (defined(videoProperty)) {
             var url = videoProperty.getValue(time);
-            if (defined(url) && this._videoUrl !== url) {
+            if (defined(url) && videoUrl !== url) {
                 videoLoaded = false;
-                this._videoUrl = url;
-                if (defined(this._videoElement)) {
+                videoUrl = url;
+                if (defined(videoElement)) {
                     // pause, and completely unload the video.
-                    this._videoElement.pause();
-                    this._videoElement.removeEventListener("waiting", triggerVideoLoadingEvent, false);
-                    this._videoElement.removeEventListener("playing", triggerVideoLoadedEvent, false);
-                    this._videoElement.src = ""; // force video to unload and stop downloading
-                    this._videoElement.load();
-                    document.body.removeChild(this._videoElement);
+                    videoElement.pause();
+                    videoElement.removeEventListener("waiting", triggerVideoLoadingEvent, false);
+                    videoElement.removeEventListener("playing", triggerVideoLoadedEvent, false);
+                    videoElement.src = ""; // force video to unload and stop downloading
+                    videoElement.load();
+                    document.body.removeChild(videoElement);
                 }
 
-                var videoElement = this._videoElement = document.createElement('video');
+                videoElement = document.createElement('video');
                 document.body.appendChild(videoElement);
 
                 videoElement.addEventListener("waiting", triggerVideoLoadingEvent, false);
@@ -267,10 +270,10 @@ define([
             var deltaAnimationTime = previousTime.getSecondsDifference(time);
             var deltaSystemTime = (currentSystemTime-previousSystemTime) / 1000.0;
             var animationRate = deltaAnimationTime / deltaSystemTime;
-            syncVideo(this._videoElement, animationRate, result, time);
+            syncVideo(videoElement, animationRate, result, time);
 
             // copy the video frame into the material texture
-            this._texture.copyFrom(this._videoElement);
+            this._texture.copyFrom(videoElement);
         }
 
         previousSystemTime = currentSystemTime;
