@@ -18,6 +18,7 @@ define([
         'Widgets/Animation/Animation',
         'Widgets/Animation/AnimationViewModel',
         'Widgets/Timeline/Timeline',
+        'Widgets/FullscreenButton/FullscreenButton',
         'Core/Cartesian2',
         'Core/Cartesian3',
         'Core/Cartographic',
@@ -57,6 +58,7 @@ define([
         Animation,
         AnimationViewModel,
         Timeline,
+        FullscreenButton,
         Cartesian2,
         Cartesian3,
         Cartographic,
@@ -379,6 +381,13 @@ define([
                 cesiumWidget.clock.shouldAnimate = true;
             }, false
         );
+
+        // fullscreen buton
+        var fullscreenContainer = document.createElement('div');
+        fullscreenContainer.className = 'fullscreenContainer';
+        var cesiumContainer = document.getElementById('fullScreenContainer');
+        cesiumContainer.appendChild(fullscreenContainer);
+        var fullscreenButton = new FullscreenButton(fullscreenContainer, cesiumContainer);
 
 
         var slopeImageryProvider = new TileMapServiceImageryProvider({

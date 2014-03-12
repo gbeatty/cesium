@@ -12,6 +12,16 @@ body {
     font-family: sans-serif;
 }
 
+.fullscreenContainer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0;
+    width: 29px;
+    height: 29px;
+    overflow: hidden;
+}
+
 .fullWindow {
     position: absolute;
     top: 0;
