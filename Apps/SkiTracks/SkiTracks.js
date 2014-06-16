@@ -106,23 +106,19 @@ define([
 
         var objectPosition = dynamicObject.position.getValue(time);
         var cameraOffset = new Cartesian3(0, -1000, 100);
-        var direction = Cartesian3.negate(Cartesian3.normalize(cameraOffset));
-        var up = Cartesian3.normalize(Cartesian3.cross(Cartesian3.cross(direction, objectPosition), direction));
+        var direction = new Cartesian3();
+        Cartesian3.negate(Cartesian3.normalize(cameraOffset, direction), direction);
 
-        /*var cameraFlightPath = CameraFlightPath.createAnimation(
-            scene, {
-                destination : Cartesian3.add(objectPosition, cameraOffset),
-                direction : direction,
-                up : up,
-                duration : 12000,
-                onComplete : function() {
-                    enableInput(scene);
-            }
-        });
-        scene.animations.add(cameraFlightPath);*/
+        var up = new Cartesian3();
+        Cartesian3.cross(direction, objectPosition, up);
+        Cartesian3.cross(up, direction, up);
+        Cartesian3.normalize(up, up);
+
+        var destination = new Cartesian3();
+        Cartesian3.add(objectPosition, cameraOffset, destination);
 
         scene.camera.flyTo({
-            destination : Cartesian3.add(objectPosition, cameraOffset),
+            destination : destination,
             direction : direction,
             up : up,
             duration : 12000,
@@ -133,8 +129,10 @@ define([
     }
 
     function createQuaternion(direction, up) {
-        var right = Cartesian3.cross(direction, up);
-        up = Cartesian3.cross(right, direction);
+        var right = new Cartesian3();
+        Cartesian3.cross(direction, up, right);
+
+        Cartesian3.cross(right, direction, up);
         var viewMat = new Matrix3( right.x,      right.y,      right.z,
                                    up.x,         up.y,         up.z,
                                   -direction.x, -direction.y, -direction.z);
@@ -156,15 +154,27 @@ define([
         var initialCameraPositionWC = Cartesian3.clone(camera.positionWC);
         var initialObjectPositionWC = pathObject.position.getValue(cesiumWidget.clock.currentTime);
 
-        var cameraOffsetWC = Cartesian3.subtract(initialCameraPositionWC, initialObjectPositionWC);
-        cameraOffsetWC = Cartesian3.multiplyByScalar(Cartesian3.normalize(cameraOffsetWC), 75);
-        var finalCameraPositionENU = Cartesian3.multiplyByScalar(Cartesian3.normalize(initialCameraPositionENU), 75);
-        var finalObjectPositionWC = pathObject.position.getValue(jdate);
-        var finalCameraPositionWC = Cartesian3.add(finalObjectPositionWC, cameraOffsetWC);
+        var cameraOffsetWC = new Cartesian3();
+        Cartesian3.subtract(initialCameraPositionWC, initialObjectPositionWC, cameraOffsetWC);
+        Cartesian3.multiplyByScalar(Cartesian3.normalize(cameraOffsetWC, cameraOffsetWC), 75, cameraOffsetWC);
 
-        var finalDirection = Cartesian3.normalize(Cartesian3.negate(cameraOffsetWC));
-        var finalRight = Cartesian3.normalize(Cartesian3.cross(finalDirection, finalObjectPositionWC));
-        var finalUp = Cartesian3.normalize(Cartesian3.cross(finalRight, finalDirection));
+        var finalCameraPositionENU = new Cartesian3();
+        Cartesian3.multiplyByScalar(Cartesian3.normalize(initialCameraPositionENU, finalCameraPositionENU), 75, finalCameraPositionENU);
+
+        var finalObjectPositionWC = pathObject.position.getValue(jdate);
+
+        var finalCameraPositionWC = new Cartesian3();
+        Cartesian3.add(finalObjectPositionWC, cameraOffsetWC, finalCameraPositionWC);
+
+        var finalDirection = new Cartesian3();
+        Cartesian3.normalize(Cartesian3.negate(cameraOffsetWC, finalDirection), finalDirection);
+
+        var finalRight = new Cartesian3();
+        Cartesian3.normalize(Cartesian3.cross(finalDirection, finalObjectPositionWC, finalRight), finalRight);
+
+        var finalUp = new Cartesian3();
+        Cartesian3.normalize(Cartesian3.cross(finalRight, finalDirection, finalUp), finalUp);
+
         var finalRefFrame = Transforms.eastNorthUpToFixedFrame(finalObjectPositionWC);
         var finalOffsetENU = Matrix4.multiplyByVector(Matrix4.getRotation(finalRefFrame), cameraOffsetWC);
 
@@ -186,10 +196,10 @@ define([
             var orientation = Quaternion.slerp(initialOrientation, finalOrientation, time);
             var rotationMatrix = Matrix3.fromQuaternion(orientation);
 
-            camera.position = Cartesian3.lerp(initialCameraPositionWC, finalCameraPositionWC, time);
+            Cartesian3.lerp(initialCameraPositionWC, finalCameraPositionWC, time, camera.position);
             camera.right = Matrix3.getRow(rotationMatrix, 0);
             camera.up = Matrix3.getRow(rotationMatrix, 1);
-            camera.direction = Cartesian3.negate(Matrix3.getRow(rotationMatrix, 2));
+            Cartesian3.negate(Matrix3.getRow(rotationMatrix, 2), camera.direction);
         };
 
         var duration = 3000;
@@ -207,9 +217,9 @@ define([
                 onComplete : function() {
                     camera.transform = finalRefFrame;
                     camera.position = finalCameraPositionENU;
-                    camera.direction = Cartesian3.normalize(Cartesian3.negate(camera.position));
-                    camera.right = Cartesian3.normalize(Cartesian3.cross(camera.direction, Cartesian3.UNIT_Z));
-                    camera.up = Cartesian3.normalize(Cartesian3.cross(camera.right, camera.direction));
+                    Cartesian3.normalize(Cartesian3.negate(camera.position, camera.direction), camera.direction);
+                    Cartesian3.normalize(Cartesian3.cross(camera.direction, Cartesian3.UNIT_Z, camera.right), camera.right);
+                    Cartesian3.normalize(Cartesian3.cross(camera.right, camera.direction, camera.up), camera.up);
                     enableInput(cesiumWidget.scene);
                     cesiumWidget.clock.shouldAnimate = true;
                     cesiumWidget.clock.currentTime = jdate;
@@ -253,14 +263,17 @@ define([
 
             // calculate instantaneous speed
             var currentPosition = pathObject.position.getValue(clock.currentTime);
-            var startPosition = pathObject.position.getValue(clock.currentTime.addSeconds(-2.0));
+            var time = new JulianDate();
+            var startPosition = pathObject.position.getValue(JulianDate.addSeconds(clock.currentTime, -2.0, time));
             var distance = Cartesian3.distance(currentPosition, startPosition);
             var speed = distance * 1.23694; // m/s -> mph
             speed = Math.round(speed); // round to 2 decimal places
 
             // calculate slope
+            var vec1 = new Cartesian3();
+            var vec2 = new Cartesian3();
             var earth = cesiumWidget._globe.ellipsoid;
-            startPosition = earth.cartesianToCartographic(pathObject.position.getValue(clock.currentTime.addSeconds(-2.0)));
+            startPosition = earth.cartesianToCartographic(pathObject.position.getValue(JulianDate.addSeconds(clock.currentTime, -2.0, time)));
             currentPosition = earth.cartesianToCartographic(pathObject.position.getValue(clock.currentTime));
             var altitude = Math.round(currentPosition.height * 3.28084);
             var referencePoint = currentPosition.clone();
@@ -268,8 +281,8 @@ define([
             startPosition = earth.cartographicToCartesian(startPosition);
             currentPosition = earth.cartographicToCartesian(currentPosition);
             referencePoint = earth.cartographicToCartesian(referencePoint);
-            var vec1 = Cartesian3.subtract(referencePoint, startPosition);
-            var vec2 = Cartesian3.subtract(currentPosition, startPosition);
+            Cartesian3.subtract(referencePoint, startPosition, vec1);
+            Cartesian3.subtract(currentPosition, startPosition, vec2);
             var slope = CesiumMath.toDegrees(Cartesian3.angleBetween(vec1, vec2));
             slope = Math.round(slope);
 

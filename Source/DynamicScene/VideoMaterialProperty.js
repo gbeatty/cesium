@@ -4,6 +4,7 @@ define([
         '../Core/defined',
         '../Core/defineProperties',
         '../Core/Event',
+        '../Core/JulianDate',
         './createDynamicPropertyDescriptor',
         './ConstantProperty',
         './Property'
@@ -12,6 +13,7 @@ define([
         defined,
         defineProperties,
         Event,
+        JulianDate,
         createDynamicPropertyDescriptor,
         ConstantProperty,
         Property) {
@@ -54,7 +56,7 @@ define([
         //before setting the currentTime, but if there are no seekable
         //segments, then this code will have no affect, so the net result
         //seems to be the same.
-        var videoTime = result.startTime.getSecondsDifference(currentTime);
+        var videoTime = JulianDate.getSecondsDifference(currentTime, result.startTime);
         videoTime = videoTime * result.speed;
         if (result.loop) {
             videoTime = videoTime % duration;
@@ -267,7 +269,7 @@ define([
         var currentSystemTime = new Date().getTime();
         if(videoLoaded && previousTime !== 'undefined' && previousSystemTime !== 'undefined') {
 
-            var deltaAnimationTime = previousTime.getSecondsDifference(time);
+            var deltaAnimationTime = JulianDate.getSecondsDifference(time, previousTime);
             var deltaSystemTime = (currentSystemTime-previousSystemTime) / 1000.0;
             var animationRate = deltaAnimationTime / deltaSystemTime;
             syncVideo(videoElement, animationRate, result, time);
