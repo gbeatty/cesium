@@ -1,5 +1,8 @@
 /*global define*/
-define(['./defined'], function(defined) {
+define([
+        './defined'
+    ], function(
+        defined) {
     "use strict";
 
     var implementation = window.requestAnimationFrame;
@@ -41,8 +44,9 @@ define(['./defined'], function(defined) {
      * @exports requestAnimationFrame
      *
      * @param {Function} callback The function to call when animation is ready.
+     * @returns An ID that can be passed to {@link cancelAnimationFrame} to cancel the request.
      *
-     * @returns An ID that can be passed to @{link cancelAnimationFrame} to cancel the request.
+     * @see {@link http://www.w3.org/TR/animation-timing/#the-WindowAnimationTiming-interface|The WindowAnimationTiming interface}
      *
      * @example
      * // Create a draw loop using requestAnimationFrame. The
@@ -52,8 +56,6 @@ define(['./defined'], function(defined) {
      *   Cesium.requestAnimationFrame(tick);
      * }
      * tick();
-     *
-     * @see <a href='http://www.w3.org/TR/animation-timing/#the-WindowAnimationTiming-interface'>The WindowAnimationTiming interface</a>
      */
     var requestAnimationFrame = function(callback) {
         // we need this extra wrapper function because the native requestAnimationFrame

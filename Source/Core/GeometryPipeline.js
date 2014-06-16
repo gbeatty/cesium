@@ -1,52 +1,52 @@
 /*global define*/
 define([
         './barycentricCoordinates',
-        './defaultValue',
-        './defined',
-        './DeveloperError',
+        './BoundingSphere',
         './Cartesian2',
         './Cartesian3',
         './Cartesian4',
         './Cartographic',
+        './ComponentDatatype',
+        './defaultValue',
+        './defined',
+        './DeveloperError',
         './EncodedCartesian3',
+        './GeographicProjection',
+        './Geometry',
+        './GeometryAttribute',
+        './IndexDatatype',
         './Intersect',
         './IntersectionTests',
         './Math',
         './Matrix3',
         './Matrix4',
         './Plane',
-        './GeographicProjection',
-        './ComponentDatatype',
-        './IndexDatatype',
         './PrimitiveType',
-        './Tipsify',
-        './BoundingSphere',
-        './Geometry',
-        './GeometryAttribute'
+        './Tipsify'
     ], function(
         barycentricCoordinates,
-        defaultValue,
-        defined,
-        DeveloperError,
+        BoundingSphere,
         Cartesian2,
         Cartesian3,
         Cartesian4,
         Cartographic,
+        ComponentDatatype,
+        defaultValue,
+        defined,
+        DeveloperError,
         EncodedCartesian3,
+        GeographicProjection,
+        Geometry,
+        GeometryAttribute,
+        IndexDatatype,
         Intersect,
         IntersectionTests,
         CesiumMath,
         Matrix3,
         Matrix4,
         Plane,
-        GeographicProjection,
-        ComponentDatatype,
-        IndexDatatype,
         PrimitiveType,
-        Tipsify,
-        BoundingSphere,
-        Geometry,
-        GeometryAttribute) {
+        Tipsify) {
     "use strict";
 
     /**
@@ -55,7 +55,6 @@ define([
      * @exports GeometryPipeline
      *
      * @see Geometry
-     * @see Context#createVertexArrayFromGeometry
      */
     var GeometryPipeline = {};
 
@@ -129,7 +128,6 @@ define([
      * </p>
      *
      * @param {Geometry} geometry The geometry to modify.
-     *
      * @returns {Geometry} The modified <code>geometry</code> argument, with its triangle indices converted to lines.
      *
      * @exception {DeveloperError} geometry.primitiveType must be TRIANGLES, TRIANGLE_STRIP, or TRIANGLE_FAN.
@@ -174,7 +172,6 @@ define([
      * @param {Geometry} geometry The <code>Geometry</code> instance with the attribute.
      * @param {String} [attributeName='normal'] The name of the attribute.
      * @param {Number} [length=10000.0] The length of each line segment in meters.  This can be negative to point the vector in the opposite direction.
-     *
      * @returns {Geometry} A new <code>Geometry<code> instance with line segments for the vector.
      *
      * @exception {DeveloperError} geometry.attributes must have an attribute with the same name as the attributeName parameter.
@@ -240,7 +237,6 @@ define([
      * for matching vertex attributes and shader programs.
      *
      * @param {Geometry} geometry The geometry, which is not modified, to create the object for.
-     *
      * @returns {Object} An object with attribute name / index pairs.
      *
      * @example
@@ -250,9 +246,6 @@ define([
      * //   'position' : 0,
      * //   'normal' : 1
      * // }
-     *
-     * @see Context#createVertexArrayFromGeometry
-     * @see ShaderCache
      */
     GeometryPipeline.createAttributeLocations = function(geometry) {
         //>>includeStart('debug', pragmas.debug);
@@ -313,15 +306,14 @@ define([
      * Reorders a geometry's attributes and <code>indices</code> to achieve better performance from the GPU's pre-vertex-shader cache.
      *
      * @param {Geometry} geometry The geometry to modify.
-     *
      * @returns {Geometry} The modified <code>geometry</code> argument, with its attributes and indices reordered for the GPU's pre-vertex-shader cache.
      *
      * @exception {DeveloperError} Each attribute array in geometry.attributes must have the same number of attributes.
      *
+     * @see GeometryPipeline.reorderForPostVertexCache
+     *
      * @example
      * geometry = Cesium.GeometryPipeline.reorderForPreVertexCache(geometry);
-     *
-     * @see GeometryPipeline.reorderForPostVertexCache
      */
     GeometryPipeline.reorderForPreVertexCache = function(geometry) {
         //>>includeStart('debug', pragmas.debug);
@@ -400,18 +392,16 @@ define([
      *
      * @param {Geometry} geometry The geometry to modify.
      * @param {Number} [cacheCapacity=24] The number of vertices that can be held in the GPU's vertex cache.
-     *
      * @returns {Geometry} The modified <code>geometry</code> argument, with its indices reordered for the post-vertex-shader cache.
      *
      * @exception {DeveloperError} cacheCapacity must be greater than two.
      *
+     * @see GeometryPipeline.reorderForPreVertexCache
+     * @see {@link http://gfx.cs.princeton.edu/pubs/Sander_2007_%3ETR/tipsy.pdf|Fast Triangle Reordering for Vertex Locality and Reduced Overdraw}
+     * by Sander, Nehab, and Barczak
+     *
      * @example
      * geometry = Cesium.GeometryPipeline.reorderForPostVertexCache(geometry);
-     *
-     * @see GeometryPipeline.reorderForPreVertexCache
-     * @see <a href='http://gfx.cs.princeton.edu/pubs/Sander_2007_%3ETR/tipsy.pdf'>
-     * Fast Triangle Reordering for Vertex Locality and Reduced Overdraw</a>
-     * by Sander, Nehab, and Barczak
      */
     GeometryPipeline.reorderForPostVertexCache = function(geometry, cacheCapacity) {
         //>>includeStart('debug', pragmas.debug);
@@ -478,14 +468,13 @@ define([
     /**
      * Splits a geometry into multiple geometries, if necessary, to ensure that indices in the
      * <code>indices</code> fit into unsigned shorts.  This is used to meet the WebGL requirements
-     * when {@link Context#getElementIndexUint} is <code>false</code>.
+     * when unsigned int indices are not supported.
      * <p>
      * If the geometry does not have any <code>indices</code>, this function has no effect.
      * </p>
      *
      * @param {Geometry} geometry The geometry to be split into multiple geometries.
-     *
-     * @returns {Array} An array of geometries, each with indices that fit into unsigned shorts.
+     * @returns {Geometry[]} An array of geometries, each with indices that fit into unsigned shorts.
      *
      * @exception {DeveloperError} geometry.primitiveType must equal to PrimitiveType.TRIANGLES, PrimitiveType.LINES, or PrimitiveType.POINTS
      * @exception {DeveloperError} All geometry attribute lists must have the same number of attributes.
@@ -589,7 +578,6 @@ define([
      * @param {String} attributeName3D The name of the attribute in 3D.
      * @param {String} attributeName2D The name of the attribute in 2D.
      * @param {Object} [projection=new GeographicProjection()] The projection to use.
-     *
      * @returns {Geometry} The modified <code>geometry</code> argument with <code>position3D</code> and <code>position2D</code> attributes.
      *
      * @exception {DeveloperError} geometry must have attribute matching the attributeName argument.
@@ -616,7 +604,7 @@ define([
         if (!defined(geometry.attributes[attributeName])) {
             throw new DeveloperError('geometry must have attribute matching the attributeName argument: ' + attributeName + '.');
         }
-        if (geometry.attributes[attributeName].componentDatatype.value !== ComponentDatatype.DOUBLE.value) {
+        if (geometry.attributes[attributeName].componentDatatype !== ComponentDatatype.DOUBLE) {
             throw new DeveloperError('The attribute componentDatatype must be ComponentDatatype.DOUBLE.');
         }
         //>>includeEnd('debug');
@@ -675,16 +663,15 @@ define([
      * @param {String} attributeName The name of the attribute.
      * @param {String} attributeHighName The name of the attribute for the encoded high bits.
      * @param {String} attributeLowName The name of the attribute for the encoded low bits.
-     *
      * @returns {Geometry} The modified <code>geometry</code> argument, with its encoded attribute.
      *
      * @exception {DeveloperError} geometry must have attribute matching the attributeName argument.
      * @exception {DeveloperError} The attribute componentDatatype must be ComponentDatatype.DOUBLE.
      *
+     * @see EncodedCartesian3
+     *
      * @example
      * geometry = Cesium.GeometryPipeline.encodeAttribute(geometry, 'position3D', 'position3DHigh', 'position3DLow');
-     *
-     * @see EncodedCartesian3
      */
     GeometryPipeline.encodeAttribute = function(geometry, attributeName, attributeHighName, attributeLowName) {
         //>>includeStart('debug', pragmas.debug);
@@ -703,7 +690,7 @@ define([
         if (!defined(geometry.attributes[attributeName])) {
             throw new DeveloperError('geometry must have attribute matching the attributeName argument: ' + attributeName + '.');
         }
-        if (geometry.attributes[attributeName].componentDatatype.value !== ComponentDatatype.DOUBLE.value) {
+        if (geometry.attributes[attributeName].componentDatatype !== ComponentDatatype.DOUBLE) {
             throw new DeveloperError('The attribute componentDatatype must be ComponentDatatype.DOUBLE.');
         }
         //>>includeEnd('debug');
@@ -775,16 +762,15 @@ define([
      * <code>binormal</code>, and <code>tangent</code>.
      *
      * @param {GeometryInstance} instance The geometry instance to modify.
-     *
      * @returns {GeometryInstance} The modified <code>instance</code> argument, with its attributes transforms to world coordinates.
+     *
+     * @see GeometryPipeline.combine
      *
      * @example
      * for (var i = 0; i < instances.length; ++i) {
      *   Cesium.GeometryPipeline.transformToWorldCoordinates(instances[i]);
      * }
      * var geometry = Cesium.GeometryPipeline.combine(instances);
-     *
-     * @see GeometryPipeline.combine
      */
     GeometryPipeline.transformToWorldCoordinates = function(instance) {
         //>>includeStart('debug', pragmas.debug);
@@ -853,7 +839,7 @@ define([
                     var otherAttribute = instances[i].geometry.attributes[name];
 
                     if ((!defined(otherAttribute)) ||
-                        (attribute.componentDatatype.value !== otherAttribute.componentDatatype.value) ||
+                        (attribute.componentDatatype !== otherAttribute.componentDatatype) ||
                         (attribute.componentsPerAttribute !== otherAttribute.componentsPerAttribute) ||
                         (attribute.normalize !== otherAttribute.normalize)) {
 
@@ -890,21 +876,20 @@ define([
      * This is used by {@link Primitive} to efficiently render a large amount of static data.
      * </p>
      *
-     * @param {Array} [instances] The array of {@link GeometryInstance} objects whose geometry will be combined.
-     *
+     * @param {GeometryInstance[]} [instances] The array of {@link GeometryInstance} objects whose geometry will be combined.
      * @returns {Geometry} A single geometry created from the provided geometry instances.
      *
      * @exception {DeveloperError} All instances must have the same modelMatrix.
      * @exception {DeveloperError} All instance geometries must have an indices or not have one.
      * @exception {DeveloperError} All instance geometries must have the same primitiveType.
      *
+     * @see GeometryPipeline.transformToWorldCoordinates
+     *
      * @example
      * for (var i = 0; i < instances.length; ++i) {
      *   Cesium.GeometryPipeline.transformToWorldCoordinates(instances[i]);
      * }
      * var geometry = Cesium.GeometryPipeline.combine(instances);
-     *
-     * @see GeometryPipeline.transformToWorldCoordinates
      */
     GeometryPipeline.combine = function(instances) {
         //>>includeStart('debug', pragmas.debug);
@@ -1041,7 +1026,6 @@ define([
      * This assumes a counter-clockwise winding order.
      *
      * @param {Geometry} geometry The geometry to modify.
-     *
      * @returns {Geometry} The modified <code>geometry</code> argument with the computed <code>normal</code> attribute.
      *
      * @exception {DeveloperError} geometry.indices length must be greater than 0 and be a multiple of 3.
@@ -1185,7 +1169,6 @@ define([
      * </p>
      *
      * @param {Geometry} geometry The geometry to modify.
-     *
      * @returns {Geometry} The modified <code>geometry</code> argument with the computed <code>binormal</code> and <code>tangent</code> attributes.
      *
      * @exception {DeveloperError} geometry.indices length must be greater than 0 and be a multiple of 3.
@@ -1884,7 +1867,6 @@ define([
      * correcting drawing in 2D and Columbus view.
      *
      * @param {Geometry} geometry The geometry to modify.
-     *
      * @returns {Geometry} The modified <code>geometry</code> argument, with it's primitives split at the International Date Line.
      *
      * @example

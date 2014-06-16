@@ -11,7 +11,7 @@ define([
         'Scene/BingMapsImageryProvider',
         'Scene/Camera',
         'Scene/CameraFlightPath',
-        'Scene/CesiumTerrainProvider',
+        'Core/CesiumTerrainProvider',
         'Scene/TileMapServiceImageryProvider',
         'Widgets/ClockViewModel',
         'Widgets/CesiumWidget/CesiumWidget',
@@ -26,7 +26,7 @@ define([
         'Core/ClockStep',
         'Core/defined',
         'Core/Ellipsoid',
-        'Core/Extent',
+        'Core/Rectangle',
         'Core/Iso8601',
         'Core/JulianDate',
         'Core/loadJson',
@@ -109,7 +109,7 @@ define([
         var direction = Cartesian3.negate(Cartesian3.normalize(cameraOffset));
         var up = Cartesian3.normalize(Cartesian3.cross(Cartesian3.cross(direction, objectPosition), direction));
 
-        var cameraFlightPath = CameraFlightPath.createAnimation(
+        /*var cameraFlightPath = CameraFlightPath.createAnimation(
             scene, {
                 destination : Cartesian3.add(objectPosition, cameraOffset),
                 direction : direction,
@@ -119,7 +119,17 @@ define([
                     enableInput(scene);
             }
         });
-        scene.animations.add(cameraFlightPath);
+        scene.animations.add(cameraFlightPath);*/
+
+        scene.camera.flyTo({
+            destination : Cartesian3.add(objectPosition, cameraOffset),
+            direction : direction,
+            up : up,
+            duration : 12000,
+            onComplete : function() {
+                enableInput(scene);
+            }
+        });
     }
 
     function createQuaternion(direction, up) {
@@ -249,7 +259,7 @@ define([
             speed = Math.round(speed); // round to 2 decimal places
 
             // calculate slope
-            var earth = cesiumWidget.centralBody.ellipsoid;
+            var earth = cesiumWidget._globe.ellipsoid;
             startPosition = earth.cartesianToCartographic(pathObject.position.getValue(clock.currentTime.addSeconds(-2.0)));
             currentPosition = earth.cartesianToCartographic(pathObject.position.getValue(clock.currentTime));
             var altitude = Math.round(currentPosition.height * 3.28084);
@@ -355,7 +365,7 @@ define([
                 url : 'http://cesium.agi.com/srtmplusutah'
             })
         });
-        cesiumWidget.centralBody.depthTestAgainstTerrain = true;
+        cesiumWidget._globe.depthTestAgainstTerrain = true;
         cesiumWidget.clock.onTick.addEventListener(updateData);
 
         // disable tilting with the middle mouse button
@@ -400,7 +410,7 @@ define([
                 CesiumMath.toRadians(-111.3080556),
                 CesiumMath.toRadians(40.7639815))
         });
-        var layers = cesiumWidget.centralBody.imageryLayers;
+        var layers = cesiumWidget._globe.imageryLayers;
         slopeLayer = layers.addImageryProvider(slopeImageryProvider);
         slopeLayer.show = false;
         slopeLayer.alpha = 0.6;
@@ -429,7 +439,7 @@ define([
         var animation;
         var animatingBillboard;
         var updateAnimation = function(value) {
-            animatingBillboard.setScale(value.scale);
+            animatingBillboard.scale = value.scale;
         };
 
         var animationComplete = function() {
@@ -460,7 +470,7 @@ define([
                     onUpdate : updateAnimation,
                     onComplete : animationComplete,
                     startValue : {
-                        scale : animatingBillboard.getScale()
+                        scale : animatingBillboard.scale
                     },
                     stopValue : {
                         scale : 1.5
@@ -481,7 +491,7 @@ define([
                     onUpdate : updateAnimation,
                     onComplete : finalAnimationComplete,
                     startValue : {
-                        scale : animatingBillboard.getScale()
+                        scale : animatingBillboard.scale
                     },
                     stopValue : {
                         scale : 1.0
@@ -505,7 +515,7 @@ define([
         var pathCzmlDataSource = new CzmlDataSource();
         pathCzmlDataSource.loadUrl(pathCzml).then(function() {
 
-            var dynamicObjectCollection =  pathCzmlDataSource.getDynamicObjectCollection();
+            var dynamicObjectCollection =  pathCzmlDataSource.dynamicObjects;
             setTimeFromBuffer(dynamicObjectCollection);
 
             // set the camera to follow the path

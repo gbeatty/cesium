@@ -1,10 +1,11 @@
 /*global define*/
-define(['../Core/Cartesian2',
+define([
+        '../Core/Cartesian2',
         '../Core/Cartesian3',
         '../Core/Cartographic',
-        '../Core/Color',
         '../Core/ClockRange',
         '../Core/ClockStep',
+        '../Core/Color',
         '../Core/createGuid',
         '../Core/defaultValue',
         '../Core/defined',
@@ -22,6 +23,7 @@ define(['../Core/Cartesian2',
         '../Core/loadJson',
         '../Core/Math',
         '../Core/Quaternion',
+        '../Core/Rectangle',
         '../Core/ReferenceFrame',
         '../Core/RuntimeError',
         '../Core/Spherical',
@@ -30,6 +32,9 @@ define(['../Core/Cartesian2',
         '../Scene/HorizontalOrigin',
         '../Scene/LabelStyle',
         '../Scene/VerticalOrigin',
+        '../ThirdParty/Uri',
+        '../ThirdParty/when',
+        './ColorMaterialProperty',
         './CompositeMaterialProperty',
         './CompositePositionProperty',
         './CompositeProperty',
@@ -38,40 +43,41 @@ define(['../Core/Cartesian2',
         './createDynamicPropertyDescriptor',
         './DynamicBillboard',
         './DynamicClock',
-        './ColorMaterialProperty',
-        './PolylineOutlineMaterialProperty',
         './DynamicCone',
-        './DynamicLabel',
         './DynamicEllipse',
         './DynamicEllipsoid',
-        './GridMaterialProperty',
-        './ImageMaterialProperty',
+        './DynamicLabel',
         './DynamicModel',
         './DynamicObject',
         './DynamicObjectCollection',
         './DynamicPath',
         './DynamicPoint',
-        './DynamicPolyline',
         './DynamicPolygon',
+        './DynamicPolyline',
         './DynamicPyramid',
         './DynamicScreenOverlay',
+        './DynamicRectangle',
         './DynamicVector',
+        './DynamicWall',
+        './GridMaterialProperty',
+        './ImageMaterialProperty',
+        './PolylineOutlineMaterialProperty',
         './PositionPropertyArray',
         './ReferenceProperty',
         './SampledPositionProperty',
         './SampledProperty',
+        './StripeMaterialProperty',
+        './StripeOrientation',
         './TimeIntervalCollectionPositionProperty',
         './TimeIntervalCollectionProperty',
-        './VideoMaterialProperty',
-        '../ThirdParty/Uri',
-        '../ThirdParty/when'
+        './VideoMaterialProperty'
     ], function(
         Cartesian2,
         Cartesian3,
         Cartographic,
-        Color,
         ClockRange,
         ClockStep,
+        Color,
         createGuid,
         defaultValue,
         defined,
@@ -89,6 +95,7 @@ define(['../Core/Cartesian2',
         loadJson,
         CesiumMath,
         Quaternion,
+        Rectangle,
         ReferenceFrame,
         RuntimeError,
         Spherical,
@@ -97,6 +104,9 @@ define(['../Core/Cartesian2',
         HorizontalOrigin,
         LabelStyle,
         VerticalOrigin,
+        Uri,
+        when,
+        ColorMaterialProperty,
         CompositeMaterialProperty,
         CompositePositionProperty,
         CompositeProperty,
@@ -105,34 +115,44 @@ define(['../Core/Cartesian2',
         createDynamicPropertyDescriptor,
         DynamicBillboard,
         DynamicClock,
-        ColorMaterialProperty,
-        PolylineOutlineMaterialProperty,
         DynamicCone,
-        DynamicLabel,
         DynamicEllipse,
         DynamicEllipsoid,
-        GridMaterialProperty,
-        ImageMaterialProperty,
+        DynamicLabel,
         DynamicModel,
         DynamicObject,
         DynamicObjectCollection,
         DynamicPath,
         DynamicPoint,
-        DynamicPolyline,
         DynamicPolygon,
+        DynamicPolyline,
         DynamicPyramid,
         DynamicScreenOverlay,
+        DynamicRectangle,
         DynamicVector,
+        DynamicWall,
+        GridMaterialProperty,
+        ImageMaterialProperty,
+        PolylineOutlineMaterialProperty,
         PositionPropertyArray,
         ReferenceProperty,
         SampledPositionProperty,
         SampledProperty,
+        StripeMaterialProperty,
+        StripeOrientation,
         TimeIntervalCollectionPositionProperty,
         TimeIntervalCollectionProperty,
-        VideoMaterialProperty,
-        Uri,
-        when) {
+        VideoMaterialProperty) {
     "use strict";
+
+    var currentId;
+
+    function makeReference(collection, referenceString) {
+        if (referenceString[0] === '#') {
+            referenceString = currentId + referenceString;
+        }
+        return ReferenceProperty.fromString(collection, referenceString);
+    }
 
     //This class is a workaround for CZML represented as two properties which get turned into a single Cartesian2 property once loaded.
     var Cartesian2WrapperProperty = function() {
@@ -247,9 +267,25 @@ define(['../Core/Cartesian2',
         return result;
     }
 
+    function unwrapRectangleInterval(czmlInterval) {
+        var wsenDegrees = czmlInterval.wsenDegrees;
+        if (defined(wsenDegrees)) {
+            var length = wsenDegrees.length;
+            for (var i = 0; i < length; i++) {
+                wsenDegrees[i] = CesiumMath.toRadians(wsenDegrees[i]);
+            }
+            return wsenDegrees;
+        }
+        return czmlInterval.wsen;
+    }
+
     function unwrapCartesianInterval(czmlInterval) {
         if (defined(czmlInterval.cartesian)) {
             return czmlInterval.cartesian;
+        }
+
+        if (defined(czmlInterval.cartesianVelocity)) {
+            return czmlInterval.cartesianVelocity;
         }
 
         if (defined(czmlInterval.unitCartesian)) {
@@ -353,10 +389,16 @@ define(['../Core/Cartesian2',
             return unwrapCartesianInterval(czmlInterval);
         case Color:
             return unwrapColorInterval(czmlInterval);
+        case StripeOrientation:
+            return StripeOrientation[defaultValue(czmlInterval.stripeOrientation, czmlInterval)];
         case HorizontalOrigin:
             return HorizontalOrigin[defaultValue(czmlInterval.horizontalOrigin, czmlInterval)];
         case Image:
-            return unwrapImageInterval(czmlInterval, sourceUri);
+            // Backwards compatibility: new files use 'uri', old files use 'image'
+            if (defined(czmlInterval.image)) {
+                return unwrapImageInterval(czmlInterval, sourceUri);
+            }
+            return unwrapUriInterval(czmlInterval, sourceUri);
         case JulianDate:
             return JulianDate.fromIso8601(defaultValue(czmlInterval.date, czmlInterval));
         case LabelStyle:
@@ -385,6 +427,8 @@ define(['../Core/Cartesian2',
                 }
             }
             return unitQuaternion;
+        case Rectangle:
+            return unwrapRectangleInterval(czmlInterval);
         case Uri:
             return unwrapUriInterval(czmlInterval, sourceUri);
         case VerticalOrigin:
@@ -412,7 +456,7 @@ define(['../Core/Cartesian2',
         }
     }
 
-    function processProperty(type, object, propertyName, packetData, constrainedInterval, sourceUri) {
+    function processProperty(type, object, propertyName, packetData, constrainedInterval, sourceUri, dynamicObjectCollection) {
         var combinedInterval;
         var packetInterval = packetData.interval;
         if (defined(packetInterval)) {
@@ -424,23 +468,33 @@ define(['../Core/Cartesian2',
             combinedInterval = constrainedInterval;
         }
 
-        var unwrappedInterval = unwrapInterval(type, packetData, sourceUri);
+        var packedLength;
+        var isSampled;
+        var unwrappedInterval;
+        var unwrappedIntervalLength;
+        var isReference = defined(packetData.reference);
         var hasInterval = defined(combinedInterval) && !combinedInterval.equals(Iso8601.MAXIMUM_INTERVAL);
-        var packedLength = defaultValue(type.packedLength, 1);
-        var unwrappedIntervalLength = defaultValue(unwrappedInterval.length, 1);
-        var isSampled = !defined(packetData.array) && (typeof unwrappedInterval !== 'string') && unwrappedIntervalLength > packedLength;
+
+        if (!isReference) {
+            unwrappedInterval = unwrapInterval(type, packetData, sourceUri);
+            packedLength = defaultValue(type.packedLength, 1);
+            unwrappedIntervalLength = defaultValue(unwrappedInterval.length, 1);
+            isSampled = !defined(packetData.array) && (typeof unwrappedInterval !== 'string') && unwrappedIntervalLength > packedLength;
+        }
+
 
         //Any time a constant value is assigned, it completely blows away anything else.
         if (!isSampled && !hasInterval) {
-            if (defined(type.unpack)) {
+            if (isReference) {
+                object[propertyName] = makeReference(dynamicObjectCollection, packetData.reference);
+            } else if (defined(type.unpack)) {
                 object[propertyName] = new ConstantProperty(type.unpack(unwrappedInterval, 0));
             } else {
                 object[propertyName] = new ConstantProperty(unwrappedInterval);
             }
-            return true;
+            return;
         }
 
-        var propertyCreated = false;
         var property = object[propertyName];
 
         var epoch;
@@ -455,11 +509,10 @@ define(['../Core/Cartesian2',
             if (!(property instanceof SampledProperty)) {
                 property = new SampledProperty(type);
                 object[propertyName] = property;
-                propertyCreated = true;
             }
             property.addSamplesPackedArray(unwrappedInterval, epoch);
             updateInterpolationSettings(packetData, property);
-            return propertyCreated;
+            return;
         }
 
         var interval;
@@ -470,7 +523,9 @@ define(['../Core/Cartesian2',
         if (!isSampled && hasInterval) {
             //Create a new interval for the constant value.
             combinedInterval = combinedInterval.clone();
-            if (defined(type.unpack)) {
+            if (isReference) {
+                combinedInterval.data = makeReference(dynamicObjectCollection, packetData.reference);
+            } else if (defined(type.unpack)) {
                 combinedInterval.data = type.unpack(unwrappedInterval, 0);
             } else {
                 combinedInterval.data = unwrappedInterval;
@@ -478,17 +533,20 @@ define(['../Core/Cartesian2',
 
             //If no property exists, simply use a new interval collection
             if (!defined(property)) {
-                property = new TimeIntervalCollectionProperty();
+                if (isReference) {
+                    property = new CompositeProperty();
+                } else {
+                    property = new TimeIntervalCollectionProperty();
+                }
                 object[propertyName] = property;
-                propertyCreated = true;
             }
 
-            if (property instanceof TimeIntervalCollectionProperty) {
+            if (!isReference && property instanceof TimeIntervalCollectionProperty) {
                 //If we create a collection, or it already existed, use it.
                 property.intervals.addInterval(combinedInterval);
             } else if (property instanceof CompositeProperty) {
                 //If the collection was already a CompositeProperty, use it.
-                combinedInterval.data = new ConstantProperty(combinedInterval.data);
+                combinedInterval.data = isReference ? combinedInterval.data : new ConstantProperty(combinedInterval.data);
                 property.intervals.addInterval(combinedInterval);
             } else {
                 //Otherwise, create a CompositeProperty but preserve the existing data.
@@ -498,7 +556,6 @@ define(['../Core/Cartesian2',
                 interval.data = property;
 
                 //Create the composite.
-                propertyCreated = true;
                 property = new CompositeProperty();
                 object[propertyName] = property;
 
@@ -506,16 +563,15 @@ define(['../Core/Cartesian2',
                 property.intervals.addInterval(interval);
 
                 //Change the new data to a ConstantProperty and add it.
-                combinedInterval.data = new ConstantProperty(combinedInterval.data);
+                combinedInterval.data = isReference ? combinedInterval.data : new ConstantProperty(combinedInterval.data);
                 property.intervals.addInterval(combinedInterval);
             }
 
-            return propertyCreated;
+            return;
         }
 
         //isSampled && hasInterval
         if (!defined(property)) {
-            propertyCreated = true;
             property = new CompositeProperty();
             object[propertyName] = property;
         }
@@ -527,7 +583,6 @@ define(['../Core/Cartesian2',
             interval.data = property;
 
             //Create the composite.
-            propertyCreated = true;
             property = new CompositeProperty();
             object[propertyName] = property;
 
@@ -546,24 +601,24 @@ define(['../Core/Cartesian2',
         }
         interval.data.addSamplesPackedArray(unwrappedInterval, epoch);
         updateInterpolationSettings(packetData, interval.data);
-        return propertyCreated;
+        return;
     }
 
-    function processPacketData(type, object, propertyName, packetData, interval, sourceUri) {
+    function processPacketData(type, object, propertyName, packetData, interval, sourceUri, dynamicObjectCollection) {
         if (!defined(packetData)) {
             return;
         }
 
         if (isArray(packetData)) {
             for (var i = 0, len = packetData.length; i < len; i++) {
-                processProperty(type, object, propertyName, packetData[i], interval, sourceUri);
+                processProperty(type, object, propertyName, packetData[i], interval, sourceUri, dynamicObjectCollection);
             }
         } else {
-            processProperty(type, object, propertyName, packetData, interval, sourceUri);
+            processProperty(type, object, propertyName, packetData, interval, sourceUri, dynamicObjectCollection);
         }
     }
 
-    function processPositionProperty(object, propertyName, packetData, constrainedInterval, sourceUri) {
+    function processPositionProperty(object, propertyName, packetData, constrainedInterval, sourceUri, dynamicObjectCollection) {
         var combinedInterval;
         var packetInterval = packetData.interval;
         if (defined(packetInterval)) {
@@ -575,20 +630,32 @@ define(['../Core/Cartesian2',
             combinedInterval = constrainedInterval;
         }
 
-        var referenceFrame = defaultValue(ReferenceFrame[packetData.referenceFrame], undefined);
-        var unwrappedInterval = unwrapCartesianInterval(packetData);
+        var referenceFrame;
+        var unwrappedInterval;
+        var isSampled = false;
+        var unwrappedIntervalLength;
+        var numberOfDerivatives = defined(packetData.cartesianVelocity) ? 1 : 0;
+        var packedLength = Cartesian3.packedLength * (numberOfDerivatives + 1);
+        var isReference = defined(packetData.reference);
         var hasInterval = defined(combinedInterval) && !combinedInterval.equals(Iso8601.MAXIMUM_INTERVAL);
-        var packedLength = Cartesian3.packedLength;
-        var unwrappedIntervalLength = defaultValue(unwrappedInterval.length, 1);
-        var isSampled = (typeof unwrappedInterval !== 'string') && unwrappedIntervalLength > packedLength;
+
+        if (!isReference) {
+            referenceFrame = defaultValue(ReferenceFrame[packetData.referenceFrame], undefined);
+            unwrappedInterval = unwrapCartesianInterval(packetData);
+            unwrappedIntervalLength = defaultValue(unwrappedInterval.length, 1);
+            isSampled = unwrappedIntervalLength > packedLength;
+        }
 
         //Any time a constant value is assigned, it completely blows away anything else.
         if (!isSampled && !hasInterval) {
-            object[propertyName] = new ConstantPositionProperty(Cartesian3.unpack(unwrappedInterval), referenceFrame);
-            return true;
+            if (isReference) {
+                object[propertyName] = makeReference(dynamicObjectCollection, packetData.reference);
+            } else {
+                object[propertyName] = new ConstantPositionProperty(Cartesian3.unpack(unwrappedInterval), referenceFrame);
+            }
+            return;
         }
 
-        var propertyCreated = false;
         var property = object[propertyName];
 
         var epoch;
@@ -601,13 +668,12 @@ define(['../Core/Cartesian2',
         //replaces any non-sampled property that may exist.
         if (isSampled && !hasInterval) {
             if (!(property instanceof SampledPositionProperty) || (defined(referenceFrame) && property.referenceFrame !== referenceFrame)) {
-                property = new SampledPositionProperty(referenceFrame);
+                property = new SampledPositionProperty(referenceFrame, numberOfDerivatives);
                 object[propertyName] = property;
-                propertyCreated = true;
             }
             property.addSamplesPackedArray(unwrappedInterval, epoch);
             updateInterpolationSettings(packetData, property);
-            return propertyCreated;
+            return;
         }
 
         var interval;
@@ -618,21 +684,28 @@ define(['../Core/Cartesian2',
         if (!isSampled && hasInterval) {
             //Create a new interval for the constant value.
             combinedInterval = combinedInterval.clone();
-            combinedInterval.data = Cartesian3.unpack(unwrappedInterval);
+            if (isReference) {
+                combinedInterval.data = makeReference(dynamicObjectCollection, packetData.reference);
+            } else {
+                combinedInterval.data = Cartesian3.unpack(unwrappedInterval);
+            }
 
             //If no property exists, simply use a new interval collection
             if (!defined(property)) {
-                property = new TimeIntervalCollectionPositionProperty(referenceFrame);
+                if (isReference) {
+                    property = new CompositePositionProperty(referenceFrame);
+                } else {
+                    property = new TimeIntervalCollectionPositionProperty(referenceFrame);
+                }
                 object[propertyName] = property;
-                propertyCreated = true;
             }
 
-            if (property instanceof TimeIntervalCollectionPositionProperty && (defined(referenceFrame) && property.referenceFrame === referenceFrame)) {
+            if (!isReference && property instanceof TimeIntervalCollectionPositionProperty && (defined(referenceFrame) && property.referenceFrame === referenceFrame)) {
                 //If we create a collection, or it already existed, use it.
                 property.intervals.addInterval(combinedInterval);
             } else if (property instanceof CompositePositionProperty) {
                 //If the collection was already a CompositePositionProperty, use it.
-                combinedInterval.data = new ConstantPositionProperty(combinedInterval.data, referenceFrame);
+                combinedInterval.data = isReference ? combinedInterval.data : new ConstantPositionProperty(combinedInterval.data, referenceFrame);
                 property.intervals.addInterval(combinedInterval);
             } else {
                 //Otherwise, create a CompositePositionProperty but preserve the existing data.
@@ -642,7 +715,6 @@ define(['../Core/Cartesian2',
                 interval.data = property;
 
                 //Create the composite.
-                propertyCreated = true;
                 property = new CompositePositionProperty(property.referenceFrame);
                 object[propertyName] = property;
 
@@ -650,16 +722,15 @@ define(['../Core/Cartesian2',
                 property.intervals.addInterval(interval);
 
                 //Change the new data to a ConstantPositionProperty and add it.
-                combinedInterval.data = new ConstantPositionProperty(combinedInterval.data, referenceFrame);
+                combinedInterval.data = isReference ? combinedInterval.data : new ConstantPositionProperty(combinedInterval.data, referenceFrame);
                 property.intervals.addInterval(combinedInterval);
             }
 
-            return propertyCreated;
+            return;
         }
 
         //isSampled && hasInterval
         if (!defined(property)) {
-            propertyCreated = true;
             property = new CompositePositionProperty(referenceFrame);
             object[propertyName] = property;
         } else if (!(property instanceof CompositePositionProperty)) {
@@ -669,7 +740,6 @@ define(['../Core/Cartesian2',
             interval.data = property;
 
             //Create the composite.
-            propertyCreated = true;
             property = new CompositePositionProperty(property.referenceFrame);
             object[propertyName] = property;
 
@@ -683,29 +753,28 @@ define(['../Core/Cartesian2',
         if (!defined(interval) || !(interval.data instanceof SampledPositionProperty) || (defined(referenceFrame) && interval.data.referenceFrame !== referenceFrame)) {
             //If not, create a SampledPositionProperty for it.
             interval = combinedInterval.clone();
-            interval.data = new SampledPositionProperty(referenceFrame);
+            interval.data = new SampledPositionProperty(referenceFrame, numberOfDerivatives);
             intervals.addInterval(interval);
         }
         interval.data.addSamplesPackedArray(unwrappedInterval, epoch);
         updateInterpolationSettings(packetData, interval.data);
-        return propertyCreated;
     }
 
-    function processPositionPacketData(object, propertyName, packetData, interval, sourceUri) {
+    function processPositionPacketData(object, propertyName, packetData, interval, sourceUri, dynamicObjectCollection) {
         if (!defined(packetData)) {
             return;
         }
 
         if (isArray(packetData)) {
             for (var i = 0, len = packetData.length; i < len; i++) {
-                processPositionProperty(object, propertyName, packetData[i], interval, sourceUri);
+                processPositionProperty(object, propertyName, packetData[i], interval, sourceUri, dynamicObjectCollection);
             }
         } else {
-            processPositionProperty(object, propertyName, packetData, interval, sourceUri);
+            processPositionProperty(object, propertyName, packetData, interval, sourceUri, dynamicObjectCollection);
         }
     }
 
-    function processMaterialProperty(object, propertyName, packetData, constrainedInterval, sourceUri) {
+    function processMaterialProperty(object, propertyName, packetData, constrainedInterval, sourceUri, dynamicObjectCollection) {
         var combinedInterval;
         var packetInterval = packetData.interval;
         if (defined(packetInterval)) {
@@ -748,22 +817,23 @@ define(['../Core/Cartesian2',
                 existingMaterial = new ColorMaterialProperty();
             }
             materialData = packetData.solidColor;
-            processPacketData(Color, existingMaterial, 'color', materialData.color);
+            processPacketData(Color, existingMaterial, 'color', materialData.color, undefined, undefined, dynamicObjectCollection);
         } else if (defined(packetData.grid)) {
             if (!(existingMaterial instanceof GridMaterialProperty)) {
                 existingMaterial = new GridMaterialProperty();
             }
             materialData = packetData.grid;
-            processPacketData(Color, existingMaterial, 'color', materialData.color, undefined, sourceUri);
-            processPacketData(Number, existingMaterial, 'cellAlpha', materialData.cellAlpha, undefined, sourceUri);
-            existingMaterial.lineThickness = combineIntoCartesian2(existingMaterial.lineThickness, materialData.rowThickness, materialData.columnThickness);
-            existingMaterial.lineCount = combineIntoCartesian2(existingMaterial.lineCount, materialData.rowCount, materialData.columnCount);
+            processPacketData(Color, existingMaterial, 'color', materialData.color, undefined, sourceUri, dynamicObjectCollection);
+            processPacketData(Number, existingMaterial, 'cellAlpha', materialData.cellAlpha, undefined, sourceUri, dynamicObjectCollection);
+            existingMaterial.lineThickness = combineIntoCartesian2(existingMaterial.lineThickness, materialData.rowThickness, materialData.columnThickness, undefined, undefined, dynamicObjectCollection);
+            existingMaterial.lineOffset = combineIntoCartesian2(existingMaterial.lineOffset, materialData.rowOffset, materialData.columnOffset, undefined, undefined, dynamicObjectCollection);
+            existingMaterial.lineCount = combineIntoCartesian2(existingMaterial.lineCount, materialData.rowCount, materialData.columnCount, undefined, undefined, dynamicObjectCollection);
         } else if (defined(packetData.image)) {
             if (!(existingMaterial instanceof ImageMaterialProperty)) {
                 existingMaterial = new ImageMaterialProperty();
             }
             materialData = packetData.image;
-            processPacketData(Image, existingMaterial, 'image', materialData.image, undefined, sourceUri);
+            processPacketData(Image, existingMaterial, 'image', materialData.image, undefined, sourceUri, dynamicObjectCollection);
             existingMaterial.repeat = combineIntoCartesian2(existingMaterial.repeat, materialData.horizontalRepeat, materialData.verticalRepeat);
         } else if (defined(packetData.video)) {
             if (!(existingMaterial instanceof VideoMaterialProperty)) {
@@ -776,6 +846,16 @@ define(['../Core/Cartesian2',
             processPacketData(Boolean, existingMaterial, 'loop', materialData.loop, undefined, sourceUri);
             processPacketData(Number, existingMaterial, 'speed', materialData.speed, undefined, sourceUri);
             processPacketData(JulianDate, existingMaterial, 'startTime', materialData.startTime, undefined, sourceUri);
+        } else if (defined(packetData.stripe)) {
+            if (!(existingMaterial instanceof StripeMaterialProperty)) {
+                existingMaterial = new StripeMaterialProperty();
+            }
+            materialData = packetData.stripe;
+            processPacketData(StripeOrientation, existingMaterial, 'orientation', materialData.orientation, undefined, sourceUri, dynamicObjectCollection);
+            processPacketData(Color, existingMaterial, 'evenColor', materialData.evenColor, undefined, sourceUri, dynamicObjectCollection);
+            processPacketData(Color, existingMaterial, 'oddColor', materialData.oddColor, undefined, sourceUri, dynamicObjectCollection);
+            processPacketData(Number, existingMaterial, 'offset', materialData.offset, undefined, sourceUri, dynamicObjectCollection);
+            processPacketData(Number, existingMaterial, 'repeat', materialData.repeat, undefined, sourceUri, dynamicObjectCollection);
         }
 
         if (defined(existingInterval)) {
@@ -785,17 +865,17 @@ define(['../Core/Cartesian2',
         }
     }
 
-    function processMaterialPacketData(object, propertyName, packetData, interval, sourceUri) {
+    function processMaterialPacketData(object, propertyName, packetData, interval, sourceUri, dynamicObjectCollection) {
         if (!defined(packetData)) {
             return;
         }
 
         if (isArray(packetData)) {
             for (var i = 0, len = packetData.length; i < len; i++) {
-                processMaterialProperty(object, propertyName, packetData[i], interval, sourceUri);
+                processMaterialProperty(object, propertyName, packetData[i], interval, sourceUri, dynamicObjectCollection);
             }
         } else {
-            processMaterialProperty(object, propertyName, packetData, interval, sourceUri);
+            processMaterialProperty(object, propertyName, packetData, interval, sourceUri, dynamicObjectCollection);
         }
     }
 
@@ -806,28 +886,28 @@ define(['../Core/Cartesian2',
     function processDescription(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
         var descriptionData = packet.description;
         if (defined(descriptionData)) {
-            processPacketData(String, dynamicObject, 'description', descriptionData, undefined, sourceUri);
+            processPacketData(String, dynamicObject, 'description', descriptionData, undefined, sourceUri, dynamicObjectCollection);
         }
     }
 
     function processPosition(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
         var positionData = packet.position;
         if (defined(positionData)) {
-            processPositionPacketData(dynamicObject, 'position', positionData, undefined, sourceUri);
+            processPositionPacketData(dynamicObject, 'position', positionData, undefined, sourceUri, dynamicObjectCollection);
         }
     }
 
     function processViewFrom(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
         var viewFromData = packet.viewFrom;
         if (defined(viewFromData)) {
-            processPacketData(Cartesian3, dynamicObject, 'viewFrom', viewFromData, undefined, sourceUri);
+            processPacketData(Cartesian3, dynamicObject, 'viewFrom', viewFromData, undefined, sourceUri, dynamicObjectCollection);
         }
     }
 
     function processOrientation(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
         var orientationData = packet.orientation;
         if (defined(orientationData)) {
-            processPacketData(Quaternion, dynamicObject, 'orientation', orientationData, undefined, sourceUri);
+            processPacketData(Quaternion, dynamicObject, 'orientation', orientationData, undefined, sourceUri, dynamicObjectCollection);
         }
     }
 
@@ -838,7 +918,7 @@ define(['../Core/Cartesian2',
         if (defined(references)) {
             var properties = [];
             for (i = 0, len = references.length; i < len; i++) {
-                properties.push(ReferenceProperty.fromString(dynamicObjectCollection, references[i]));
+                properties.push(makeReference(dynamicObjectCollection, references[i]));
             }
 
             var iso8601Interval = vertexPositionsData.interval;
@@ -864,21 +944,24 @@ define(['../Core/Cartesian2',
                 tmp = vertexPositionsData.cartographicRadians;
                 if (defined(tmp)) {
                     for (i = 0, len = tmp.length; i < len; i += 3) {
-                        values.push(Ellipsoid.WGS84.cartographicToCartesian(new Cartographic(tmp[i], tmp[i + 1], tmp[i + 2])));
+                        scratchCartographic.longitude = tmp[i];
+                        scratchCartographic.latitude = tmp[i + 1];
+                        scratchCartographic.height = tmp[i + 2];
+                        values.push(Ellipsoid.WGS84.cartographicToCartesian(scratchCartographic));
                     }
                     vertexPositionsData.array = values;
                 } else {
                     tmp = vertexPositionsData.cartographicDegrees;
                     if (defined(tmp)) {
                         for (i = 0, len = tmp.length; i < len; i += 3) {
-                            values.push(Ellipsoid.WGS84.cartographicToCartesian(Cartographic.fromDegrees(tmp[i], tmp[i + 1], tmp[i + 2])));
+                            values.push(Cartesian3.fromDegrees(tmp[i], tmp[i + 1], tmp[i + 2]));
                         }
                         vertexPositionsData.array = values;
                     }
                 }
             }
             if (defined(vertexPositionsData.array)) {
-                processPacketData(Array, dynamicObject, 'vertexPositions', vertexPositionsData);
+                processPacketData(Array, dynamicObject, 'vertexPositions', vertexPositionsData, undefined, undefined, dynamicObjectCollection);
             }
         }
     }
@@ -940,16 +1023,16 @@ define(['../Core/Cartesian2',
             dynamicObject.billboard = billboard = new DynamicBillboard();
         }
 
-        processPacketData(Color, billboard, 'color', billboardData.color, interval, sourceUri);
-        processPacketData(Cartesian3, billboard, 'eyeOffset', billboardData.eyeOffset, interval, sourceUri);
-        processPacketData(HorizontalOrigin, billboard, 'horizontalOrigin', billboardData.horizontalOrigin, interval, sourceUri);
-        processPacketData(Image, billboard, 'image', billboardData.image, interval, sourceUri);
-        processPacketData(Cartesian2, billboard, 'pixelOffset', billboardData.pixelOffset, interval, sourceUri);
-        processPacketData(Number, billboard, 'scale', billboardData.scale, interval, sourceUri);
-        processPacketData(Number, billboard, 'rotation', billboardData.rotation, interval, sourceUri);
-        processPacketData(Cartesian3, billboard, 'alignedAxis', billboardData.alignedAxis, interval, sourceUri);
-        processPacketData(Boolean, billboard, 'show', billboardData.show, interval, sourceUri);
-        processPacketData(VerticalOrigin, billboard, 'verticalOrigin', billboardData.verticalOrigin, interval, sourceUri);
+        processPacketData(Color, billboard, 'color', billboardData.color, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Cartesian3, billboard, 'eyeOffset', billboardData.eyeOffset, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(HorizontalOrigin, billboard, 'horizontalOrigin', billboardData.horizontalOrigin, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Image, billboard, 'image', billboardData.image, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Cartesian2, billboard, 'pixelOffset', billboardData.pixelOffset, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, billboard, 'scale', billboardData.scale, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, billboard, 'rotation', billboardData.rotation, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Cartesian3, billboard, 'alignedAxis', billboardData.alignedAxis, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, billboard, 'show', billboardData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(VerticalOrigin, billboard, 'verticalOrigin', billboardData.verticalOrigin, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processClock(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1003,19 +1086,19 @@ define(['../Core/Cartesian2',
             dynamicObject.cone = cone = new DynamicCone();
         }
 
-        processPacketData(Boolean, cone, 'show', coneData.show, interval, sourceUri);
-        processPacketData(Number, cone, 'radius', coneData.radius, interval, sourceUri);
-        processPacketData(Boolean, cone, 'showIntersection', coneData.showIntersection, interval, sourceUri);
-        processPacketData(Color, cone, 'intersectionColor', coneData.intersectionColor, interval, sourceUri);
-        processPacketData(Number, cone, 'intersectionWidth', coneData.intersectionWidth, interval, sourceUri);
-        processPacketData(Number, cone, 'innerHalfAngle', coneData.innerHalfAngle, interval, sourceUri);
-        processPacketData(Number, cone, 'outerHalfAngle', coneData.outerHalfAngle, interval, sourceUri);
-        processPacketData(Number, cone, 'minimumClockAngle', coneData.minimumClockAngle, interval, sourceUri);
-        processPacketData(Number, cone, 'maximumClockAngle', coneData.maximumClockAngle, interval, sourceUri);
-        processMaterialPacketData(cone, 'capMaterial', coneData.capMaterial, interval, sourceUri);
-        processMaterialPacketData(cone, 'innerMaterial', coneData.innerMaterial, interval, sourceUri);
-        processMaterialPacketData(cone, 'outerMaterial', coneData.outerMaterial, interval, sourceUri);
-        processMaterialPacketData(cone, 'silhouetteMaterial', coneData.silhouetteMaterial, interval, sourceUri);
+        processPacketData(Boolean, cone, 'show', coneData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, cone, 'radius', coneData.radius, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, cone, 'showIntersection', coneData.showIntersection, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, cone, 'intersectionColor', coneData.intersectionColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, cone, 'intersectionWidth', coneData.intersectionWidth, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, cone, 'innerHalfAngle', coneData.innerHalfAngle, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, cone, 'outerHalfAngle', coneData.outerHalfAngle, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, cone, 'minimumClockAngle', coneData.minimumClockAngle, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, cone, 'maximumClockAngle', coneData.maximumClockAngle, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(cone, 'capMaterial', coneData.capMaterial, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(cone, 'innerMaterial', coneData.innerMaterial, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(cone, 'outerMaterial', coneData.outerMaterial, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(cone, 'silhouetteMaterial', coneData.silhouetteMaterial, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processEllipse(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1034,19 +1117,19 @@ define(['../Core/Cartesian2',
             dynamicObject.ellipse = ellipse = new DynamicEllipse();
         }
 
-        processPacketData(Boolean, ellipse, 'show', ellipseData.show, interval, sourceUri);
-        processPacketData(Number, ellipse, 'rotation', ellipseData.rotation, interval, sourceUri);
-        processPacketData(Number, ellipse, 'semiMajorAxis', ellipseData.semiMajorAxis, interval, sourceUri);
-        processPacketData(Number, ellipse, 'semiMinorAxis', ellipseData.semiMinorAxis, interval, sourceUri);
-        processPacketData(Number, ellipse, 'height', ellipseData.height, interval, sourceUri);
-        processPacketData(Number, ellipse, 'extrudedHeight', ellipseData.extrudedHeight, interval, sourceUri);
-        processPacketData(Number, ellipse, 'granularity', ellipseData.granularity, interval, sourceUri);
-        processPacketData(Number, ellipse, 'stRotation', ellipseData.stRotation, interval, sourceUri);
-        processMaterialPacketData(ellipse, 'material', ellipseData.material, interval, sourceUri);
-        processPacketData(Boolean, ellipse, 'fill', ellipseData.fill, interval, sourceUri);
-        processPacketData(Boolean, ellipse, 'outline', ellipseData.outline, interval, sourceUri);
-        processPacketData(Color, ellipse, 'outlineColor', ellipseData.outlineColor, interval, sourceUri);
-        processPacketData(Number, ellipse, 'numberOfVerticalLines', ellipseData.numberOfVerticalLines, interval, sourceUri);
+        processPacketData(Boolean, ellipse, 'show', ellipseData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, ellipse, 'rotation', ellipseData.rotation, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, ellipse, 'semiMajorAxis', ellipseData.semiMajorAxis, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, ellipse, 'semiMinorAxis', ellipseData.semiMinorAxis, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, ellipse, 'height', ellipseData.height, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, ellipse, 'extrudedHeight', ellipseData.extrudedHeight, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, ellipse, 'granularity', ellipseData.granularity, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, ellipse, 'stRotation', ellipseData.stRotation, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(ellipse, 'material', ellipseData.material, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, ellipse, 'fill', ellipseData.fill, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, ellipse, 'outline', ellipseData.outline, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, ellipse, 'outlineColor', ellipseData.outlineColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, ellipse, 'numberOfVerticalLines', ellipseData.numberOfVerticalLines, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processEllipsoid(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1065,12 +1148,12 @@ define(['../Core/Cartesian2',
             dynamicObject.ellipsoid = ellipsoid = new DynamicEllipsoid();
         }
 
-        processPacketData(Boolean, ellipsoid, 'show', ellipsoidData.show, interval, sourceUri);
-        processPacketData(Cartesian3, ellipsoid, 'radii', ellipsoidData.radii, interval, sourceUri);
-        processMaterialPacketData(ellipsoid, 'material', ellipsoidData.material, interval, sourceUri);
-        processPacketData(Boolean, ellipsoid, 'fill', ellipsoidData.fill, interval, sourceUri);
-        processPacketData(Boolean, ellipsoid, 'outline', ellipsoidData.outline, interval, sourceUri);
-        processPacketData(Color, ellipsoid, 'outlineColor', ellipsoidData.outlineColor, interval, sourceUri);
+        processPacketData(Boolean, ellipsoid, 'show', ellipsoidData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Cartesian3, ellipsoid, 'radii', ellipsoidData.radii, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(ellipsoid, 'material', ellipsoidData.material, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, ellipsoid, 'fill', ellipsoidData.fill, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, ellipsoid, 'outline', ellipsoidData.outline, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, ellipsoid, 'outlineColor', ellipsoidData.outlineColor, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processLabel(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1089,18 +1172,18 @@ define(['../Core/Cartesian2',
             dynamicObject.label = label = new DynamicLabel();
         }
 
-        processPacketData(Color, label, 'fillColor', labelData.fillColor, interval, sourceUri);
-        processPacketData(Color, label, 'outlineColor', labelData.outlineColor, interval, sourceUri);
-        processPacketData(Number, label, 'outlineWidth', labelData.outlineWidth, interval, sourceUri);
-        processPacketData(Cartesian3, label, 'eyeOffset', labelData.eyeOffset, interval, sourceUri);
-        processPacketData(HorizontalOrigin, label, 'horizontalOrigin', labelData.horizontalOrigin, interval, sourceUri);
-        processPacketData(String, label, 'text', labelData.text, interval, sourceUri);
-        processPacketData(Cartesian2, label, 'pixelOffset', labelData.pixelOffset, interval, sourceUri);
-        processPacketData(Number, label, 'scale', labelData.scale, interval, sourceUri);
-        processPacketData(Boolean, label, 'show', labelData.show, interval, sourceUri);
-        processPacketData(VerticalOrigin, label, 'verticalOrigin', labelData.verticalOrigin, interval, sourceUri);
-        processPacketData(String, label, 'font', labelData.font, interval, sourceUri);
-        processPacketData(LabelStyle, label, 'style', labelData.style, interval, sourceUri);
+        processPacketData(Color, label, 'fillColor', labelData.fillColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, label, 'outlineColor', labelData.outlineColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, label, 'outlineWidth', labelData.outlineWidth, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Cartesian3, label, 'eyeOffset', labelData.eyeOffset, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(HorizontalOrigin, label, 'horizontalOrigin', labelData.horizontalOrigin, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(String, label, 'text', labelData.text, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Cartesian2, label, 'pixelOffset', labelData.pixelOffset, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, label, 'scale', labelData.scale, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, label, 'show', labelData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(VerticalOrigin, label, 'verticalOrigin', labelData.verticalOrigin, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(String, label, 'font', labelData.font, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(LabelStyle, label, 'style', labelData.style, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processModel(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1119,9 +1202,10 @@ define(['../Core/Cartesian2',
             dynamicObject.model = model = new DynamicModel();
         }
 
-        processPacketData(Boolean, model, 'show', modelData.show, interval, sourceUri);
-        processPacketData(Number, model, 'scale', modelData.scale, interval, sourceUri);
-        processPacketData(Uri, model, 'uri', modelData.gltf, interval, sourceUri);
+        processPacketData(Boolean, model, 'show', modelData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, model, 'scale', modelData.scale, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, model, 'minimumPixelSize', modelData.minimumPixelSize, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Uri, model, 'uri', modelData.gltf, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processPath(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1140,14 +1224,42 @@ define(['../Core/Cartesian2',
             dynamicObject.path = path = new DynamicPath();
         }
 
-        processPacketData(Color, path, 'color', pathData.color, interval, sourceUri);
-        processPacketData(Number, path, 'width', pathData.width, interval, sourceUri);
-        processPacketData(Color, path, 'outlineColor', pathData.outlineColor, interval, sourceUri);
-        processPacketData(Number, path, 'outlineWidth', pathData.outlineWidth, interval, sourceUri);
-        processPacketData(Boolean, path, 'show', pathData.show, interval, sourceUri);
-        processPacketData(Number, path, 'resolution', pathData.resolution, interval, sourceUri);
-        processPacketData(Number, path, 'leadTime', pathData.leadTime, interval, sourceUri);
-        processPacketData(Number, path, 'trailTime', pathData.trailTime, interval, sourceUri);
+        //Since CZML does not support PolylineOutlineMaterial, we map its properties into one.
+        var materialToProcess = path.material;
+        if (defined(interval)) {
+            var materialInterval;
+            var composite = materialToProcess;
+            if (!(composite instanceof CompositeMaterialProperty)) {
+                composite = new CompositeMaterialProperty();
+                path.material = composite;
+                if (defined(materialToProcess)) {
+                    materialInterval = Iso8601.MAXIMUM_INTERVAL.clone();
+                    materialInterval.data = materialToProcess;
+                    composite.intervals.addInterval(materialInterval);
+                }
+            }
+            materialInterval = composite.intervals.findInterval(interval.start, interval.stop, interval.isStartIncluded, interval.isStopIncluded);
+            if (defined(materialInterval)) {
+                materialToProcess = materialInterval.data;
+            } else {
+                materialToProcess = new PolylineOutlineMaterialProperty();
+                materialInterval = interval.clone();
+                materialInterval.data = materialToProcess;
+                composite.intervals.addInterval(materialInterval);
+            }
+        } else if (!(materialToProcess instanceof PolylineOutlineMaterialProperty)) {
+            materialToProcess = new PolylineOutlineMaterialProperty();
+            path.material = materialToProcess;
+        }
+
+        processPacketData(Boolean, path, 'show', pathData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, path, 'width', pathData.width, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, path, 'resolution', pathData.resolution, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, path, 'leadTime', pathData.leadTime, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, path, 'trailTime', pathData.trailTime, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, materialToProcess, 'color', pathData.color, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, materialToProcess, 'outlineColor', pathData.outlineColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, materialToProcess, 'outlineWidth', pathData.outlineWidth, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processPoint(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1166,11 +1278,11 @@ define(['../Core/Cartesian2',
             dynamicObject.point = point = new DynamicPoint();
         }
 
-        processPacketData(Color, point, 'color', pointData.color, interval, sourceUri);
-        processPacketData(Number, point, 'pixelSize', pointData.pixelSize, interval, sourceUri);
-        processPacketData(Color, point, 'outlineColor', pointData.outlineColor, interval, sourceUri);
-        processPacketData(Number, point, 'outlineWidth', pointData.outlineWidth, interval, sourceUri);
-        processPacketData(Boolean, point, 'show', pointData.show, interval, sourceUri);
+        processPacketData(Color, point, 'color', pointData.color, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, point, 'pixelSize', pointData.pixelSize, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, point, 'outlineColor', pointData.outlineColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, point, 'outlineWidth', pointData.outlineWidth, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, point, 'show', pointData.show, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processPolygon(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1189,16 +1301,73 @@ define(['../Core/Cartesian2',
             dynamicObject.polygon = polygon = new DynamicPolygon();
         }
 
-        processPacketData(Boolean, polygon, 'show', polygonData.show, interval, sourceUri);
-        processMaterialPacketData(polygon, 'material', polygonData.material, interval, sourceUri);
-        processPacketData(Number, polygon, 'height', polygonData.height, interval, sourceUri);
-        processPacketData(Number, polygon, 'extrudedHeight', polygonData.extrudedHeight, interval, sourceUri);
-        processPacketData(Number, polygon, 'granularity', polygonData.granularity, interval, sourceUri);
-        processPacketData(Number, polygon, 'stRotation', polygonData.stRotation, interval, sourceUri);
-        processPacketData(Boolean, polygon, 'fill', polygonData.fill, interval, sourceUri);
-        processPacketData(Boolean, polygon, 'outline', polygonData.outline, interval, sourceUri);
-        processPacketData(Color, polygon, 'outlineColor', polygonData.outlineColor, interval, sourceUri);
-        processPacketData(Boolean, polygon, 'perPositionHeight', polygonData.perPositionHeight, interval, sourceUri);
+        processPacketData(Boolean, polygon, 'show', polygonData.show, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(polygon, 'material', polygonData.material, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, polygon, 'height', polygonData.height, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, polygon, 'extrudedHeight', polygonData.extrudedHeight, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, polygon, 'granularity', polygonData.granularity, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, polygon, 'stRotation', polygonData.stRotation, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, polygon, 'fill', polygonData.fill, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, polygon, 'outline', polygonData.outline, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, polygon, 'outlineColor', polygonData.outlineColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, polygon, 'perPositionHeight', polygonData.perPositionHeight, interval, sourceUri, dynamicObjectCollection);
+    }
+
+    function processRectangle(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
+        var rectangleData = packet.rectangle;
+        if (!defined(rectangleData)) {
+            return;
+        }
+
+        var interval = rectangleData.interval;
+        if (defined(interval)) {
+            interval = TimeInterval.fromIso8601(interval);
+        }
+
+        var rectangle = dynamicObject.rectangle;
+        if (!defined(rectangle)) {
+            dynamicObject.rectangle = rectangle = new DynamicRectangle();
+        }
+
+        processPacketData(Boolean, rectangle, 'show', rectangleData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Rectangle, rectangle, 'coordinates', rectangleData.coordinates, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(rectangle, 'material', rectangleData.material, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, rectangle, 'height', rectangleData.height, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, rectangle, 'extrudedHeight', rectangleData.extrudedHeight, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, rectangle, 'granularity', rectangleData.granularity, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, rectangle, 'rotation', rectangleData.rotation, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, rectangle, 'stRotation', rectangleData.stRotation, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, rectangle, 'fill', rectangleData.fill, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, rectangle, 'outline', rectangleData.outline, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, rectangle, 'outlineColor', rectangleData.outlineColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, rectangle, 'closeBottom', rectangleData.closeBottom, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, rectangle, 'closeTop', rectangleData.closeTop, interval, sourceUri, dynamicObjectCollection);
+    }
+
+    function processWall(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
+        var wallData = packet.wall;
+        if (!defined(wallData)) {
+            return;
+        }
+
+        var interval = wallData.interval;
+        if (defined(interval)) {
+            interval = TimeInterval.fromIso8601(interval);
+        }
+
+        var wall = dynamicObject.wall;
+        if (!defined(wall)) {
+            dynamicObject.wall = wall = new DynamicWall();
+        }
+
+        processPacketData(Boolean, wall, 'show', wallData.show, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(wall, 'material', wallData.material, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Array, wall, 'minimumHeights', wallData.minimumHeights, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Array, wall, 'maximumHeights', wallData.maximumHeights, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, wall, 'granularity', wallData.granularity, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, wall, 'fill', wallData.fill, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, wall, 'outline', wallData.outline, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, wall, 'outlineColor', wallData.outlineColor, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processPolyline(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1217,7 +1386,7 @@ define(['../Core/Cartesian2',
             dynamicObject.polyline = polyline = new DynamicPolyline();
         }
 
-        //Since CZML does not support PolylineOutlineMaterial, we map it's properties into one.
+        //Since CZML does not support PolylineOutlineMaterial, we map its properties into one.
         var materialToProcess = polyline.material;
         if (defined(interval)) {
             var materialInterval;
@@ -1245,14 +1414,14 @@ define(['../Core/Cartesian2',
             polyline.material = materialToProcess;
         }
 
-        processPacketData(Boolean, polyline, 'show', polylineData.show, interval, sourceUri);
-        processPacketData(Number, polyline, 'width', polylineData.width, interval, sourceUri);
-        processPacketData(Color, materialToProcess, 'color', polylineData.color, interval, sourceUri);
-        processPacketData(Color, materialToProcess, 'outlineColor', polylineData.outlineColor, interval, sourceUri);
-        processPacketData(Number, materialToProcess, 'outlineWidth', polylineData.outlineWidth, interval, sourceUri);
+        processPacketData(Boolean, polyline, 'show', polylineData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, polyline, 'width', polylineData.width, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, materialToProcess, 'color', polylineData.color, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, materialToProcess, 'outlineColor', polylineData.outlineColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, materialToProcess, 'outlineWidth', polylineData.outlineWidth, interval, sourceUri, dynamicObjectCollection);
     }
 
-    function processDirectionData(pyramid, directions, interval, sourceUri) {
+    function processDirectionData(pyramid, directions, interval, sourceUri, dynamicObjectCollection) {
         var i;
         var len;
         var values = [];
@@ -1271,7 +1440,7 @@ define(['../Core/Cartesian2',
             }
             directions.array = values;
         }
-        processPacketData(Array, pyramid, 'directions', directions, interval, sourceUri);
+        processPacketData(Array, pyramid, 'directions', directions, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processPyramid(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
@@ -1290,12 +1459,12 @@ define(['../Core/Cartesian2',
             dynamicObject.pyramid = pyramid = new DynamicPyramid();
         }
 
-        processPacketData(Boolean, pyramid, 'show', pyramidData.show, interval, sourceUri);
-        processPacketData(Number, pyramid, 'radius', pyramidData.radius, interval, sourceUri);
-        processPacketData(Boolean, pyramid, 'showIntersection', pyramidData.showIntersection, interval, sourceUri);
-        processPacketData(Color, pyramid, 'intersectionColor', pyramidData.intersectionColor, interval, sourceUri);
-        processPacketData(Number, pyramid, 'intersectionWidth', pyramidData.intersectionWidth, interval, sourceUri);
-        processMaterialPacketData(pyramid, 'material', pyramidData.material, interval, sourceUri);
+        processPacketData(Boolean, pyramid, 'show', pyramidData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, pyramid, 'radius', pyramidData.radius, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, pyramid, 'showIntersection', pyramidData.showIntersection, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Color, pyramid, 'intersectionColor', pyramidData.intersectionColor, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, pyramid, 'intersectionWidth', pyramidData.intersectionWidth, interval, sourceUri, dynamicObjectCollection);
+        processMaterialPacketData(pyramid, 'material', pyramidData.material, interval, sourceUri, dynamicObjectCollection);
 
         //The directions property is a special case value that can be an array of unitSpherical or unit Cartesians.
         //We pre-process this into Spherical instances and then process it like any other array.
@@ -1304,10 +1473,10 @@ define(['../Core/Cartesian2',
             if (isArray(directions)) {
                 var length = directions.length;
                 for (var i = 0; i < length; i++) {
-                    processDirectionData(pyramid, directions[i], interval, sourceUri);
+                    processDirectionData(pyramid, directions[i], interval, sourceUri, dynamicObjectCollection);
                 }
             } else {
-                processDirectionData(pyramid, directions, interval, sourceUri);
+                processDirectionData(pyramid, directions, interval, sourceUri, dynamicObjectCollection);
             }
         }
     }
@@ -1352,11 +1521,11 @@ define(['../Core/Cartesian2',
             dynamicObject.vector = vector = new DynamicVector();
         }
 
-        processPacketData(Color, vector, 'color', vectorData.color, interval, sourceUri);
-        processPacketData(Boolean, vector, 'show', vectorData.show, interval, sourceUri);
-        processPacketData(Number, vector, 'width', vectorData.width, interval, sourceUri);
-        processPacketData(Cartesian3, vector, 'direction', vectorData.direction, interval, sourceUri);
-        processPacketData(Number, vector, 'length', vectorData.length, interval, sourceUri);
+        processPacketData(Color, vector, 'color', vectorData.color, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Boolean, vector, 'show', vectorData.show, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, vector, 'width', vectorData.width, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Cartesian3, vector, 'direction', vectorData.direction, interval, sourceUri, dynamicObjectCollection);
+        processPacketData(Number, vector, 'length', vectorData.length, interval, sourceUri, dynamicObjectCollection);
     }
 
     function processCzmlPacket(packet, dynamicObjectCollection, updaterFunctions, sourceUri, dataSource) {
@@ -1364,6 +1533,8 @@ define(['../Core/Cartesian2',
         if (!defined(objectId)) {
             objectId = createGuid();
         }
+
+        currentId = objectId;
 
         if (packet['delete'] === true) {
             dynamicObjectCollection.removeById(objectId);
@@ -1384,6 +1555,8 @@ define(['../Core/Cartesian2',
                 updaterFunctions[i](dynamicObject, packet, dynamicObjectCollection, sourceUri);
             }
         }
+
+        currentId = undefined;
     }
 
     function loadCzml(dataSource, czml, sourceUri) {
@@ -1445,6 +1618,13 @@ define(['../Core/Cartesian2',
         }
     }
 
+    function setLoading(dataSource, isLoading) {
+        if (dataSource._isLoading !== isLoading) {
+            dataSource._isLoading = isLoading;
+            dataSource._loading.raiseEvent(dataSource, isLoading);
+        }
+    }
+
     /**
      * A {@link DataSource} which processes CZML.
      * @alias CzmlDataSource
@@ -1456,11 +1636,87 @@ define(['../Core/Cartesian2',
         this._name = name;
         this._changed = new Event();
         this._error = new Event();
+        this._isLoading = false;
+        this._loading = new Event();
         this._clock = undefined;
         this._dynamicObjectCollection = new DynamicObjectCollection();
-        this._timeVarying = true;
         this._document = new DynamicObject();
     };
+
+    defineProperties(CzmlDataSource.prototype, {
+        /**
+         * Gets a human-readable name for this instance.
+         * @memberof CzmlDataSource.prototype
+         * @type {String}
+         */
+        name : {
+            get : function() {
+                return this._name;
+            }
+        },
+        /**
+         * Gets the clock settings defined by the loaded CZML.  If no clock is explicitly
+         * defined in the CZML, the combined availability of all objects is returned.  If
+         * only static data exists, this value is undefined.
+         * @memberof CzmlDataSource.prototype
+         * @type {DynamicClock}
+         */
+        clock : {
+            get : function() {
+                return this._clock;
+            }
+        },
+        /**
+         * Gets the collection of {@link DynamicObject} instances.
+         * @memberof CzmlDataSource.prototype
+         * @type {DynamicObjectCollection}
+         */
+        dynamicObjects : {
+            get : function() {
+                return this._dynamicObjectCollection;
+            }
+        },
+        /**
+         * Gets a value indicating if the data source is currently loading data.
+         * @memberof CzmlDataSource.prototype
+         * @type {Boolean}
+         */
+        isLoading : {
+            get : function() {
+                return this._isLoading;
+            }
+        },
+        /**
+         * Gets an event that will be raised when the underlying data changes.
+         * @memberof CzmlDataSource.prototype
+         * @type {Event}
+         */
+        changedEvent : {
+            get : function() {
+                return this._changed;
+            }
+        },
+        /**
+         * Gets an event that will be raised if an error is encountered during processing.
+         * @memberof CzmlDataSource.prototype
+         * @type {Event}
+         */
+        errorEvent : {
+            get : function() {
+                return this._error;
+            }
+        },
+        /**
+         * Gets an event that will be raised when the data source either starts or stops loading.
+         * @memberof CzmlDataSource.prototype
+         * @type {Event}
+         */
+        loadingEvent : {
+            get : function() {
+                return this._loading;
+            }
+        }
+    });
 
     /**
      * Gets the array of CZML processing functions.
@@ -1482,102 +1738,38 @@ define(['../Core/Cartesian2',
     processPolyline, //
     processPyramid, //
     processScreenOverlay, //
+    processRectangle, //
     processVector, //
     processPosition, //
     processViewFrom, //
+    processWall, //
     processOrientation, //
     processVertexPositions, //
     processAvailability];
 
     /**
-     * Gets an event that will be raised when non-time-varying data changes
-     * or if the return value of getIsTimeVarying changes.
-     * @memberof CzmlDataSource
-     *
-     * @returns {Event} The event.
-     */
-    CzmlDataSource.prototype.getChangedEvent = function() {
-        return this._changed;
-    };
-
-    /**
-     * Gets an event that will be raised if an error is encountered during processing.
-     * @memberof CzmlDataSource
-     *
-     * @returns {Event} The event.
-     */
-    CzmlDataSource.prototype.getErrorEvent = function() {
-        return this._error;
-    };
-
-    /**
-     * Gets the DynamicObjectCollection generated by this data source.
-     * @memberof CzmlDataSource
-     *
-     * @returns {DynamicObjectCollection} The collection of objects generated by this data source.
-     */
-    CzmlDataSource.prototype.getDynamicObjectCollection = function() {
-        return this._dynamicObjectCollection;
-    };
-
-    /**
-     * Gets the name of this data source.  If the return value of
-     * this function changes, the changed event will be raised.
-     * @memberof CzmlDataSource
-     *
-     * @returns {String} The name.
-     */
-    CzmlDataSource.prototype.getName = function() {
-        return this._name;
-    };
-
-    /**
-     * Gets the top level clock defined in CZML or the availability of the
-     * underlying data if no clock is defined.  If the CZML document only contains
-     * infinite data, undefined will be returned.  If the return value of
-     * this function changes, the changed event will be raised.
-     * @memberof CzmlDataSource
-     *
-     * @returns {DynamicClock} The clock associated with the current CZML data, or undefined if none exists.
-     */
-    CzmlDataSource.prototype.getClock = function() {
-        return this._clock;
-    };
-
-    /**
-     * Gets a value indicating if the data varies with simulation time.  If the return value of
-     * this function changes, the changed event will be raised.
-     * @memberof CzmlDataSource
-     *
-     * @returns {Boolean} True if the data is varies with simulation time, false otherwise.
-     */
-    CzmlDataSource.prototype.getIsTimeVarying = function() {
-        return this._timeVarying;
-    };
-
-    /**
      * Processes the provided CZML without clearing any existing data.
      *
      * @param {Object} czml The CZML to be processed.
-     * @param {String} source The source of the CZML.
+     * @param {String} sourceUri The source URI of the CZML.
      */
-    CzmlDataSource.prototype.process = function(czml, source) {
+    CzmlDataSource.prototype.process = function(czml, sourceUri) {
         //>>includeStart('debug', pragmas.debug);
         if (!defined(czml)) {
             throw new DeveloperError('czml is required.');
         }
         //>>includeEnd('debug');
 
-        loadCzml(this, czml, source);
+        loadCzml(this, czml, sourceUri);
     };
 
     /**
      * Replaces any existing data with the provided CZML.
      *
      * @param {Object} czml The CZML to be processed.
-     * @param {String} source The source of the CZML.
+     * @param {String} source The source URI of the CZML.
      */
-    CzmlDataSource.prototype.load = function(czml, source) {
+    CzmlDataSource.prototype.load = function(czml, sourceUri) {
         //>>includeStart('debug', pragmas.debug);
         if (!defined(czml)) {
             throw new DeveloperError('czml is required.');
@@ -1586,14 +1778,13 @@ define(['../Core/Cartesian2',
 
         this._document = new DynamicObject('document');
         this._dynamicObjectCollection.removeAll();
-        loadCzml(this, czml, source);
+        loadCzml(this, czml, sourceUri);
     };
 
     /**
      * Asynchronously processes the CZML at the provided url without clearing any existing data.
      *
      * @param {Object} url The url to be processed.
-     *
      * @returns {Promise} a promise that will resolve when the CZML is processed.
      */
     CzmlDataSource.prototype.processUrl = function(url) {
@@ -1603,10 +1794,14 @@ define(['../Core/Cartesian2',
         }
         //>>includeEnd('debug');
 
+        setLoading(this, true);
+
         var dataSource = this;
         return when(loadJson(url), function(czml) {
             dataSource.process(czml, url);
+            setLoading(dataSource, false);
         }, function(error) {
+            setLoading(dataSource, false);
             dataSource._error.raiseEvent(dataSource, error);
             return when.reject(error);
         });
@@ -1616,7 +1811,6 @@ define(['../Core/Cartesian2',
      * Asynchronously loads the CZML at the provided url, replacing any existing data.
      *
      * @param {Object} url The url to be processed.
-     *
      * @returns {Promise} a promise that will resolve when the CZML is processed.
      */
     CzmlDataSource.prototype.loadUrl = function(url) {
@@ -1626,10 +1820,14 @@ define(['../Core/Cartesian2',
         }
         //>>includeEnd('debug');
 
+        setLoading(this, true);
+
         var dataSource = this;
         return when(loadJson(url), function(czml) {
             dataSource.load(czml, url);
+            setLoading(dataSource, false);
         }, function(error) {
+            setLoading(dataSource, false);
             dataSource._error.raiseEvent(dataSource, error);
             return when.reject(error);
         });
@@ -1643,10 +1841,10 @@ define(['../Core/Cartesian2',
      * @param {Function} type The constructor function for the property being processed.
      * @param {Object} object The object on which the property will be added or updated.
      * @param {String} propertyName The name of the property on the object.
-     * @param {Object} packetData The CZML packet being processed.y
-     * @param {TimeInterval} [interval] A constraining interval for which the data is valid.
-     * @param {String} [sourceUri] The originating uri of the data being processed.
-     * @returns {Boolean} True if a new property was created, false otherwise.
+     * @param {Object} packetData The CZML packet being processed.
+     * @param {TimeInterval} interval A constraining interval for which the data is valid.
+     * @param {String} sourceUri The originating uri of the data being processed.
+     * @param {DynamicObjectCollection} dynamicObjectCollection The collection being processsed.
      */
     CzmlDataSource.processPacketData = processPacketData;
 
@@ -1657,10 +1855,10 @@ define(['../Core/Cartesian2',
      *
      * @param {Object} object The object on which the property will be added or updated.
      * @param {String} propertyName The name of the property on the object.
-     * @param {Object} packetData The CZML packet being processed.y
-     * @param {TimeInterval} [interval] A constraining interval for which the data is valid.
-     * @param {String} [sourceUri] The originating uri of the data being processed.
-     * @returns {Boolean} True if a new property was created, false otherwise.
+     * @param {Object} packetData The CZML packet being processed.
+     * @param {TimeInterval} interval A constraining interval for which the data is valid.
+     * @param {String} sourceUri The originating uri of the data being processed.
+     * @param {DynamicObjectCollection} dynamicObjectCollection The collection being processsed.
      */
     CzmlDataSource.processPositionPacketData = processPositionPacketData;
 
@@ -1671,10 +1869,10 @@ define(['../Core/Cartesian2',
      *
      * @param {Object} object The object on which the property will be added or updated.
      * @param {String} propertyName The name of the property on the object.
-     * @param {Object} packetData The CZML packet being processed.y
-     * @param {TimeInterval} [interval] A constraining interval for which the data is valid.
-     * @param {String} [sourceUri] The originating uri of the data being processed.
-     * @returns {Boolean} True if a new property was created, false otherwise.
+     * @param {Object} packetData The CZML packet being processed.
+     * @param {TimeInterval} interval A constraining interval for which the data is valid.
+     * @param {String} sourceUri The originating uri of the data being processed.
+     * @param {DynamicObjectCollection} dynamicObjectCollection The collection being processsed.
      */
     CzmlDataSource.processMaterialPacketData = processMaterialPacketData;
 

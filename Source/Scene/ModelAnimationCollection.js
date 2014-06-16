@@ -1,28 +1,28 @@
 /*global define*/
 define([
         '../Core/clone',
+        '../Core/defaultValue',
         '../Core/defined',
         '../Core/defineProperties',
-        '../Core/defaultValue',
         '../Core/DeveloperError',
-        '../Core/Math',
         '../Core/Event',
         '../Core/JulianDate',
+        '../Core/Math',
+        './ModelAnimation',
         './ModelAnimationLoop',
-        './ModelAnimationState',
-        './ModelAnimation'
+        './ModelAnimationState'
     ], function(
         clone,
+        defaultValue,
         defined,
         defineProperties,
-        defaultValue,
         DeveloperError,
-        CesiumMath,
         Event,
         JulianDate,
+        CesiumMath,
+        ModelAnimation,
         ModelAnimationLoop,
-        ModelAnimationState,
-        ModelAnimation) {
+        ModelAnimationState) {
     "use strict";
 
     /**
@@ -71,9 +71,9 @@ define([
         /**
          * The number of animations in the collection.
          *
-         * @memberof ModelAnimationCollection
-         * @type {Number}
+         * @memberof ModelAnimationCollection.prototype
          *
+         * @type {Number}
          * @readonly
          */
         length : {
@@ -89,17 +89,16 @@ define([
      * This raises the {@link ModelAnimationCollection#animationAdded} event so, for example, a UI can stay in sync.
      * </p>
      *
-     * @memberof ModelAnimationCollection
      *
+     * @param {Object} options Object with the following properties:
      * @param {String} options.name The glTF animation name that identifies the animation.
-     * @param {JulianDate} [options.startTime=undefined] The scene time to start playing the animation.  When this is <code>undefined</code>, the animation starts at the next frame.
+     * @param {JulianDate} [options.startTime] The scene time to start playing the animation.  When this is <code>undefined</code>, the animation starts at the next frame.
      * @param {Number} [options.startOffset=0.0] The offset, in seconds, from <code>startTime</code> to start playing.
-     * @param {JulianDate} [options.stopTime=undefined] The scene time to stop playing the animation.  When this is <code>undefined</code>, the animation is played for its full duration.
+     * @param {JulianDate} [options.stopTime] The scene time to stop playing the animation.  When this is <code>undefined</code>, the animation is played for its full duration.
      * @param {Boolean} [options.removeOnStop=false] When <code>true</code>, the animation is removed after it stops playing.
      * @param {Number} [options.speedup=1.0] Values greater than <code>1.0</code> increase the speed that the animation is played relative to the scene clock speed; values less than <code>1.0</code> decrease the speed.
      * @param {Boolean} [options.reverse=false] When <code>true</code>, the animation is played in reverse.
      * @param {ModelAnimationLoop} [options.loop=ModelAnimationLoop.NONE] Determines if and how the animation is looped.
-     *
      * @returns {ModelAnimation} The animation that was added to the collection.
      *
      * @exception {DeveloperError} Animations are not loaded.  Wait for the {@link Model#readyToRender} event.
@@ -112,6 +111,7 @@ define([
      *   name : 'animation name'
      * });
      *
+     * @example
      * // Example 2. Add an animation and provide all properties and events
      * var startTime = new JulianDate();
      *
@@ -144,7 +144,7 @@ define([
 
         //>>includeStart('debug', pragmas.debug);
         if (!defined(animations)) {
-            throw new DeveloperError('Animations are not loaded.  Wait for the model\'s readyToRender event.');
+            throw new DeveloperError('Animations are not loaded.  Wait for the model\'s readyToRender event or ready property.');
         }
         //>>includeEnd('debug');
 
@@ -173,17 +173,15 @@ define([
      * This raises the {@link ModelAnimationCollection#animationAdded} event for each model so, for example, a UI can stay in sync.
      * </p>
      *
-     * @memberof ModelAnimationCollection
-     *
-     * @param {JulianDate} [options.startTime=undefined] The scene time to start playing the animations.  When this is <code>undefined</code>, the animations starts at the next frame.
+     * @param {Object} [options] Object with the following properties:
+     * @param {JulianDate} [options.startTime] The scene time to start playing the animations.  When this is <code>undefined</code>, the animations starts at the next frame.
      * @param {Number} [options.startOffset=0.0] The offset, in seconds, from <code>startTime</code> to start playing.
-     * @param {JulianDate} [options.stopTime=undefined] The scene time to stop playing the animations.  When this is <code>undefined</code>, the animations are played for its full duration.
+     * @param {JulianDate} [options.stopTime] The scene time to stop playing the animations.  When this is <code>undefined</code>, the animations are played for its full duration.
      * @param {Boolean} [options.removeOnStop=false] When <code>true</code>, the animations are removed after they stop playing.
      * @param {Number} [options.speedup=1.0] Values greater than <code>1.0</code> increase the speed that the animations play relative to the scene clock speed; values less than <code>1.0</code> decrease the speed.
      * @param {Boolean} [options.reverse=false] When <code>true</code>, the animations are played in reverse.
      * @param {ModelAnimationLoop} [options.loop=ModelAnimationLoop.NONE] Determines if and how the animations are looped.
-     *
-     * @returns {Array} An array of {@link ModelAnimation} objects, one for each animation added to the collection.  If there are no glTF animations, the array is empty.
+     * @returns {ModelAnimation[]} An array of {@link ModelAnimation} objects, one for each animation added to the collection.  If there are no glTF animations, the array is empty.
      *
      * @exception {DeveloperError} Animations are not loaded.  Wait for the {@link Model#readyToRender} event.
      * @exception {DeveloperError} options.speedup must be greater than zero.
@@ -199,7 +197,7 @@ define([
 
         //>>includeStart('debug', pragmas.debug);
         if (!defined(this._model._runtime.animations)) {
-            throw new DeveloperError('Animations are not loaded.  Wait for the model\'s readyToRender event.');
+            throw new DeveloperError('Animations are not loaded.  Wait for the model\'s readyToRender event or ready property.');
         }
 
         if (defined(options.speedup) && (options.speedup <= 0.0)) {
@@ -231,10 +229,7 @@ define([
      * <code>true</code>.  The {@link ModelAnimationCollection#animationRemoved} event is still fired when the animation is removed.
      * </p>
      *
-     * @memberof ModelAnimationCollection
-     *
      * @param {ModelAnimation} animation The animation to remove.
-     *
      * @returns {Boolean} <code>true</code> if the animation was removed; <code>false</code> if the animation was not found in the collection.
      *
      * @example
@@ -263,8 +258,6 @@ define([
      * This raises the {@link ModelAnimationCollection#animationRemoved} event for each
      * animation so, for example, a UI can stay in sync.
      * </p>
-     *
-     * @memberof ModelAnimationCollection
      */
     ModelAnimationCollection.prototype.removeAll = function() {
         var model = this._model;
@@ -281,10 +274,7 @@ define([
     /**
      * Determines whether this collection contains a given animation.
      *
-     * @memberof ModelAnimationCollection
-     *
      * @param {ModelAnimation} animation The animation to check for.
-     *
      * @returns {Boolean} <code>true</code> if this animation contains the animation, <code>false</code> otherwise.
      */
     ModelAnimationCollection.prototype.contains = function(animation) {
@@ -301,10 +291,7 @@ define([
      * it to the left, changing their indices.  This function is commonly used to iterate over
      * all the animations in the collection.
      *
-     * @memberof ModelAnimationCollection
-     *
      * @param {Number} index The zero-based index of the animation.
-     *
      * @returns {ModelAnimation} The animation at the specified index.
      *
      * @example
@@ -392,7 +379,7 @@ define([
                 // STOPPED -> ANIMATING state transition?
                 if (scheduledAnimation._state === ModelAnimationState.STOPPED) {
                     scheduledAnimation._state = ModelAnimationState.ANIMATING;
-                    if (scheduledAnimation.start.getNumberOfListeners() > 0) {
+                    if (scheduledAnimation.start.numberOfListeners > 0) {
                         frameState.afterRender.push(scheduledAnimation._raiseStartEvent);
                     }
                 }
@@ -417,7 +404,7 @@ define([
 
                 animateChannels(runtimeAnimation, localAnimationTime);
 
-                if (scheduledAnimation.update.getNumberOfListeners() > 0) {
+                if (scheduledAnimation.update.numberOfListeners > 0) {
                     scheduledAnimation._updateEventTime = localAnimationTime;
                     frameState.afterRender.push(scheduledAnimation._raiseUpdateEvent);
                 }
@@ -426,7 +413,7 @@ define([
                 // ANIMATING -> STOPPED state transition?
                 if (pastStartTime && (scheduledAnimation._state === ModelAnimationState.ANIMATING)) {
                     scheduledAnimation._state = ModelAnimationState.STOPPED;
-                    if (scheduledAnimation.stop.getNumberOfListeners() > 0) {
+                    if (scheduledAnimation.stop.numberOfListeners > 0) {
                         frameState.afterRender.push(scheduledAnimation._raiseStopEvent);
                     }
 

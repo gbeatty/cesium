@@ -67,6 +67,12 @@ define([
          */
         this.titleText = '';
 
+        /**
+         * Gets or sets the HTML for the loading indicator during sanitization of the raw description.
+         * @type {String}
+         */
+        this.loadingIndicatorHtml = '<div class="cesium-infoBox-loadingContainer"><span class="cesium-infoBox-loading"></span></div>';
+
         knockout.track(this, ['showInfo', 'titleText', '_descriptionRawHtml', '_descriptionSanitizedHtml', 'maxHeight', 'enableCamera', 'isCameraTracking']);
 
         /**
@@ -81,7 +87,7 @@ define([
             set : function(value) {
                 if (this._descriptionRawHtml !== value) {
                     this._descriptionRawHtml = value;
-                    this._descriptionSanitizedHtml = '';
+                    this._descriptionSanitizedHtml = this.loadingIndicatorHtml;
                     var that = this;
                     when(this.sanitizer(value), function(sanitized) {
                         // make sure the raw HTML still matches the input we sanitized,
@@ -119,20 +125,20 @@ define([
             }
         });
 
-        /**
-         * Gets the maximum height of sections within the info box, minus an offset, in CSS-ready form.
-         * @param {Number} offset The offset in pixels.
-         * @returns {String}
-         */
-        InfoBoxViewModel.prototype.maxHeightOffset = function(offset) {
-            return (this.maxHeight - offset) + 'px';
-        };
-
         knockout.defineProperty(this, '_bodyless', {
             get : function() {
                 return !this._descriptionSanitizedHtml;
             }
         });
+    };
+
+    /**
+     * Gets the maximum height of sections within the info box, minus an offset, in CSS-ready form.
+     * @param {Number} offset The offset in pixels.
+     * @returns {String}
+     */
+    InfoBoxViewModel.prototype.maxHeightOffset = function(offset) {
+        return (this.maxHeight - offset) + 'px';
     };
 
     var sanitizerTaskProcessor;
@@ -150,13 +156,14 @@ define([
      *
      * This property returns a function which takes a unsanitized HTML String and returns a
      * sanitized String, or a Promise which resolves to the sanitized version.
-     * @memberof InfoBoxViewModel
      */
     InfoBoxViewModel.defaultSanitizer = defaultSanitizer;
 
     defineProperties(InfoBoxViewModel.prototype, {
         /**
          * Gets an {@link Event} that is fired when the user clicks the camera icon.
+         * @memberof InfoBoxViewModel.prototype
+         * @type {Event}
          */
         cameraClicked : {
             get : function() {
@@ -165,6 +172,8 @@ define([
         },
         /**
          * Gets an {@link Event} that is fired when the user closes the info box.
+         * @memberof InfoBoxViewModel.prototype
+         * @type {Event}
          */
         closeClicked : {
             get : function() {
@@ -173,6 +182,8 @@ define([
         },
         /**
          * Gets the HTML sanitization function to use for the selection description.
+         * @memberof InfoBoxViewModel.prototype
+         * @type {Function}
          */
         sanitizer : {
             get : function() {

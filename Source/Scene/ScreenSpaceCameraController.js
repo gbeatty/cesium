@@ -1,18 +1,18 @@
 /*global define*/
 define([
-        '../Core/defined',
-        '../Core/defineProperties',
-        '../Core/destroyObject',
         '../Core/Cartesian2',
         '../Core/Cartesian3',
         '../Core/Cartesian4',
         '../Core/Cartographic',
+        '../Core/defined',
+        '../Core/defineProperties',
+        '../Core/destroyObject',
         '../Core/DeveloperError',
         '../Core/Ellipsoid',
-        '../Core/KeyboardEventModifier',
         '../Core/FAR',
         '../Core/IntersectionTests',
         '../Core/isArray',
+        '../Core/KeyboardEventModifier',
         '../Core/Math',
         '../Core/Matrix4',
         '../Core/Ray',
@@ -20,22 +20,21 @@ define([
         './AnimationCollection',
         './CameraEventAggregator',
         './CameraEventType',
-        './CameraColumbusViewMode',
         './SceneMode'
     ], function(
-        defined,
-        defineProperties,
-        destroyObject,
         Cartesian2,
         Cartesian3,
         Cartesian4,
         Cartographic,
+        defined,
+        defineProperties,
+        destroyObject,
         DeveloperError,
         Ellipsoid,
-        KeyboardEventModifier,
         FAR,
         IntersectionTests,
         isArray,
+        KeyboardEventModifier,
         CesiumMath,
         Matrix4,
         Ray,
@@ -43,7 +42,6 @@ define([
         AnimationCollection,
         CameraEventAggregator,
         CameraEventType,
-        CameraColumbusViewMode,
         SceneMode) {
     "use strict";
 
@@ -52,7 +50,7 @@ define([
      * @alias ScreenSpaceCameraController
      * @constructor
      *
-     * @param {HTMLCanvasElement} canvas The canvas to listen for events.
+     * @param {Canvas} canvas The canvas to listen for events.
      * @param {Camera} camera The camera.
      */
     var ScreenSpaceCameraController = function(canvas, camera) {
@@ -144,12 +142,6 @@ define([
          * @default 0.1
          */
         this.maximumMovementRatio = 0.1;
-        /**
-         * Sets the behavior in Columbus view.
-         * @type {CameraColumbusViewMode}
-         * @default {@link CameraColumbusViewMode.FREE}
-         */
-        this.columbusViewMode = CameraColumbusViewMode.FREE;
         /**
          * Sets the duration, in milliseconds, of the bounce back animations in 2D and Columbus view. The default value is 3000.
          * @type {Number}
@@ -245,7 +237,7 @@ define([
         this._lastInertiaWheelZoomMovement = undefined;
         this._lastInertiaTiltMovement = undefined;
 
-        this._animationCollection = new AnimationCollection();
+        this._animations = new AnimationCollection();
         this._animation = undefined;
 
         this._horizontalRotationAxis = undefined;
@@ -486,11 +478,11 @@ define([
         end.y = (2.0 / height) * (height - movement.endPosition.y) - 1.0;
         Cartesian2.normalize(end, end);
 
-        var startTheta = Math.acos(start.x);
+        var startTheta = CesiumMath.acosClamped(start.x);
         if (start.y < 0) {
             startTheta = CesiumMath.TWO_PI - startTheta;
         }
-        var endTheta = Math.acos(end.x);
+        var endTheta = CesiumMath.acosClamped(end.x);
         if (end.y < 0) {
             endTheta = CesiumMath.TWO_PI - endTheta;
         }
@@ -519,25 +511,31 @@ define([
     }
 
     function update2D(controller) {
+        var animations = controller._animations;
         if (controller._aggregator.anyButtonDown()) {
-            controller._animationCollection.removeAll();
+            animations.removeAll();
         }
 
-        reactToInput(controller, controller.enableTranslate, controller.translateEventTypes, translate2D, controller.inertiaTranslate, '_lastInertiaTranslateMovement');
-        reactToInput(controller, controller.enableZoom, controller.zoomEventTypes, zoom2D, controller.inertiaZoom, '_lastInertiaZoomMovement');
-        reactToInput(controller, controller.enableRotate, controller.tiltEventTypes, twist2D, controller.inertiaSpin, '_lastInertiaTiltMovement');
+        if (!Matrix4.equals(Matrix4.IDENTITY, controller._camera.transform)) {
+            reactToInput(controller, controller.enableRotate, controller.translateEventTypes, twist2D, controller.inertiaSpin, '_lastInertiaSpinMovement');
+            reactToInput(controller, controller.enableZoom, controller.zoomEventTypes, zoom3D, controller.inertiaZoom, '_lastInertiaZoomMovement');
+        } else {
+            reactToInput(controller, controller.enableTranslate, controller.translateEventTypes, translate2D, controller.inertiaTranslate, '_lastInertiaTranslateMovement');
+            reactToInput(controller, controller.enableZoom, controller.zoomEventTypes, zoom2D, controller.inertiaZoom, '_lastInertiaZoomMovement');
+            reactToInput(controller, controller.enableRotate, controller.tiltEventTypes, twist2D, controller.inertiaSpin, '_lastInertiaTiltMovement');
+        }
 
         if (!controller._aggregator.anyButtonDown() &&
                 (!defined(controller._lastInertiaZoomMovement) || !controller._lastInertiaZoomMovement.active) &&
                 (!defined(controller._lastInertiaTranslateMovement) || !controller._lastInertiaTranslateMovement.active) &&
-                !controller._animationCollection.contains(controller._animation)) {
+                !animations.contains(controller._animation)) {
             var animation = controller._camera.createCorrectPositionAnimation(controller.bounceAnimationTime);
             if (defined(animation)) {
-                controller._animation = controller._animationCollection.add(animation);
+                controller._animation = animations.add(animation);
             }
         }
 
-        controller._animationCollection.update();
+        animations.update();
     }
 
     var translateCVStartRay = new Ray();
@@ -579,6 +577,8 @@ define([
     var rotateCVWindowRay = new Ray();
     var rotateCVCenter = new Cartesian3();
     var rotateTransform = new Matrix4();
+    var rotateCVCart = new Cartographic();
+
     function rotateCV(controller, movement) {
         if (defined(movement.angleAndHeight)) {
             movement = movement.angleAndHeight;
@@ -595,7 +595,15 @@ define([
         var scalar = -Cartesian3.dot(normal, position) / Cartesian3.dot(normal, direction);
         var center = Cartesian3.multiplyByScalar(direction, scalar, rotateCVCenter);
         Cartesian3.add(position, center, center);
-        var transform = Matrix4.fromTranslation(center, rotateTransform);
+
+        var projection = controller._camera._projection;
+        var ellipsoid = projection.ellipsoid;
+
+        Cartesian3.fromElements(center.y, center.z, center.x, center);
+        var cart = projection.unproject(center, rotateCVCart);
+        ellipsoid.cartographicToCartesian(cart, center);
+
+        var transform = Transforms.eastNorthUpToFixedFrame(center, ellipsoid, rotateTransform);
 
         var oldEllipsoid = controller._ellipsoid;
         controller.ellipsoid = Ellipsoid.UNIT_SPHERE;
@@ -626,12 +634,14 @@ define([
     }
 
     function updateCV(controller) {
-        if (controller.columbusViewMode === CameraColumbusViewMode.LOCKED) {
-                reactToInput(controller, controller.enableRotate, controller.rotateEventTypes, rotate3D, controller.inertiaSpin, '_lastInertiaSpinMovement');
-                reactToInput(controller, controller.enableZoom, controller.zoomEventTypes, zoom3D, controller.inertiaZoom, '_lastInertiaZoomMovement');
+        if (!Matrix4.equals(Matrix4.IDENTITY, controller._camera.transform)) {
+            reactToInput(controller, controller.enableRotate, controller.rotateEventTypes, rotate3D, controller.inertiaSpin, '_lastInertiaSpinMovement');
+            reactToInput(controller, controller.enableZoom, controller.zoomEventTypes, zoom3D, controller.inertiaZoom, '_lastInertiaZoomMovement');
         } else {
+            var animations = controller._animations;
+
             if (controller._aggregator.anyButtonDown()) {
-                controller._animationCollection.removeAll();
+                animations.removeAll();
             }
 
             reactToInput(controller, controller.enableTilt, controller.tiltEventTypes, rotateCV, controller.inertiaSpin, '_lastInertiaTiltMovement');
@@ -641,14 +651,14 @@ define([
 
             if (!controller._aggregator.anyButtonDown() && (!defined(controller._lastInertiaZoomMovement) || !controller._lastInertiaZoomMovement.active) &&
                     (!defined(controller._lastInertiaTranslateMovement) || !controller._lastInertiaTranslateMovement.active) &&
-                    !controller._animationCollection.contains(controller._animation)) {
+                    !animations.contains(controller._animation)) {
                 var animation = controller._camera.createCorrectPositionAnimation(controller.bounceAnimationTime);
                 if (defined(animation)) {
-                    controller._animation = controller._animationCollection.add(animation);
+                    controller._animation = animations.add(animation);
                 }
             }
 
-            controller._animationCollection.update();
+            animations.update();
         }
     }
 
@@ -881,7 +891,7 @@ define([
         var center;
         var intersection = IntersectionTests.rayEllipsoid(ray, ellipsoid);
         if (defined(intersection)) {
-            center = ray.getPoint(intersection.start, tilt3DCenter);
+            center = Ray.getPoint(ray, intersection.start, tilt3DCenter);
         } else {
             var grazingAltitudeLocation = IntersectionTests.grazingAltitudeLocation(ray, ellipsoid);
             if (!defined(grazingAltitudeLocation)) {
@@ -978,8 +988,6 @@ define([
      * If this object was destroyed, it should not be used; calling any function other than
      * <code>isDestroyed</code> will result in a {@link DeveloperError} exception.
      *
-     * @memberof ScreenSpaceCameraController
-     *
      * @returns {Boolean} <code>true</code> if this object was destroyed; otherwise, <code>false</code>.
      *
      * @see ScreenSpaceCameraController#destroy
@@ -995,8 +1003,6 @@ define([
      * <code>isDestroyed</code> will result in a {@link DeveloperError} exception.  Therefore,
      * assign the return value (<code>undefined</code>) to the object as done in the example.
      *
-     * @memberof ScreenSpaceCameraController
-     *
      * @returns {undefined}
      *
      * @exception {DeveloperError} This object was destroyed, i.e., destroy() was called.
@@ -1007,7 +1013,7 @@ define([
      * controller = controller && controller.destroy();
      */
     ScreenSpaceCameraController.prototype.destroy = function() {
-        this._animationCollection.removeAll();
+        this._animations.removeAll();
         this._spinHandler = this._spinHandler && this._spinHandler.destroy();
         this._translateHandler = this._translateHandler && this._translateHandler.destroy();
         this._lookHandler = this._lookHandler && this._lookHandler.destroy();
