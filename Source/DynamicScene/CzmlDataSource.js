@@ -209,6 +209,7 @@ define([
     var scratchCartesian = new Cartesian3();
     var scratchSpherical = new Spherical();
     var scratchCartographic = new Cartographic();
+    var scratchTimeInterval = new TimeInterval();
 
     function unwrapColorInterval(czmlInterval) {
         var rgbaf = czmlInterval.rgbaf;
@@ -460,9 +461,10 @@ define([
         var combinedInterval;
         var packetInterval = packetData.interval;
         if (defined(packetInterval)) {
-            combinedInterval = TimeInterval.fromIso8601(packetInterval);
+            iso8601Scratch.iso8601 = packetInterval;
+            combinedInterval = TimeInterval.fromIso8601(iso8601Scratch);
             if (defined(constrainedInterval)) {
-                combinedInterval = combinedInterval.intersect(constrainedInterval);
+                combinedInterval = TimeInterval.intersect(combinedInterval, constrainedInterval, scratchTimeInterval);
             }
         } else if (defined(constrainedInterval)) {
             combinedInterval = constrainedInterval;
@@ -592,7 +594,7 @@ define([
 
         //Check if the interval already exists in the composite
         var intervals = property.intervals;
-        interval = intervals.findInterval(combinedInterval.start, combinedInterval.stop, combinedInterval.isStartIncluded, combinedInterval.isStopIncluded);
+        interval = intervals.findInterval(combinedInterval);
         if (!defined(interval) || !(interval.data instanceof SampledProperty)) {
             //If not, create a SampledProperty for it.
             interval = combinedInterval.clone();
@@ -622,9 +624,10 @@ define([
         var combinedInterval;
         var packetInterval = packetData.interval;
         if (defined(packetInterval)) {
-            combinedInterval = TimeInterval.fromIso8601(packetInterval);
+            iso8601Scratch.iso8601 = packetInterval;
+            combinedInterval = TimeInterval.fromIso8601(iso8601Scratch);
             if (defined(constrainedInterval)) {
-                combinedInterval = combinedInterval.intersect(constrainedInterval);
+                combinedInterval = TimeInterval.intersect(combinedInterval, constrainedInterval, scratchTimeInterval);
             }
         } else if (defined(constrainedInterval)) {
             combinedInterval = constrainedInterval;
@@ -749,7 +752,7 @@ define([
 
         //Check if the interval already exists in the composite
         var intervals = property.intervals;
-        interval = intervals.findInterval(combinedInterval.start, combinedInterval.stop, combinedInterval.isStartIncluded, combinedInterval.isStopIncluded);
+        interval = intervals.findInterval(combinedInterval);
         if (!defined(interval) || !(interval.data instanceof SampledPositionProperty) || (defined(referenceFrame) && interval.data.referenceFrame !== referenceFrame)) {
             //If not, create a SampledPositionProperty for it.
             interval = combinedInterval.clone();
@@ -778,9 +781,10 @@ define([
         var combinedInterval;
         var packetInterval = packetData.interval;
         if (defined(packetInterval)) {
-            combinedInterval = TimeInterval.fromIso8601(packetInterval);
+            iso8601Scratch.iso8601 = packetInterval;
+            combinedInterval = TimeInterval.fromIso8601(iso8601Scratch);
             if (defined(constrainedInterval)) {
-                combinedInterval = combinedInterval.intersect(constrainedInterval);
+                combinedInterval = TimeInterval.intersect(combinedInterval, constrainedInterval, scratchTimeInterval);
             }
         } else if (defined(constrainedInterval)) {
             combinedInterval = constrainedInterval;
@@ -797,7 +801,10 @@ define([
             }
             //See if we already have data at that interval.
             var thisIntervals = property.intervals;
-            existingInterval = thisIntervals.findInterval(combinedInterval.start, combinedInterval.stop);
+            existingInterval = thisIntervals.findInterval({
+                start : combinedInterval.start,
+                stop : combinedInterval.stop
+            });
             if (defined(existingInterval)) {
                 //We have an interval, but we need to make sure the
                 //new data is the same type of material as the old data.
@@ -996,16 +1003,22 @@ define([
                 if (!defined(intervals)) {
                     intervals = new TimeIntervalCollection();
                 }
-                interval = TimeInterval.fromIso8601(packetData[i]);
+                iso8601Scratch.iso8601 = packetData[i];
+                interval = TimeInterval.fromIso8601(iso8601Scratch);
                 intervals.addInterval(interval);
             }
         } else {
-            interval = TimeInterval.fromIso8601(packetData);
+            iso8601Scratch.iso8601 = packetData;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
             intervals = new TimeIntervalCollection();
             intervals.addInterval(interval);
         }
         dynamicObject.availability = intervals;
     }
+
+    var iso8601Scratch = {
+        iso8601 : undefined
+    };
 
     function processBillboard(dynamicObject, packet, dynamicObjectCollection, sourceUri) {
         var billboardData = packet.billboard;
@@ -1013,9 +1026,11 @@ define([
             return;
         }
 
-        var interval = billboardData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = billboardData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var billboard = dynamicObject.billboard;
@@ -1052,7 +1067,8 @@ define([
             dynamicObject.clock = clock;
         }
         if (defined(clockPacket.interval)) {
-            var interval = TimeInterval.fromIso8601(clockPacket.interval);
+            iso8601Scratch.iso8601 = clockPacket.interval;
+            var interval = TimeInterval.fromIso8601(iso8601Scratch);
             clock.startTime = interval.start;
             clock.stopTime = interval.stop;
         }
@@ -1076,9 +1092,11 @@ define([
             return;
         }
 
-        var interval = coneData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = coneData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var cone = dynamicObject.cone;
@@ -1107,9 +1125,11 @@ define([
             return;
         }
 
-        var interval = ellipseData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = ellipseData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var ellipse = dynamicObject.ellipse;
@@ -1138,9 +1158,11 @@ define([
             return;
         }
 
-        var interval = ellipsoidData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = ellipsoidData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var ellipsoid = dynamicObject.ellipsoid;
@@ -1162,9 +1184,11 @@ define([
             return;
         }
 
-        var interval = labelData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = labelData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var label = dynamicObject.label;
@@ -1192,9 +1216,11 @@ define([
             return;
         }
 
-        var interval = modelData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = modelData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var model = dynamicObject.model;
@@ -1214,9 +1240,11 @@ define([
             return;
         }
 
-        var interval = pathData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = pathData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var path = dynamicObject.path;
@@ -1238,7 +1266,7 @@ define([
                     composite.intervals.addInterval(materialInterval);
                 }
             }
-            materialInterval = composite.intervals.findInterval(interval.start, interval.stop, interval.isStartIncluded, interval.isStopIncluded);
+            materialInterval = composite.intervals.findInterval(interval);
             if (defined(materialInterval)) {
                 materialToProcess = materialInterval.data;
             } else {
@@ -1268,9 +1296,11 @@ define([
             return;
         }
 
-        var interval = pointData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = pointData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var point = dynamicObject.point;
@@ -1291,9 +1321,11 @@ define([
             return;
         }
 
-        var interval = polygonData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = polygonData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var polygon = dynamicObject.polygon;
@@ -1319,9 +1351,11 @@ define([
             return;
         }
 
-        var interval = rectangleData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = rectangleData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var rectangle = dynamicObject.rectangle;
@@ -1350,9 +1384,11 @@ define([
             return;
         }
 
-        var interval = wallData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = wallData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var wall = dynamicObject.wall;
@@ -1376,9 +1412,11 @@ define([
             return;
         }
 
-        var interval = polylineData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = polylineData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var polyline = dynamicObject.polyline;
@@ -1400,7 +1438,7 @@ define([
                     composite.intervals.addInterval(materialInterval);
                 }
             }
-            materialInterval = composite.intervals.findInterval(interval.start, interval.stop, interval.isStartIncluded, interval.isStopIncluded);
+            materialInterval = composite.intervals.findInterval(interval);
             if (defined(materialInterval)) {
                 materialToProcess = materialInterval.data;
             } else {
@@ -1449,9 +1487,11 @@ define([
             return;
         }
 
-        var interval = pyramidData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = pyramidData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var pyramid = dynamicObject.pyramid;
@@ -1511,9 +1551,11 @@ define([
             return;
         }
 
-        var interval = vectorData.interval;
-        if (defined(interval)) {
-            interval = TimeInterval.fromIso8601(interval);
+        var interval;
+        var intervalString = vectorData.interval;
+        if (defined(intervalString)) {
+            iso8601Scratch.iso8601 = intervalString;
+            interval = TimeInterval.fromIso8601(iso8601Scratch);
         }
 
         var vector = dynamicObject.vector;
