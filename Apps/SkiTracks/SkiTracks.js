@@ -121,8 +121,8 @@ define([
             destination : destination,
             direction : direction,
             up : up,
-            duration : 12000,
-            onComplete : function() {
+            duration : 12.0,
+            complete : function() {
                 enableInput(scene);
             }
         });
@@ -181,12 +181,6 @@ define([
         var initialOrientation = createQuaternion(camera.directionWC, camera.upWC);
         var finalOrientation = createQuaternion(finalDirection, finalUp);
 
-        // put the camera in world coordinate ref frame
-        /*camera.position = camera.positionWC;
-        camera.direction = camera.directionWC;
-        camera.up = camera.upWC;
-        camera.right = camera.rightWC;
-        camera.transform = Matrix4.IDENTITY.clone();*/
 
         camera.setTransform(Matrix4.IDENTITY);
 
@@ -202,19 +196,19 @@ define([
             Cartesian3.negate(Matrix3.getRow(rotationMatrix, 2), camera.direction);
         };
 
-        var duration = 3000;
+        var duration = 3.0;
         var animation =
             {
                 duration : duration,
                 easingFunction : Tween.Easing.Sinusoidal.InOut,
-                startValue : {
+                startObject : {
                     time : 0.0
                 },
-                stopValue : {
+                stopObject : {
                     time : 1.0
                 },
-                onUpdate : updateCamera,
-                onComplete : function() {
+                update : updateCamera,
+                complete : function() {
                     camera.transform = finalRefFrame;
                     camera.position = finalCameraPositionENU;
                     Cartesian3.normalize(Cartesian3.negate(camera.position, camera.direction), camera.direction);
@@ -227,7 +221,7 @@ define([
                 }
             };
 
-        cesiumWidget.scene.animations.add(animation);
+        cesiumWidget.scene.tweens.add(animation);
 
     }
 
@@ -479,16 +473,16 @@ define([
 
                 // on enter
                 animatingBillboard = pickedObject.primitive;
-                animation = animation || scene.animations.add({
-                    onUpdate : updateAnimation,
-                    onComplete : animationComplete,
-                    startValue : {
+                animation = animation || scene.tweens.add({
+                    update : updateAnimation,
+                    complete : animationComplete,
+                    startObject : {
                         scale : animatingBillboard.scale
                     },
-                    stopValue : {
+                    stopObject : {
                         scale : 1.5
                     },
-                    duration : 200,
+                    duration : 0.15,
                     easingFunction : Tween.Easing.Quartic.Out
                 });
             }
@@ -500,16 +494,16 @@ define([
                         pickedObject.primitive !== animatingBillboard)
                     )) {
                 // on exit
-                animation = animation || scene.animations.add({
-                    onUpdate : updateAnimation,
-                    onComplete : finalAnimationComplete,
-                    startValue : {
+                animation = animation || scene.tweens.add({
+                    update : updateAnimation,
+                    complete : finalAnimationComplete,
+                    startObject : {
                         scale : animatingBillboard.scale
                     },
-                    stopValue : {
+                    stopObject : {
                         scale : 1.0
                     },
-                    duration : 200,
+                    duration : 0.15,
                     easingFunction : Tween.Easing.Quartic.Out
                 });
             }
