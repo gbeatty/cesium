@@ -19,6 +19,7 @@ define([
         'Widgets/Animation/AnimationViewModel',
         'Widgets/Timeline/Timeline',
         'Widgets/FullscreenButton/FullscreenButton',
+        'Core/BingMapsApi',
         'Core/Cartesian2',
         'Core/Cartesian3',
         'Core/Cartographic',
@@ -59,6 +60,7 @@ define([
         AnimationViewModel,
         Timeline,
         FullscreenButton,
+        BingMapsApi,
         Cartesian2,
         Cartesian3,
         Cartographic,
@@ -365,6 +367,9 @@ define([
             cesiumWidget.clock.shouldAnimate = true;
             setLoading(false);
         }, false);
+
+        // set the Bing Maps key
+        BingMapsApi.defaultKey = 'AkxNIkcN3YZwLVYAJpF08XExSR3DDR5OsItxNZYdwvIq0-RJT_VbPG9CD4OMvNw2';
 
         // initialize the Cesium widget
         cesiumWidget = new CesiumWidget('cesiumContainer', {
