@@ -374,7 +374,7 @@ define([
         // initialize the Cesium widget
         cesiumWidget = new CesiumWidget('cesiumContainer', {
             terrainProvider : new CesiumTerrainProvider({
-                url : 'http://cesium.agi.com/srtmplusutah'
+                url : 'http://cesiumjs.org/stk-terrain/tilesets/world/tiles'
             })
         });
         cesiumWidget._globe.depthTestAgainstTerrain = true;
