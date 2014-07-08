@@ -1,11 +1,15 @@
 /*global define*/
-define(function() {
+define([
+        '../Core/freezeObject'
+    ], function(
+        freezeObject) {
     "use strict";
 
     /**
      * Defined the orientation of stripes in {@link StripeMaterialProperty}.
      *
-     * @exports StripeOrientation
+     * @namespace
+     * @alias StripeOrientation
      */
     var StripeOrientation = {
         /**
@@ -13,6 +17,7 @@ define(function() {
          * @type {Number}
          */
         HORIZONTAL : 0,
+
         /**
          * Vertical orientation.
          * @type {Number}
@@ -20,5 +25,5 @@ define(function() {
         VERTICAL : 1
     };
 
-    return StripeOrientation;
+    return freezeObject(StripeOrientation);
 });

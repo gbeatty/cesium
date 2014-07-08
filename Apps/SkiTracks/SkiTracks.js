@@ -178,7 +178,8 @@ define([
         Cartesian3.normalize(Cartesian3.cross(finalRight, finalDirection, finalUp), finalUp);
 
         var finalRefFrame = Transforms.eastNorthUpToFixedFrame(finalObjectPositionWC);
-        var finalOffsetENU = Matrix4.multiplyByVector(Matrix4.getRotation(finalRefFrame), cameraOffsetWC);
+        var finalOffsetENU = new Matrix4();
+        Matrix4.multiplyByVector(Matrix4.getRotation(finalRefFrame, finalOffsetENU), cameraOffsetWC, finalOffsetENU);
 
         var initialOrientation = createQuaternion(camera.directionWC, camera.upWC);
         var finalOrientation = createQuaternion(finalDirection, finalUp);
@@ -189,13 +190,15 @@ define([
 
         var updateCamera = function(value) {
             var time = value.time;
-            var orientation = Quaternion.slerp(initialOrientation, finalOrientation, time);
+            var orientation = new Quaternion();
+            Quaternion.slerp(initialOrientation, finalOrientation, time, orientation);
             var rotationMatrix = Matrix3.fromQuaternion(orientation);
 
             Cartesian3.lerp(initialCameraPositionWC, finalCameraPositionWC, time, camera.position);
-            camera.right = Matrix3.getRow(rotationMatrix, 0);
-            camera.up = Matrix3.getRow(rotationMatrix, 1);
-            Cartesian3.negate(Matrix3.getRow(rotationMatrix, 2), camera.direction);
+            Matrix3.getRow(rotationMatrix, 0, camera.right);
+            Matrix3.getRow(rotationMatrix, 1, camera.up);
+            Matrix3.getRow(rotationMatrix, 2, camera.direction);
+            Cartesian3.negate(camera.direction, camera.direction);
         };
 
         var duration = 3.0;
