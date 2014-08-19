@@ -1,6 +1,11 @@
 
 [
   {
+    "id":"document",
+    "name":"DeerValley",
+    "version":"1.0"
+  },
+  {
     "id":"CurrentTrail",
     "label":{
       "show":false,
@@ -574,13 +579,22 @@
 	 "verticalOrigin":"BOTTOM"
     },
     "path":{
-      "color":{
-        "rgba":[
-          250,25,115,255
-        ]
-      },
+	  "material":{
+		  "polylineOutline":{
+		      "outlineWidth":3.0,
+			  "color":{
+				"rgba":[
+				  250,25,115,255
+				]
+			  },
+			  "outlineColor":{
+				"rgba":[
+				  0,0,0,255
+				]
+			  }
+		  }
+	  },
       "width":6.0,
-      "outlineWidth":2.0,
       "leadTime":0.0,
 	  "trailTime":400.0
     },

@@ -1,12 +1,11 @@
 /*global define*/
 define([
-        'DynamicScene/CompositeDynamicObjectCollection',
-        'DynamicScene/DynamicObjectView',
-        'DynamicScene/DynamicObjectCollection',
-        'DynamicScene/CzmlDataSource',
-        'DynamicScene/DataSourceDisplay',
-        'DynamicScene/DataSourceCollection',
-        'DynamicScene/DynamicObject',
+        'DataSources/EntityView',
+        'DataSources/EntityCollection',
+        'DataSources/CzmlDataSource',
+        'DataSources/DataSourceDisplay',
+        'DataSources/DataSourceCollection',
+        'DataSources/Entity',
         'Scene/Billboard',
         'Scene/BingMapsImageryProvider',
         'Scene/Camera',
@@ -41,13 +40,12 @@ define([
         'ThirdParty/knockout',
         'ThirdParty/Tween'
     ], function(
-        CompositeDynamicObjectCollection,
-        DynamicObjectView,
-        DynamicObjectCollection,
+        EntityView,
+        EntityCollection,
         CzmlDataSource,
         DataSourceDisplay,
         DataSourceCollection,
-        DynamicObject,
+        Entity,
         Billboard,
         BingMapsImageryProvider,
         Camera,
@@ -98,15 +96,15 @@ define([
         controller.enableInputs = true;
     }
 
-    function flyToObject(scene, dynamicObject) {
+    function flyToObject(scene, entity) {
         disableInput(scene);
 
         var time = cesiumWidget.clock.currentTime;
 
-        dynamicObjectView = new DynamicObjectView(dynamicObject, scene);
-        dynamicObjectView.update(time);
+        entityView = new EntityView(entity, scene);
+        entityView.update(time);
 
-        var objectPosition = dynamicObject.position.getValue(time);
+        var objectPosition = entity.position.getValue(time);
         var cameraOffset = new Cartesian3(0, -1000, 100);
         var direction = new Cartesian3();
         Cartesian3.negate(Cartesian3.normalize(cameraOffset, direction), direction);
@@ -235,7 +233,7 @@ define([
     var currentTrail = 'undefined';
     var pathVisualizers = 'undefined';
     var trailsVisualizers = 'undefined';
-    var dynamicObjectView;
+    var entityView;
 
     function updateData() {
 
@@ -254,8 +252,8 @@ define([
         }
 
         // update the camera position
-        if (typeof dynamicObjectView !== 'undefined') {
-            dynamicObjectView.update(clock.currentTime);
+        if (typeof entityView !== 'undefined') {
+            entityView.update(clock.currentTime);
         }
 
         if(pathObject !== 'undefined') {
@@ -299,11 +297,11 @@ define([
         }
     }
 
-    function setTimeFromBuffer(dynamicObjectCollection) {
+    function setTimeFromBuffer(entityCollection) {
 
         var clock = cesiumWidget.clock;
 
-        var availability = dynamicObjectCollection.computeAvailability();
+        var availability = entityCollection.computeAvailability();
         if (availability.start.equals(Iso8601.MINIMUM_VALUE)) {
             clock.startTime = new JulianDate();
             clock.stopTime = clock.startTime.addDays(1);
@@ -328,9 +326,9 @@ define([
 
         if (defined(selectedObject) && defined(selectedObject.primitive) && defined(selectedObject.primitive.id)) {
             try {
-                if( selectedObject.primitive.id instanceof DynamicObject) {
-                    var dynamicObject = selectedObject.primitive.id;
-                    var jdate = JulianDate.fromIso8601(dynamicObject.id);
+                if( selectedObject.primitive.id instanceof Entity) {
+                    var entity = selectedObject.primitive.id;
+                    var jdate = JulianDate.fromIso8601(entity.id);
                     flyToTime(jdate);
                 }
             } catch (e) {
@@ -407,7 +405,7 @@ define([
             }, false
         );
 
-        // fullscreen buton
+        // fullscreen button
         var fullscreenContainer = document.createElement('div');
         fullscreenContainer.className = 'fullscreenContainer';
         var cesiumContainer = document.getElementById('fullScreenContainer');
@@ -530,31 +528,31 @@ define([
         var pathCzmlDataSource = new CzmlDataSource();
         pathCzmlDataSource.loadUrl(pathCzml).then(function() {
 
-            var dynamicObjectCollection =  pathCzmlDataSource.dynamicObjects;
-            setTimeFromBuffer(dynamicObjectCollection);
+            var entityCollection =  pathCzmlDataSource.entities;
+            setTimeFromBuffer(entityCollection);
 
             // set the camera to follow the path
-            var lookAtObject = dynamicObjectCollection.getById("path");
+            var lookAtObject = entityCollection.getById("path");
             flyToObject(cesiumWidget.scene, lookAtObject);
             pathObject = lookAtObject;
 
             // get the current trail object
-            currentTrail = dynamicObjectCollection.getById("CurrentTrail");
+            currentTrail = entityCollection.getById("CurrentTrail");
 
             var dataSourceCollection = new DataSourceCollection();
             dataSourceCollection.add(pathCzmlDataSource);
-            pathVisualizers = new DataSourceDisplay(cesiumWidget.scene, dataSourceCollection);
+            pathVisualizers = new DataSourceDisplay({scene : cesiumWidget.scene, dataSourceCollection : dataSourceCollection});
             setLoading(false);
 
         });
 
         // load trails
-        var trailsCzmlDataSource = new CzmlDataSource();
+        /*var trailsCzmlDataSource = new CzmlDataSource();
         trailsCzmlDataSource.loadUrl(trailsCzml).then(function() {
             var dataSourceCollection = new DataSourceCollection();
             dataSourceCollection.add(trailsCzmlDataSource);
-            trailsVisualizers = new DataSourceDisplay(cesiumWidget.scene, dataSourceCollection);
-        });
+            trailsVisualizers = new DataSourceDisplay({scene : cesiumWidget.scene, dataSourceCollection : dataSourceCollection});
+        });*/
 
     });
 });

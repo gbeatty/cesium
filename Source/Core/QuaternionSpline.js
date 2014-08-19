@@ -23,7 +23,7 @@ define([
         quads[length - 1] = defined(lastInnerQuadrangle) ? lastInnerQuadrangle : points[length - 1];
 
         for (var i = 1; i < length - 1; ++i) {
-            quads[i] = Quaternion.innerQuadrangle(points[i - 1], points[i], points[i + 1], new Quaternion());
+            quads[i] = Quaternion.computeInnerQuadrangle(points[i - 1], points[i], points[i + 1], new Quaternion());
         }
 
         return quads;
@@ -87,8 +87,6 @@ define([
      * @exception {DeveloperError} points.length must be greater than or equal to 2.
      * @exception {DeveloperError} times.length must be equal to points.length.
      *
-     * @see BSpline
-     * @see BezierSpline
      * @see HermiteSpline
      * @see CatmullRomSpline
      * @see LinearSpline

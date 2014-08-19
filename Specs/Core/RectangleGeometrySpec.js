@@ -35,10 +35,28 @@ defineSuite([
         expect(positions.length).toEqual(9 * 3);
         expect(m.indices.length).toEqual(8 * 3);
 
-        var expectedNWCorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.getNorthwest(rectangle));
-        var expectedSECorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.getSoutheast(rectangle));
+        var expectedNWCorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.northwest(rectangle));
+        var expectedSECorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.southeast(rectangle));
         expect(new Cartesian3(positions[0], positions[1], positions[2])).toEqualEpsilon(expectedNWCorner, CesiumMath.EPSILON9);
         expect(new Cartesian3(positions[length - 3], positions[length - 2], positions[length - 1])).toEqualEpsilon(expectedSECorner, CesiumMath.EPSILON9);
+    });
+
+    it('computes positions across IDL', function() {
+        var rectangle = Rectangle.fromDegrees(179.0, -1.0, -179.0, 1.0);
+        var m = RectangleGeometry.createGeometry(new RectangleGeometry({
+            vertexFormat : VertexFormat.POSITION_ONLY,
+            rectangle : rectangle
+        }));
+        var positions = m.attributes.position.values;
+        var length = positions.length;
+
+        expect(positions.length).toEqual(9 * 3);
+        expect(m.indices.length).toEqual(8 * 3);
+
+        var expectedNWCorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.northwest(rectangle));
+        var expectedSECorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.southeast(rectangle));
+        expect(new Cartesian3(positions[0], positions[1], positions[2])).toEqualEpsilon(expectedNWCorner, CesiumMath.EPSILON8);
+        expect(new Cartesian3(positions[length - 3], positions[length - 2], positions[length - 1])).toEqualEpsilon(expectedSECorner, CesiumMath.EPSILON8);
     });
 
     it('computes all attributes', function() {
@@ -70,7 +88,7 @@ defineSuite([
         expect(length).toEqual(9 * 3);
         expect(m.indices.length).toEqual(8 * 3);
 
-        var unrotatedSECorner = Rectangle.getSoutheast(rectangle);
+        var unrotatedSECorner = Rectangle.southeast(rectangle);
         var projection = new GeographicProjection();
         var projectedSECorner = projection.project(unrotatedSECorner);
         var rotation = Matrix2.fromRotation(angle);
@@ -93,8 +111,8 @@ defineSuite([
         expect(length).toEqual(9 * 3);
         expect(m.indices.length).toEqual(8 * 3);
 
-        var unrotatedNWCorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.getNorthwest(rectangle));
-        var unrotatedSECorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.getSoutheast(rectangle));
+        var unrotatedNWCorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.northwest(rectangle));
+        var unrotatedSECorner = Ellipsoid.WGS84.cartographicToCartesian(Rectangle.southeast(rectangle));
 
         var actual = new Cartesian3(positions[0], positions[1], positions[2]);
         expect(actual).toEqualEpsilon(unrotatedSECorner, CesiumMath.EPSILON8);
@@ -136,14 +154,6 @@ defineSuite([
                 rectangle : new Rectangle(-CesiumMath.PI_OVER_TWO, 1, CesiumMath.PI_OVER_TWO, CesiumMath.PI_OVER_TWO),
                 rotation : CesiumMath.PI_OVER_TWO
             }));
-        }).toThrowDeveloperError();
-    });
-
-    it('throws if east is less than west', function() {
-        expect(function() {
-            return new RectangleGeometry({
-                rectangle : new Rectangle(CesiumMath.PI_OVER_TWO, -CesiumMath.PI_OVER_TWO, -CesiumMath.PI_OVER_TWO, CesiumMath.PI_OVER_TWO)
-            });
         }).toThrowDeveloperError();
     });
 
@@ -200,60 +210,14 @@ defineSuite([
         expect(length).toEqual((9 + 8 + 4) * 3 * 2);
         expect(m.indices.length).toEqual((8 * 2 + 4 * 4) * 3);
 
-        var unrotatedSECorner = Rectangle.getSoutheast(rectangle);
+        var unrotatedSECorner = Rectangle.southeast(rectangle);
         var projection = new GeographicProjection();
         var projectedSECorner = projection.project(unrotatedSECorner);
         var rotation = Matrix2.fromRotation(angle);
         var rotatedSECornerCartographic = projection.unproject(Matrix2.multiplyByVector(rotation, projectedSECorner, new Cartesian2()));
         var rotatedSECorner = Ellipsoid.WGS84.cartographicToCartesian(rotatedSECornerCartographic);
-        var actual = new Cartesian3(positions[length - 21], positions[length - 20], positions[length - 19]);
+        var actual = new Cartesian3(positions[51], positions[52], positions[53]);
         expect(actual).toEqualEpsilon(rotatedSECorner, CesiumMath.EPSILON6);
-    });
-
-    it('computes extruded top open', function() {
-        var rectangle = new Rectangle(-2.0, -1.0, 0.0, 1.0);
-        var m = RectangleGeometry.createGeometry(new RectangleGeometry({
-            vertexFormat : VertexFormat.POSITION_ONLY,
-            rectangle : rectangle,
-            granularity : 1.0,
-            extrudedHeight : 2,
-            closeTop : false
-        }));
-        var positions = m.attributes.position.values;
-
-        expect(positions.length).toEqual((((8 + 4) * 2) + 9) * 3);
-        expect(m.indices.length).toEqual((8 + 4 * 4) * 3);
-    });
-
-    it('computes extruded bottom open', function() {
-        var rectangle = new Rectangle(-2.0, -1.0, 0.0, 1.0);
-        var m = RectangleGeometry.createGeometry(new RectangleGeometry({
-            vertexFormat : VertexFormat.POSITION_ONLY,
-            rectangle : rectangle,
-            granularity : 1.0,
-            extrudedHeight : 2,
-            closeBottom : false
-        }));
-        var positions = m.attributes.position.values;
-
-        expect(positions.length).toEqual((((8 + 4) * 2) + 9) * 3);
-        expect(m.indices.length).toEqual((8 + 4 * 4) * 3);
-    });
-
-    it('computes extruded top and bottom open', function() {
-        var rectangle = new Rectangle(-2.0, -1.0, 0.0, 1.0);
-        var m = RectangleGeometry.createGeometry(new RectangleGeometry({
-            vertexFormat : VertexFormat.POSITION_ONLY,
-            rectangle : rectangle,
-            granularity : 1.0,
-            extrudedHeight : 2,
-            closeTop : false,
-            closeBottom : false
-        }));
-        var positions = m.attributes.position.values;
-
-        expect(positions.length).toEqual((8 + 4) * 2 * 3);
-        expect(m.indices.length).toEqual(4 * 3 * 4);
     });
 
     it('computes non-extruded rectangle if height is small', function() {

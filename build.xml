@@ -106,7 +106,7 @@
 
 	<!-- Inputs -->
 	<!-- this version should be set to the upcoming version, so it can be tagged without requiring a bump first -->
-	<property name="version" value="b30" />
+	<property name="version" value="1.0" />
 	<property name="sourceDirectory" location="Source" />
 	<property name="shadersDirectory" location="${sourceDirectory}/Shaders" />
 	<property name="examplesDirectory" location="Examples" />
@@ -263,9 +263,11 @@
 		<echo message="Source:" />
 		<apply executable="perl" parallel="true">
 			<arg value="${clocPath}" />
+			<arg value="--quiet" />
+			<arg value="--progress-rate=0" />
 			<arg value="--read-lang-def=${clocDefinitionsPath}" />
 			<arg value="Source/Core/" />
-			<arg value="Source/DynamicScene/" />
+			<arg value="Source/DataSources/" />
 			<arg value="Source/Renderer/" />
 			<arg value="Source/Scene/" />
 			<arg value="Source/Widgets/" />
@@ -279,6 +281,8 @@
 		<echo message="${line.separator}Specs:" />
 		<exec executable="perl">
 			<arg value="${clocPath}" />
+			<arg value="--quiet" />
+			<arg value="--progress-rate=0" />
 			<arg value="--read-lang-def=${clocDefinitionsPath}" />
 			<arg value="Specs/" />
 		</exec>
