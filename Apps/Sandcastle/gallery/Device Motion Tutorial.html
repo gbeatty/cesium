@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">  <!-- Use Chrome Frame in IE -->
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta name="description" content="Use the camera to control the view, and create custom event handlers for input.">
+    <meta name="cesium-sandcastle-labels" content="Tutorials, Showcases">
+    <title>Cesium Demo</title>
+    <script type="text/javascript" src="../Sandcastle-header.js"></script>
+    <script type="text/javascript" src="../../../ThirdParty/requirejs-2.1.9/require.js"></script>
+    <script type="text/javascript">
+    require.config({
+        baseUrl : '../../../Source',
+        waitSeconds : 60
+    });
+    </script>
+</head>
+<body class="sandcastle-loading" data-sandcastle-bucket="bucket-requirejs.html">
+<style>
+    @import url(../templates/bucket.css);
+</style>
+<div id="cesiumContainer" class="fullSize"></div>
+<div id="loadingOverlay"><h1>Loading...</h1></div>
+<div id="toolbar">
+<script id="cesium_sandcastle_script">
+function startup(Cesium) {
+    "use strict";
+//Sandcastle_Begin
+var viewer = new Cesium.Viewer('cesiumContainer', {
+    timeline: false, 
+    animation: false,
+    navigationHelpButton: false
+    });
+
+var scene = viewer.scene;
+var canvas = scene.canvas;
+canvas.setAttribute('tabindex', '0'); // needed to put focus on the canvas
+canvas.onclick = function() {
+    canvas.focus();
+};
+var ellipsoid = scene.globe.ellipsoid;
+
+scene.terrainProvider = new Cesium.CesiumTerrainProvider({
+        url : 'http://cesiumjs.org/stk-terrain/tilesets/world/tiles'
+    });
+
+
+// disable the default event handlers
+scene.screenSpaceCameraController.enableRotate = false;
+scene.screenSpaceCameraController.enableTranslate = false;
+scene.screenSpaceCameraController.enableZoom = false;
+scene.screenSpaceCameraController.enableTilt = false;
+scene.screenSpaceCameraController.enableLook = false;
+
+var eye = new Cesium.Cartesian3(-2496304.1498512086, -4391818.97382059, 3884176.4503971986);
+var target = Cesium.Cartesian3.add(eye, new Cesium.Cartesian3(0.9279518715011381, -0.29488412129953234, -0.22792252890604328), new Cesium.Cartesian3());
+var up = new Cesium.Cartesian3(-0.11836693744723503, -0.8130611584421428, 0.5700182635106171);
+scene.camera.lookAt(eye, target, up);
+
+var deviceOrientation = {
+        tiltLR : 0,
+        tiltFB : 0,
+        dir : 0
+};
+var flags = {
+    looking : false,
+    moveForward : false,
+    moveBackward : false,
+    moveUp : false,
+    moveDown : false,
+    moveLeft : false,
+    moveRight : false
+};
+
+var degtorad = Math.PI / 180; // Degree-to-Radian conversion
+
+function compassHeading( alpha, beta, gamma ) {
+
+  var _x = beta  ? beta  * degtorad : 0; // beta value
+  var _y = gamma ? gamma * degtorad : 0; // gamma value
+  var _z = alpha ? alpha * degtorad : 0; // alpha value
+
+  var cX = Math.cos( _x );
+  var cY = Math.cos( _y );
+  var cZ = Math.cos( _z );
+  var sX = Math.sin( _x );
+  var sY = Math.sin( _y );
+  var sZ = Math.sin( _z );
+
+  // Calculate Vx and Vy components
+  var Vx = - cZ * sY - sZ * sX * cY;
+  var Vy = - sZ * sY + cZ * sX * cY;
+
+  // Calculate compass heading
+  var compassHeading = Math.atan( Vx / Vy );
+
+  // Convert compass heading to use whole unit circle
+  if( Vy < 0 ) {
+    compassHeading += Math.PI;
+  } else if( Vx < 0 ) {
+    compassHeading += 2 * Math.PI;
+  }
+
+  return compassHeading * ( 180 / Math.PI ); // Compass Heading (in degrees)
+
+}
+
+
+if (window.DeviceOrientationEvent) {
+
+    console.log("Device Orientation supported");
+    
+	// Listen for the deviceorientation event and handle the raw data
+	window.addEventListener('deviceorientation', function(eventData) {
+		// gamma is the left-to-right tilt in degrees, where right is positive
+		if(eventData.gamma != null && 
+		   eventData.beta != null &&
+		   eventData.alpha != null) {
+		    	    
+		    deviceOrientation.tiltLR = eventData.gamma + 90;
+		    
+		 	// beta is the front-to-back tilt in degrees, where front is positive
+			deviceOrientation.tiltFB = eventData.beta;
+			
+			// alpha is the compass direction the device is facing in degrees
+			/*deviceOrientation.dir = eventData.alpha - 270;
+			if(deviceOrientation.dir < 0) {
+			    deviceOrientation.dir += 360;
+		    }
+			if(deviceOrientation.dir >= 360) {
+			    deviceOrientation.dir -= 360;
+		    }*/
+		    deviceOrientation.dir = compassHeading(eventData.alpha, eventData.beta, eventData.gamma);
+		}
+		
+		
+	}, false);
+	
+} 
+else {
+    document.getElementById("doEvent").innerHTML = "Not supported on your device or browser.  Sorry."
+}
+
+
+function deviceOrientationHandler(tiltLR, tiltFB, dir) {
+  document.getElementById("doTiltLR").innerHTML = Math.round(tiltLR);
+  document.getElementById("doTiltFB").innerHTML = Math.round(tiltFB);
+  document.getElementById("doDirection").innerHTML = Math.round(dir);
+  
+  // Apply the transform to the image
+  var logo = document.getElementById("imgLogo");
+  logo.style.webkitTransform = "rotate("+ tiltLR +"deg) rotate3d(1,0,0, "+ (tiltFB*-1)+"deg)";
+  logo.style.MozTransform = "rotate("+ tiltLR +"deg)";
+  logo.style.transform = "rotate("+ tiltLR +"deg) rotate3d(1,0,0, "+ (tiltFB*-1)+"deg)";
+}
+
+var handler = new Cesium.ScreenSpaceEventHandler(canvas);
+
+function getFlagForKeyCode(keyCode) {
+    switch (keyCode) {
+    case 'W'.charCodeAt(0):
+        return 'moveForward';
+    case 'S'.charCodeAt(0):
+        return 'moveBackward';
+    case 'Q'.charCodeAt(0):
+        return 'moveUp';
+    case 'E'.charCodeAt(0):
+        return 'moveDown';
+    case 'D'.charCodeAt(0):
+        return 'moveRight';
+    case 'A'.charCodeAt(0):
+        return 'moveLeft';
+    default:
+        return undefined;
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    var flagName = getFlagForKeyCode(e.keyCode);
+    if (typeof flagName !== 'undefined') {
+        flags[flagName] = true;
+    }
+}, false);
+
+document.addEventListener('keyup', function(e) {
+    var flagName = getFlagForKeyCode(e.keyCode);
+    if (typeof flagName !== 'undefined') {
+        flags[flagName] = false;
+    }
+}, false);
+
+viewer.clock.onTick.addEventListener(function(clock) {
+    var camera = scene.camera;
+    camera.heading = deviceOrientation.dir * 3.14159 / 180.0;
+    camera.tilt = deviceOrientation.tiltLR * 3.14159 / 180.0;
+});
+
+
+//Sandcastle_End
+    Sandcastle.finishedLoading();
+}
+if (typeof Cesium !== "undefined") {
+    startup(Cesium);
+} else if (typeof require === "function") {
+    require(["Cesium"], startup);
+}
+</script>
+</body>
+</html>
