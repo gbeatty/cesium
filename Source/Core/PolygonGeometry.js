@@ -543,14 +543,16 @@ define([
      *
      * // 3. create extruded polygon
      * var extrudedPolygon = new Cesium.PolygonGeometry({
-     *   positions : Cesium.Cartesian3.fromDegreesArray([
-     *     -72.0, 40.0,
-     *     -70.0, 35.0,
-     *     -75.0, 30.0,
-     *     -70.0, 30.0,
-     *     -68.0, 40.0
-     *   ]),
-     *   extrudedHeight: 300000
+     *   polygonHierarchy : {
+     *     positions : Cesium.Cartesian3.fromDegreesArray([
+     *       -72.0, 40.0,
+     *       -70.0, 35.0,
+     *       -75.0, 30.0,
+     *       -70.0, 30.0,
+     *       -68.0, 40.0
+     *     ]),
+     *     extrudedHeight: 300000
+     *   }
      * });
      * var geometry = Cesium.PolygonGeometry.createGeometry(extrudedPolygon);
      */
@@ -753,7 +755,7 @@ define([
             }
         }
 
-        geometry = GeometryPipeline.combine(geometries);
+        geometry = GeometryPipeline.combineInstances(geometries)[0];
         geometry.attributes.position.values = new Float64Array(geometry.attributes.position.values);
         geometry.indices = IndexDatatype.createTypedArray(geometry.attributes.position.values.length / 3, geometry.indices);
 

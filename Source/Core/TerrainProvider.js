@@ -120,8 +120,8 @@ define([
 
             var index = 0;
             var indicesIndex = 0;
-            for ( var i = 0; i < height - 1; ++i) {
-                for ( var j = 0; j < width - 1; ++j) {
+            for (var j = 0; j < height - 1; ++j) {
+                for (var i = 0; i < width - 1; ++i) {
                     var upperLeft = index;
                     var lowerLeft = upperLeft + width;
                     var lowerRight = lowerLeft + 1;
@@ -191,6 +191,17 @@ define([
      * @returns {Number} The maximum geometric error.
      */
     TerrainProvider.prototype.getLevelMaximumGeometricError = DeveloperError.throwInstantiationError;
+
+    /**
+     * Determines whether data for a tile is available to be loaded.
+     * @function
+     *
+     * @param {Number} x The X coordinate of the tile for which to request geometry.
+     * @param {Number} y The Y coordinate of the tile for which to request geometry.
+     * @param {Number} level The level of the tile for which to request geometry.
+     * @returns {Boolean} Undefined if not supported by the terrain provider, otherwise true or false.
+     */
+    TerrainProvider.prototype.getTileDataAvailable = DeveloperError.throwInstantiationError;
 
     return TerrainProvider;
 });

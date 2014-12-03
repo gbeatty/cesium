@@ -56,7 +56,7 @@ define([
      *     flat : true,
      *     translucent : false
      *   })
-     * }));
+     * });
      *
      * // Two rectangles in a primitive, each with a different color
      * var instance = new Cesium.GeometryInstance({
@@ -110,7 +110,7 @@ define([
 
         this._vertexShaderSource = defaultValue(options.vertexShaderSource, vs);
         this._fragmentShaderSource = defaultValue(options.fragmentShaderSource, fs);
-        this._renderState = defaultValue(options.renderState, Appearance.getDefaultRenderState(translucent, closed));
+        this._renderState = Appearance.getDefaultRenderState(translucent, closed, options.renderState);
         this._closed = closed;
 
         // Non-derived members

@@ -708,7 +708,7 @@ define([
         },
 
         /**
-         * Gets or sets the camera tilt in radians
+         * Gets or sets the camera tilt in radians.
          * @memberof Camera.prototype
          *
          * @type {Number}
@@ -733,9 +733,8 @@ define([
                 //>>includeEnd('debug');
 
                 if (this._mode === SceneMode.COLUMBUS_VIEW || this._mode === SceneMode.SCENE3D) {
-                    angle = CesiumMath.clamp(angle, 0.0, CesiumMath.PI_OVER_TWO);
+                    angle = CesiumMath.clamp(angle, -CesiumMath.PI_OVER_TWO, CesiumMath.PI_OVER_TWO);
                     angle = angle - this.tilt;
-
                     this.look(this.right, angle);
                 }
             }
@@ -1725,7 +1724,7 @@ define([
             return undefined;
         }
 
-        var t = (Cartesian3.magnitude(ray.origin) < ellipsoid.maximumRadius) ? intersection.stop : intersection.start;
+        var t = intersection.start > 0.0 ? intersection.start : intersection.stop;
         return Ray.getPoint(ray, t, result);
     }
 

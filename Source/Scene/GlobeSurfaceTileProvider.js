@@ -4,6 +4,7 @@ define([
         '../Core/Cartesian2',
         '../Core/Cartesian3',
         '../Core/Cartesian4',
+        '../Core/Color',
         '../Core/defined',
         '../Core/defineProperties',
         '../Core/destroyObject',
@@ -34,6 +35,7 @@ define([
         Cartesian2,
         Cartesian3,
         Cartesian4,
+        Color,
         defined,
         defineProperties,
         destroyObject,
@@ -90,6 +92,7 @@ define([
 
         this.lightingFadeOutDistance = 6500000.0;
         this.lightingFadeInDistance = 9000000.0;
+        this.hasWaterMask = false;
         this.oceanNormalMap = undefined;
         this.zoomedOutOceanSpecularIntensity = 0.5;
 
@@ -118,9 +121,33 @@ define([
             wireframe : false,
             boundingSphereTile : undefined
         };
+
+        this._baseColor = undefined;
+        this._firstPassInitialColor = undefined;
+        this.baseColor = new Color(0.0, 0.0, 0.5, 1.0);
     };
 
     defineProperties(GlobeSurfaceTileProvider.prototype, {
+        /**
+         * Gets or sets the color of the globe when no imagery is available.
+         * @memberof GlobeSurfaceTileProvider.prototype
+         * @type {Color}
+         */
+        baseColor : {
+            get : function() {
+                return this._baseColor;
+            },
+            set : function(value) {
+                //>>includeStart('debug', pragmas.debug);
+                if (!defined(value)) {
+                    throw new DeveloperError('value is required.');
+                }
+                //>>includeEnd('debug');
+
+                this._baseColor = value;
+                this._firstPassInitialColor = Cartesian4.fromColor(value, this._firstPassInitialColor);
+            }
+        },
         /**
          * Gets or sets the {@link QuadtreePrimitive} for which this provider is
          * providing tiles.  This property may be undefined if the provider is not yet associated
@@ -208,6 +235,20 @@ define([
         }
     });
 
+    function sortTileImageryByLayerIndex(a, b) {
+        var aImagery = a.loadingImagery;
+        if (!defined(aImagery)) {
+            aImagery = a.readyImagery;
+        }
+
+        var bImagery = b.loadingImagery;
+        if (!defined(bImagery)) {
+            bImagery = b.readyImagery;
+        }
+
+        return aImagery.imageryLayer._layerIndex - bImagery.imageryLayer._layerIndex;
+    }
+
     /**
      * Called at the beginning of the update cycle for each render frame, before {@link QuadtreeTileProvider#showTileThisFrame}
      * or any other functions.
@@ -218,20 +259,6 @@ define([
      *        commands into this array.
      */
     GlobeSurfaceTileProvider.prototype.beginUpdate = function(context, frameState, commandList) {
-        function sortTileImageryByLayerIndex(a, b) {
-            var aImagery = a.loadingImagery;
-            if (!defined(aImagery)) {
-                aImagery = a.readyImagery;
-            }
-
-            var bImagery = b.loadingImagery;
-            if (!defined(bImagery)) {
-                bImagery = b.readyImagery;
-            }
-
-            return aImagery.imageryLayer._layerIndex - bImagery.imageryLayer._layerIndex;
-        }
-
         this._imageryLayers._update();
 
         if (this._layerOrderChanged) {
@@ -411,7 +438,7 @@ define([
     /**
      * Shows a specified tile in this frame.  The provider can cause the tile to be shown by adding
      * render commands to the commandList, or use any other method as appropriate.  The tile is not
-     * expected to be visible next frame as well, unless this method is call next frame, too.
+     * expected to be visible next frame as well, unless this method is called next frame, too.
      *
      * @param {Object} tile The tile instance.
      * @param {Context} context The rendering context.
@@ -421,7 +448,7 @@ define([
     GlobeSurfaceTileProvider.prototype.showTileThisFrame = function(tile, context, frameState, commandList) {
         var readyTextureCount = 0;
         var tileImageryCollection = tile.data.imagery;
-        for ( var i = 0, len = tileImageryCollection.length; i < len; ++i) {
+        for (var i = 0, len = tileImageryCollection.length; i < len; ++i) {
             var tileImagery = tileImageryCollection[i];
             if (defined(tileImagery.readyImagery) && tileImagery.readyImagery.imageryLayer.alpha !== 0.0) {
                 ++readyTextureCount;
@@ -582,7 +609,7 @@ define([
 
             var startIndex = -1;
             var numDestroyed = 0;
-            for ( var i = 0, len = tileImageryCollection.length; i < len; ++i) {
+            for (var i = 0, len = tileImageryCollection.length; i < len; ++i) {
                 var tileImagery = tileImageryCollection[i];
                 var imagery = tileImagery.loadingImagery;
                 if (!defined(imagery)) {
@@ -603,10 +630,6 @@ define([
 
             if (startIndex !== -1) {
                 tileImageryCollection.splice(startIndex, numDestroyed);
-            }
-            // If the base layer has been removed, mark the tile as non-renderable.
-            if (layer.isBaseLayer()) {
-                tile.isRenderable = false;
             }
         });
     };
@@ -680,7 +703,7 @@ define([
                 return this.southAndNorthLatitude;
             },
             u_southMercatorYLowAndHighAndOneOverHeight : function() {
-               return this.southMercatorYLowAndHighAndOneOverHeight;
+                return this.southMercatorYLowAndHighAndOneOverHeight;
             },
             u_waterMask : function() {
                 return this.waterMask;
@@ -770,7 +793,6 @@ define([
         return context.createVertexArray(vertexArray._attributes, wireframeIndexBuffer);
     }
 
-    var firstPassInitialColor = new Cartesian4(0.0, 0.0, 0.5, 1.0);
     var otherPassesInitialColor = new Cartesian4(0.0, 0.0, 0.0, 0.0);
 
     function addDrawCommandsForTile(tileProvider, tile, context, frameState, commandList) {
@@ -779,10 +801,16 @@ define([
         var viewMatrix = frameState.camera.viewMatrix;
 
         var maxTextures = context.maximumTextureImageUnits;
-        if (defined(tileProvider.oceanNormalMap)) {
+
+        var waterMaskTexture = surfaceTile.waterMaskTexture;
+        var showReflectiveOcean = tileProvider.hasWaterMask && defined(waterMaskTexture);
+        var oceanNormalMap = tileProvider.oceanNormalMap;
+        var showOceanWaves = showReflectiveOcean && defined(oceanNormalMap);
+
+        if (showReflectiveOcean) {
             --maxTextures;
         }
-        if (defined(surfaceTile.waterMaskTexture)) {
+        if (showOceanWaves) {
             --maxTextures;
         }
 
@@ -852,7 +880,7 @@ define([
         var otherPassesRenderState = tileProvider._blendRenderState;
         var renderState = firstPassRenderState;
 
-        var initialColor = firstPassInitialColor;
+        var initialColor = tileProvider._firstPassInitialColor;
 
         do {
             var numberOfDayTextures = 0;
@@ -882,7 +910,7 @@ define([
             command.debugShowBoundingVolume = (tile === tileProvider._debug.boundingSphereTile);
 
             Cartesian4.clone(initialColor, uniformMap.initialColor);
-            uniformMap.oceanNormalMap = tileProvider.oceanNormalMap;
+            uniformMap.oceanNormalMap = oceanNormalMap;
             uniformMap.lightingFadeDistance.x = tileProvider.lightingFadeOutDistance;
             uniformMap.lightingFadeDistance.y = tileProvider.lightingFadeInDistance;
             uniformMap.zoomedOutOceanSpecularIntensity = tileProvider.zoomedOutOceanSpecularIntensity;
@@ -955,10 +983,10 @@ define([
             // trim texture array to the used length so we don't end up using old textures
             // which might get destroyed eventually
             uniformMap.dayTextures.length = numberOfDayTextures;
-            uniformMap.waterMask = surfaceTile.waterMaskTexture;
+            uniformMap.waterMask = waterMaskTexture;
             Cartesian4.clone(surfaceTile.waterMaskTranslationAndScale, uniformMap.waterMaskTranslationAndScale);
 
-            command.shaderProgram = tileProvider._surfaceShaderSet.getShaderProgram(context, numberOfDayTextures, applyBrightness, applyContrast, applyHue, applySaturation, applyGamma, applyAlpha);
+            command.shaderProgram = tileProvider._surfaceShaderSet.getShaderProgram(context, numberOfDayTextures, applyBrightness, applyContrast, applyHue, applySaturation, applyGamma, applyAlpha, showReflectiveOcean, showOceanWaves);
             command.renderState = renderState;
             command.primitiveType = PrimitiveType.TRIANGLES;
             command.vertexArray = surfaceTile.vertexArray;

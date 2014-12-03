@@ -1,6 +1,7 @@
 /*global define*/
 define([
         './Cartesian3',
+        './Cartesian4',
         './defaultValue',
         './defined',
         './DeveloperError',
@@ -10,6 +11,7 @@ define([
         './RuntimeError'
     ], function(
         Cartesian3,
+        Cartesian4,
         defaultValue,
         defined,
         DeveloperError,
@@ -287,7 +289,7 @@ define([
      * and a Cartesian3 representing the translation.
      *
      * @param {Matrix3} rotation The upper left portion of the matrix representing the rotation.
-     * @param {Cartesian3} translation The upper right portion of the matrix representing the translation.
+     * @param {Cartesian3} [translation=Cartesian3.ZERO] The upper right portion of the matrix representing the translation.
      * @param {Matrix4} [result] The object in which the result will be stored, if undefined a new instance will be created.
      * @returns The modified result parameter, or a new Matrix4 instance if one was not provided.
      */
@@ -296,10 +298,9 @@ define([
         if (!defined(rotation)) {
             throw new DeveloperError('rotation is required.');
         }
-        if (!defined(translation)) {
-            throw new DeveloperError('translation is required.');
-        }
         //>>includeEnd('debug');
+
+        translation = defaultValue(translation, Cartesian3.ZERO);
 
         if (!defined(result)) {
             return new Matrix4(rotation[0], rotation[3], rotation[6], translation.x,
@@ -338,7 +339,7 @@ define([
      * @returns The modified result parameter, or a new Matrix4 instance if one was not provided.
      *
      * @example
-     * result = Cesium.Matrix4.fromTranslationQuaternionRotationScale(
+     * var result = Cesium.Matrix4.fromTranslationQuaternionRotationScale(
      *   new Cesium.Cartesian3(1.0, 2.0, 3.0), // translation
      *   Cesium.Quaternion.IDENTITY,           // rotation
      *   new Cesium.Cartesian3(7.0, 8.0, 9.0), // scale
@@ -418,6 +419,12 @@ define([
      * @see Matrix4.multiplyByTranslation
      */
     Matrix4.fromTranslation = function(translation, result) {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(translation)) {
+            throw new DeveloperError('translation is required.');
+        }
+        //>>includeEnd('debug');
+
         return Matrix4.fromRotationTranslation(Matrix3.IDENTITY, translation, result);
     };
 
@@ -434,7 +441,7 @@ define([
      * //   [0.0, 8.0, 0.0, 0.0]
      * //   [0.0, 0.0, 9.0, 0.0]
      * //   [0.0, 0.0, 0.0, 1.0]
-     * var m = Cesium.Matrix4.fromScale(new Cartesian3(7.0, 8.0, 9.0));
+     * var m = Cesium.Matrix4.fromScale(new Cesium.Cartesian3(7.0, 8.0, 9.0));
      */
     Matrix4.fromScale = function(scale, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -483,7 +490,7 @@ define([
      * //   [0.0, 2.0, 0.0, 0.0]
      * //   [0.0, 0.0, 2.0, 0.0]
      * //   [0.0, 0.0, 0.0, 1.0]
-     * var m = Cesium.Matrix4.fromScale(2.0);
+     * var m = Cesium.Matrix4.fromUniformScale(2.0);
      */
     Matrix4.fromUniformScale = function(scale, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -876,17 +883,13 @@ define([
      * @returns The modified result parameter.
      *
      * @example
-     * // Example 1.  Create viewport transformation using an explicit viewport and depth range.
+     * // Create viewport transformation using an explicit viewport and depth range.
      * var m = Cesium.Matrix4.computeViewportTransformation({
      *     x : 0.0,
      *     y : 0.0,
      *     width : 1024.0,
      *     height : 768.0
-     * }, 0.0, 1.0);
-     *
-     * @example
-     * // Example 2.  Create viewport transformation using the context's viewport.
-     * var m = Cesium.Matrix4.computeViewportTransformation(context.getViewport());
+     * }, 0.0, 1.0, new Cesium.Matrix4());
      */
     Matrix4.computeViewportTransformation = function(viewport, nearDepthRange, farDepthRange, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -998,7 +1001,7 @@ define([
      * @example
      * var myMatrix = new Cesium.Matrix4();
      * var column1Row0Index = Cesium.Matrix4.getElementIndex(1, 0);
-     * var column1Row0 = myMatrix[column1Row0Index]
+     * var column1Row0 = myMatrix[column1Row0Index];
      * myMatrix[column1Row0Index] = 10.0;
      */
     Matrix4.getElementIndex = function(column, row) {
@@ -1032,7 +1035,7 @@ define([
      * //     [22.0, 23.0, 24.0, 25.0]
      *
      * //Example 1: Creates an instance of Cartesian
-     * var a = Cesium.Matrix4.getColumn(m, 2);
+     * var a = Cesium.Matrix4.getColumn(m, 2, new Cesium.Cartesian4());
      *
      * @example
      * //Example 2: Sets values for Cartesian instance
@@ -1086,7 +1089,7 @@ define([
      * //     [18.0, 19.0, 20.0, 21.0]
      * //     [22.0, 23.0, 24.0, 25.0]
      *
-     * var a = Cesium.Matrix4.setColumn(m, 2, new Cartesian4(99.0, 98.0, 97.0, 96.0));
+     * var a = Cesium.Matrix4.setColumn(m, 2, new Cesium.Cartesian4(99.0, 98.0, 97.0, 96.0), new Cesium.Matrix4());
      *
      * // m remains the same
      * // a = [10.0, 11.0, 99.0, 13.0]
@@ -1137,7 +1140,7 @@ define([
      * //     [22.0, 23.0, 24.0, 25.0]
      *
      * //Example 1: Returns an instance of Cartesian
-     * var a = Cesium.Matrix4.getRow(m, 2);
+     * var a = Cesium.Matrix4.getRow(m, 2, new Cesium.Cartesian4());
      *
      * @example
      * //Example 2: Sets values for a Cartesian instance
@@ -1190,7 +1193,7 @@ define([
      * //     [18.0, 19.0, 20.0, 21.0]
      * //     [22.0, 23.0, 24.0, 25.0]
      *
-     * var a = Cesium.Matrix4.setRow(m, 2, new Cartesian4(99.0, 98.0, 97.0, 96.0));
+     * var a = Cesium.Matrix4.setRow(m, 2, new Cesium.Cartesian4(99.0, 98.0, 97.0, 96.0), new Cesium.Matrix4());
      *
      * // m remains the same
      * // a = [10.0, 11.0, 12.0, 13.0]
@@ -1451,9 +1454,9 @@ define([
      * @returns {Matrix4} The modified result parameter.
      *
      * @example
-     * var m1 = new Cesium.Matrix4(1.0, 6.0, 7.0, 0.0, 2.0, 5.0, 8.0, 0.0, 3.0, 4.0, 9.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+     * var m1 = new Cesium.Matrix4(1.0, 6.0, 7.0, 0.0, 2.0, 5.0, 8.0, 0.0, 3.0, 4.0, 9.0, 0.0, 0.0, 0.0, 0.0, 1.0);
      * var m2 = Cesium.Transforms.eastNorthUpToFixedFrame(new Cesium.Cartesian3(1.0, 1.0, 1.0));
-     * var m3 = Cesium.Matrix4.multiplyTransformation(m1, m2);
+     * var m3 = Cesium.Matrix4.multiplyTransformation(m1, m2, new Cesium.Matrix4());
      */
     Matrix4.multiplyTransformation = function(left, right, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -1531,6 +1534,84 @@ define([
 
     /**
      * Multiplies a transformation matrix (with a bottom row of <code>[0.0, 0.0, 0.0, 1.0]</code>)
+     * by a 3x3 rotation matrix.  This is an optimization
+     * for <code>Matrix4.multiply(m, Matrix4.fromRotationTranslation(rotation), m);</code> with less allocations and arithmetic operations.
+     *
+     * @param {Matrix4} matrix The matrix on the left-hand side.
+     * @param {Matrix3} rotation The 3x3 rotation matrix on the right-hand side.
+     * @param {Matrix4} result The object onto which to store the result.
+     * @returns {Matrix4} The modified result parameter.
+     *
+     * @example
+     * // Instead of Cesium.Matrix4.multiply(m, Cesium.Matrix4.fromRotationTranslation(rotation), m);
+     * Cesium.Matrix4.multiplyByMatrix3(m, rotation, m);
+     */
+    Matrix4.multiplyByMatrix3 = function(matrix, rotation, result) {
+        //>>includeStart('debug', pragmas.debug);
+        if (!defined(matrix)) {
+            throw new DeveloperError('matrix is required');
+        }
+        if (!defined(rotation)) {
+            throw new DeveloperError('rotation is required');
+        }
+        if (!defined(result)) {
+            throw new DeveloperError('result is required,');
+        }
+        //>>includeEnd('debug');
+
+        var left0 = matrix[0];
+        var left1 = matrix[1];
+        var left2 = matrix[2];
+        var left4 = matrix[4];
+        var left5 = matrix[5];
+        var left6 = matrix[6];
+        var left8 = matrix[8];
+        var left9 = matrix[9];
+        var left10 = matrix[10];
+
+        var right0 = rotation[0];
+        var right1 = rotation[1];
+        var right2 = rotation[2];
+        var right4 = rotation[3];
+        var right5 = rotation[4];
+        var right6 = rotation[5];
+        var right8 = rotation[6];
+        var right9 = rotation[7];
+        var right10 = rotation[8];
+
+        var column0Row0 = left0 * right0 + left4 * right1 + left8 * right2;
+        var column0Row1 = left1 * right0 + left5 * right1 + left9 * right2;
+        var column0Row2 = left2 * right0 + left6 * right1 + left10 * right2;
+
+        var column1Row0 = left0 * right4 + left4 * right5 + left8 * right6;
+        var column1Row1 = left1 * right4 + left5 * right5 + left9 * right6;
+        var column1Row2 = left2 * right4 + left6 * right5 + left10 * right6;
+
+        var column2Row0 = left0 * right8 + left4 * right9 + left8 * right10;
+        var column2Row1 = left1 * right8 + left5 * right9 + left9 * right10;
+        var column2Row2 = left2 * right8 + left6 * right9 + left10 * right10;
+
+        result[0] = column0Row0;
+        result[1] = column0Row1;
+        result[2] = column0Row2;
+        result[3] = 0.0;
+        result[4] = column1Row0;
+        result[5] = column1Row1;
+        result[6] = column1Row2;
+        result[7] = 0.0;
+        result[8] = column2Row0;
+        result[9] = column2Row1;
+        result[10] = column2Row2;
+        result[11] = 0.0;
+        result[12] = matrix[12];
+        result[13] = matrix[13];
+        result[14] = matrix[14];
+        result[15] = matrix[15];
+        return result;
+    };
+
+    /**
+     * Multiplies a transformation matrix (with a bottom row of <code>[0.0, 0.0, 0.0, 1.0]</code>)
      * by an implicit translation matrix defined by a {@link Cartesian3}.  This is an optimization
      * for <code>Matrix4.multiply(m, Matrix4.fromTranslation(position), m);</code> with less allocations and arithmetic operations.
      *
@@ -1538,8 +1619,6 @@ define([
      * @param {Cartesian3} translation The translation on the right-hand side.
      * @param {Matrix4} result The object onto which to store the result.
      * @returns {Matrix4} The modified result parameter.
-     *
-     * @see Matrix4.fromTranslation
      *
      * @example
      * // Instead of Cesium.Matrix4.multiply(m, Cesium.Matrix4.fromTranslation(position), m);
@@ -1638,7 +1717,7 @@ define([
      *
      * @example
      * // Instead of Cesium.Matrix4.multiply(m, Cesium.Matrix4.fromScale(scale), m);
-     * Cesium.Matrix4.multiplyByUniformScale(m, scale, m);
+     * Cesium.Matrix4.multiplyByScale(m, scale, m);
      */
     Matrix4.multiplyByScale = function(matrix, scale, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -1730,7 +1809,7 @@ define([
      *
      * @example
      * var p = new Cesium.Cartesian3(1.0, 2.0, 3.0);
-     * Cesium.Matrix4.multiplyByPointAsVector(matrix, p, result);
+     * var result = Cesium.Matrix4.multiplyByPointAsVector(matrix, p, new Cesium.Cartesian3());
      * // A shortcut for
      * //   Cartesian3 p = ...
      * //   Cesium.Matrix4.multiplyByVector(matrix, new Cesium.Cartesian4(p.x, p.y, p.z, 0.0), result);
@@ -1773,7 +1852,7 @@ define([
      *
      * @example
      * var p = new Cesium.Cartesian3(1.0, 2.0, 3.0);
-     * Cesium.Matrix4.multiplyByPoint(matrix, p, result);
+     * var result = Cesium.Matrix4.multiplyByPoint(matrix, p, new Cesium.Cartesian3());
      */
     Matrix4.multiplyByPoint = function(matrix, cartesian, result) {
         //>>includeStart('debug', pragmas.debug);
@@ -1818,7 +1897,7 @@ define([
      * //     [18.0, 19.0, 20.0, 21.0]
      * //     [22.0, 23.0, 24.0, 25.0]
      *
-     * var a = Cesium.Matrix4.multiplyByScalar(m, -2);
+     * var a = Cesium.Matrix4.multiplyByScalar(m, -2, new Cesium.Matrix4());
      *
      * // m remains the same
      * // a = [-20.0, -22.0, -24.0, -26.0]
@@ -1872,7 +1951,7 @@ define([
      * //     [18.0, 19.0, 20.0, 21.0]
      * //     [22.0, 23.0, 24.0, 25.0]
      *
-     * var a = Cesium.Matrix4.negate(m);
+     * var a = Cesium.Matrix4.negate(m, new Cesium.Matrix4());
      *
      * // m remains the same
      * // a = [-10.0, -11.0, -12.0, -13.0]
@@ -1923,7 +2002,7 @@ define([
      * //     [18.0, 19.0, 20.0, 21.0]
      * //     [22.0, 23.0, 24.0, 25.0]
      *
-     * var a = Cesium.Matrix4.negate(m);
+     * var a = Cesium.Matrix4.transpose(m, new Cesium.Matrix4());
      *
      * // m remains the same
      * // a = [10.0, 14.0, 18.0, 22.0]
@@ -2181,6 +2260,11 @@ define([
         return result;
     };
 
+    var scratchInverseRotation = new Matrix3();
+    var scratchMatrix3Zero = new Matrix3();
+    var scratchBottomRow = new Cartesian4();
+    var scratchExpectedBottomRow = new Cartesian4(0.0, 0.0, 0.0, 1.0);
+
      /**
       * Computes the inverse of the provided matrix using Cramers Rule.
       * If the determinant is zero, the matrix can not be inverted, and an exception is thrown.
@@ -2202,6 +2286,30 @@ define([
             throw new DeveloperError('result is required,');
         }
         //>>includeEnd('debug');
+
+        // Special case for a zero scale matrix that can occur, for example,
+        // when a model's node has a [0, 0, 0] scale.
+        if (Matrix3.equalsEpsilon(Matrix4.getRotation(matrix, scratchInverseRotation), scratchMatrix3Zero, CesiumMath.EPSILON7) &&
+            Cartesian4.equals(Matrix4.getRow(matrix, 3, scratchBottomRow), scratchExpectedBottomRow)) {
+
+            result[0] = 0.0;
+            result[1] = 0.0;
+            result[2] = 0.0;
+            result[3] = 0.0;
+            result[4] = 0.0;
+            result[5] = 0.0;
+            result[6] = 0.0;
+            result[7] = 0.0;
+            result[8] = 0.0;
+            result[9] = 0.0;
+            result[10] = 0.0;
+            result[11] = 0.0;
+            result[12] = -matrix[12];
+            result[13] = -matrix[13];
+            result[14] = -matrix[14];
+            result[15] = 1.0;
+            return result;
+        }
 
         //
         // Ported from:
