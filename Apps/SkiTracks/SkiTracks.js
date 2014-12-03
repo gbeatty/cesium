@@ -2,6 +2,7 @@
 define([
         'DataSources/EntityView',
         'DataSources/EntityCollection',
+        'DataSources/ConstantProperty',
         'DataSources/CzmlDataSource',
         'DataSources/DataSourceDisplay',
         'DataSources/DataSourceCollection',
@@ -42,6 +43,7 @@ define([
     ], function(
         EntityView,
         EntityCollection,
+        ConstantProperty,
         CzmlDataSource,
         DataSourceDisplay,
         DataSourceCollection,
@@ -408,7 +410,7 @@ define([
         // fullscreen button
         var fullscreenContainer = document.createElement('div');
         fullscreenContainer.className = 'fullscreenContainer';
-        var cesiumContainer = document.getElementById('fullScreenContainer');
+        var cesiumContainer = document.getElementById('cesiumContainer');
         cesiumContainer.appendChild(fullscreenContainer);
         var fullscreenButton = new FullscreenButton(fullscreenContainer, cesiumContainer);
 
@@ -452,7 +454,7 @@ define([
         var animation;
         var animatingBillboard;
         var updateAnimation = function(value) {
-            animatingBillboard.scale = value.scale;
+            animatingBillboard.id.billboard.scale = new ConstantProperty(value.scale);
         };
 
         var animationComplete = function() {
