@@ -570,7 +570,7 @@
 		</copy>
 
 		<!-- Copy web.config -->
-		<copy file="${basedir}/web.config" tofile="${cesiumViewerOutputDirectory}/web.config" />
+		<copy file="${basedir}/web.config" tofile="${SkiTracksOutputDirectory}/web.config" />
 
 		<!-- rewrite the paths in the configuration -->
 		<replace dir="${SkiTracksOutputDirectory}" summary="true">
