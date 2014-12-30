@@ -549,12 +549,12 @@ define([
         });
 
         // load trails
-        /*var trailsCzmlDataSource = new CzmlDataSource();
+        var trailsCzmlDataSource = new CzmlDataSource();
         trailsCzmlDataSource.loadUrl(trailsCzml).then(function() {
             var dataSourceCollection = new DataSourceCollection();
             dataSourceCollection.add(trailsCzmlDataSource);
             trailsVisualizers = new DataSourceDisplay({scene : cesiumWidget.scene, dataSourceCollection : dataSourceCollection});
-        });*/
+        });
 
     });
 });
