@@ -271,7 +271,7 @@ define([
             // calculate slope
             var vec1 = new Cartesian3();
             var vec2 = new Cartesian3();
-            var earth = cesiumWidget._globe.ellipsoid;
+            var earth = cesiumWidget.scene.globe.ellipsoid;
             startPosition = earth.cartesianToCartographic(pathObject.position.getValue(JulianDate.addSeconds(clock.currentTime, -2.0, time)));
             currentPosition = earth.cartesianToCartographic(pathObject.position.getValue(clock.currentTime));
             var altitude = Math.round(currentPosition.height * 3.28084);
@@ -377,10 +377,9 @@ define([
         // initialize the Cesium widget
         cesiumWidget = new CesiumWidget('cesiumContainer', {
             terrainProvider : new CesiumTerrainProvider({
-                url : '//cesiumjs.org/stk-terrain/tilesets/world/tiles'
+                url : '//assets.agi.com/stk-terrain/tilesets/world/tiles'
             })
         });
-        cesiumWidget._globe.depthTestAgainstTerrain = true;
         cesiumWidget.clock.onTick.addEventListener(updateData);
 
         // disable tilting with the middle mouse button
@@ -425,7 +424,7 @@ define([
                 CesiumMath.toRadians(-111.3080556),
                 CesiumMath.toRadians(40.7639815))
         });
-        var layers = cesiumWidget._globe.imageryLayers;
+        var layers = cesiumWidget.scene.globe.imageryLayers;
         slopeLayer = layers.addImageryProvider(slopeImageryProvider);
         slopeLayer.show = false;
         slopeLayer.alpha = 0.6;
