@@ -380,6 +380,7 @@ define([
                 url : '//assets.agi.com/stk-terrain/tilesets/world/tiles'
             })
         });
+        cesiumWidget.scene.globe.depthTestAgainstTerrain = true;
         cesiumWidget.clock.onTick.addEventListener(updateData);
 
         // disable tilting with the middle mouse button
